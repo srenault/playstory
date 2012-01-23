@@ -1,0 +1,193 @@
+            html, body {
+                margin: 0;
+                padding: 0;
+                font-family: Helvetica, Arial, Sans;
+                background: #EEEEEE;
+                -moz-user-select: none;
+            }
+            a {
+                outline: none;
+            }
+            .block {
+                padding: 20px;
+                border-bottom: 1px solid #aaa;
+            }
+            #header {
+                position: fixed;
+                height: 60px;
+                width: 100%;
+            }
+            #header h1 {
+                font-weight: normal;
+                font-size: 28px;
+                margin: 0;
+            }
+            #header {
+                background: #a4c4f3;
+            }
+            #header p {
+                color: #333;
+            }
+            #cmds {
+                background: #f6f6f6;
+                position: fixed;
+                height: 20px;
+                width: 100%;
+                top: 100px;
+            }
+            label {
+                font-weight: bold;
+                display: block;
+            }
+            .field {
+                margin-bottom: 15px;
+            }
+            small {
+                color: #888;
+                font-size: 80%;
+                position: relative;
+                top: -3px;
+            }
+            #logs {
+               padding-top: 12em;
+            }
+            #logs h2 {
+                color: #333;
+                font-weight: normal;                  
+                border-left: 4px solid #ccc; 
+                padding-left: 5px;  
+                -moz-user-select: none;      
+            }
+            #logs h2 span {
+                cursor: pointer;   
+            }
+            .log a {
+                background: #fafafa;
+                padding: 3px 6px;
+                color: #666;   
+                font-weight: bold;
+                text-decoration: none;   
+                cursor: pointer;  
+                -moz-user-select: none;
+            }
+            .selected a {
+                background: #fff2ab;
+                color: #333;
+            }
+            #bms, #quickLinks {
+                color: #888;
+                font-size: 80%;
+            }
+            #start {
+                float: left;
+                background: #70c111;
+                color: #fff;
+                font-size: 120%;
+                border: 1px double #70c111;
+                cursor: pointer;
+                padding: 3px 8px;
+                -moz-user-select: none;
+            }
+            #stop {
+                float: right;
+                background: #c00;
+                color: #fff;
+                font-size: 120%;
+                border: 1px double #c00;
+                cursor: pointer;
+                padding: 3px 8px;
+                -moz-user-select: none;
+            }
+            #start.disabled {
+                background: #b7d2aa;
+                cursor: default;
+            }
+            #cmds {
+                font-size: 110%;
+                color: #999;
+            }
+            #started {
+                display: none;
+            }
+            .running #started {
+                display: block;
+            }
+            .running #stopped {
+                display: none;
+            }
+            .running #tests h2 span {
+                cursor: default;
+            }
+            .running .test {
+                cursor: default;
+            }
+            .passed a, #header.passed {
+                background: #81CF5A !important;
+            }
+            .failed a, #header.failed {
+                background: #EF6868 !important;
+            }
+            .passing .touch {
+                background: url(@{'/public/test-runner/running.gif'}) no-repeat;
+            }
+            .passing a {
+                background: #95D7EF;
+            }
+            .passed .touch {
+                color: #81CF5A !important;
+            }
+            .failed .touch {
+                color: #EF6868 !important;
+            }
+            .touch {
+                color: #bbb;            
+                padding: 2px 10px 2px 5px;
+                cursor: default;
+                font-family: monospace;
+                font-size: 110%;
+                font-weight: bold;
+            }
+            .failed .touch, .passed .touch {
+                cursor: pointer;
+            }
+            #loading {
+                background: #c00;
+                color: #fff;
+                position: absolute;
+                top: 0;
+                right: 0;
+                padding: 4px 5px;
+                font-size: 80%;
+                display: none;
+            }
+
+/***** Me *****/
+
+ul {
+    list-style: none;
+    margin-bottom: 40px;
+    padding: 0px;
+    padding-left: 20px;
+}
+
+li {
+    margin-bottom: 10px;
+    margin-top: 10px;
+    border: 1px grey;
+    border-radius: 10px;
+    border-style: solid groove;
+    padding-left: 10px;
+    padding-top: 15px;
+    min-height: 60px;
+    background-color: white;
+}
+
+#narrow {
+    margin-right: auto;
+    margin-left: auto;
+    width: 300px;
+}
+
+#narrow input[type="search"] {
+    width: 200px;
+}

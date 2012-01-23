@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <title>Play! Story</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=${_response_encoding}"/>
+        <!--<script src="@{'/public/test-runner/jquery-1.3.2.min.js'}" type="text/javascript" charset="${_response_encoding}"></script>-->
+        <link rel="stylesheet" href="main.css">
+        <script type="text/javascript">
+        </script>
+    </head>
+    <body>
+        <div id="header" class="block">
+            <h1>
+                Play! Story
+            </h1>
+            <p>
+                <strong>To listen stories from your app</strong>, click [Start] and enjoy
+            </p>
+            <div id="loading">waiting ...</div>
+        </div>
+        <div id="cmds" class="block">
+            <div id="stopped">
+                <span id="start">Start !</span>
+            </div>
+            <div id="started">
+                <span id="stop">Stop ...</span>
+            </div>
+        </div>
+        <div id="logs" class="block">
+          <div id="narrow">
+            <form>
+              <input id="keywords" type="search" />
+              <input type="submit" value="Search/Filter" />
+            </form>
+          </div>
+          <ul>
+            <li>play.Logger.debug("entry #1")</li>
+            <li>play.Logger.debug("#pages:json={"name": "renault"}")</li>
+            <li>play.Logger.debug("#sports:xml=<name>renault</name>") </li> <!-- variables; chemins -->
+            <li>entry #2</li>
+            <li>entry #1</li>
+            <li>entry #2</li>
+            <li>entry #1</li>
+            <li>entry #2</li>
+            <li>entry #1</li>
+            <li>entry #2</li>
+            <li>entry #1</li>
+            <li>entry #2</li>
+            <li>entry #1</li>
+            <li>entry #2</li>
+            <li>entry #1</li>
+            <li>entry #2</li>
+            <li>entry #1</li>
+            <li>entry #2</li>
+        </div>
+    </body>
+</html>
