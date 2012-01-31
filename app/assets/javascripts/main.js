@@ -1,32 +1,38 @@
-(function(window, $) {
+$(function(window) {
     var session = {};
-    Session.onReceive = function(log) {
-        alert("log received !");
-        var projectName = _.template('<%= project %>');
-        var messsage = _.template('<%= data.message %>');
-        $('#logs').append('<li>'+ log.data.message +'</li>');
+    session.onReceive = function(log) {
+        var message = _.template('<%= message %>');
+        $('#logs').append('<li>'+ message(log) +'</li>');
     };
 
     session.bindUI = function() {
         var buttons = {
-            $start: $('div.commands #start'),
-            $stop: $('div.commands #stop')
+            $start: $('div#cmds #stopped #start'),
+            $stop: $('div#cmds #started #stop')
         };
 
-        var $results = $('#stream');
-        var _this = this;
+        var containers = {
+            $stopped: $('div#cmds #stopped'),
+            $started: $('div#cmds #started')
+        };
+
+        var $stream = $('#stream');
         buttons.$start.click(function(e) {
             e.preventDefault();
-            var url = '/story/listen';
-            $results.attr('src', url);
+            containers.$stopped.hide();
+            containers.$started.show();
+            var url = 'story/listen';
+            $stream.attr('src', url);
         });
         
         buttons.$stop.click(function(e) {
             e.preventDefault();
-            $results.attr('src', '#');
+            containers.$started.hide();
+            containers.$stopped.show();
+            $stream.attr('src', '#');
         });
     };
 
     session.bindUI();
     window.session = session;
-})(window, $);
+})(window);

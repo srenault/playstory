@@ -108,6 +108,7 @@
             }
             #started {
                 display: none;
+                float: left;
             }
             .running #started {
                 display: block;
@@ -126,9 +127,6 @@
             }
             .failed a, #header.failed {
                 background: #EF6868 !important;
-            }
-            .passing .touch {
-                background: url(@{'/public/test-runner/running.gif'}) no-repeat;
             }
             .passing a {
                 background: #95D7EF;
