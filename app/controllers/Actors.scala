@@ -5,6 +5,7 @@ import akka.actor.Actor._
 
 import play.api._
 import play.api.libs.iteratee._
+import play.api.libs.iteratee.Enumerator.Pushee
 import play.api.libs.concurrent._
 
 import models.Log
@@ -13,15 +14,16 @@ class StoryActor extends Actor {
   
   import StoryActor._
   
-  private var logs: Option[CallbackEnumerator[Log]] = None
+  private var logs: Option[Pushee[Log]] = None
   
   def receive = {
 
     case Listen() => {
-      lazy val channel: CallbackEnumerator[Log] = new CallbackEnumerator[Log](
+      lazy val channel: Enumerator[Log] = Enumerator.pushEnumerator(
+        pushee => self ! Init(pushee),
         onComplete = self ! Quit()
       )
-      logs = Some(channel)
+      //logs = Some(channel)
       Logger.info("New debugging session")
       sender ! channel
     }
@@ -32,7 +34,7 @@ class StoryActor extends Actor {
     }
     
     case NewLog(log) => {
-      Logger.info("Got a log : " + log)
+      Logger.info("Catch a log : " + log)
       logs.map(_.push(log))
     }
   }
@@ -43,6 +45,7 @@ object StoryActor {
   case class Listen() extends Event
   case class Quit() extends Event
   case class NewLog(log: Log)
+  case class Init(p: Pushee[Log])
   lazy val system = ActorSystem("debugroom")
   lazy val ref = system.actorOf(Props[StoryActor])
 }
