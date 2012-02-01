@@ -8,19 +8,19 @@ import play.api.libs.json.Json._
 import java.util.Date
 
 case class Log(logger: String,
-               file: String,
+               className: String,
                date: String,
+               file: String,
                location: String,
-               line: Long,
+               line: String,
                message: String,
                method: String,
                level: String,
-               thread: String,
-               receivedAt: Long = new Date().getTime())
+               thread: String)
 
 object Log {
   def fromJsObject(json: JsObject) = fromJson[Log](json)
 
   import play.api.libs.json.Generic._
-  implicit val LogFormat: Format[Log] = productFormat10("logger", "file", "date", "location", "line", "message", "method", "level", "thread", "receivedAt")(Log.apply)(Log.unapply(_))
+  implicit val LogFormat: Format[Log] = productFormat10("logger", "class", "date", "file", "location", "line", "message", "method", "level", "thread")(Log.apply)(Log.unapply(_))
 }

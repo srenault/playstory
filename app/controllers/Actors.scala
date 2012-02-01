@@ -23,9 +23,12 @@ class StoryActor extends Actor {
         pushee => self ! Init(pushee),
         onComplete = self ! Quit()
       )
-      //logs = Some(channel)
       Logger.info("New debugging session")
       sender ! channel
+    }
+
+    case Init(pushee) => {
+      logs = Some(pushee)
     }
 
     case Quit() => {

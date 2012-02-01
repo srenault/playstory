@@ -33,17 +33,14 @@ object Application extends Controller {
   }
 
   def eval() = ToJsObject { json =>
+    println(json)
     StoryActor.ref ! NewLog(Log.fromJsObject(json))
     Ok
   }
 
   private def ToJsObject(action: JsObject => Result) = Action { implicit request =>
     Logger.info("entering")
-    Form(
-      (
-        "data" -> nonEmptyText
-      )
-    ).bindFromRequest.fold(
+    Form(("data" -> nonEmptyText)).bindFromRequest.fold(
       err => BadRequest("Empty json ?"), {
         case jsonStr => Json.parse(jsonStr) match {
           case jsObj: JsObject => action(jsObj)
@@ -54,14 +51,3 @@ object Application extends Controller {
     )
   }
 }
-
-/*  val computerForm = Form(
-    mapping(
-      "id" -> ignored(NotAssigned:Pk[Long]),
-      "name" -> nonEmptyText,
-      "introduced" -> optional(date("yyyy-MM-dd")),
-      "discontinued" -> optional(date("yyyy-MM-dd")),
-      "company" -> optional(longNumber)
-    )(Computer.apply)(Computer.unapply)
-  )
-*/

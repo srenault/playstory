@@ -1,8 +1,7 @@
-$(function(window) {
+$(function() {
     var session = {};
     session.onReceive = function(log) {
-        var message = _.template('<%= message %>');
-        $('#logs').append('<li>'+ message(log) +'</li>');
+        $('#logs').append('<li>'+ log.message +'</li>');
     };
 
     session.bindUI = function() {
@@ -35,4 +34,5 @@ $(function(window) {
 
     session.bindUI();
     window.session = session;
-})(window);
+    alert(window.session);
+});
