@@ -8,13 +8,17 @@ $(document).ready(function() {
         var buttons = {
             $start: $('div#cmds #stopped #start'),
             $stop: $('div#cmds #started #stop'),
-            $clear: $('div#cmds #finished #clear')
+            $clear: $('div#cmds #started #clear')
         };
 
         var containers = {
             $stopped: $('div#cmds #stopped'),
             $started: $('div#cmds #started'),
-            $logs: $('#logs ul')
+            $logs: $('div#logs ul')
+        };
+
+        var inputs = {
+            $keywords: $('div#cmds #narrow input[type="search"]')
         };
 
         var $stream = $('#stream');
@@ -23,6 +27,8 @@ $(document).ready(function() {
             containers.$stopped.hide();
             containers.$started.show();
             var url = 'story/listen';
+            var keywords = inputs.$keywords.val().trim();
+            if(keywords != '') url = url.concat('/{keywords}'.replace('{keywords}', keywords));
             $stream.attr('src', url);
         });
         

@@ -23,11 +23,17 @@ object Application extends Controller {
     Ok(views.html.index())
   }
 
-  def listen() = Action {
+  def listen(keywords: Option[String]) = Action {
     implicit val LogComet = Comet.CometMessage[Log](dbLog => toJson(dbLog).toString)
+
+    val cometEnumeratee =  Comet( callback = "window.parent.session.onReceive")
+    val finalEnumeratee = keywords.map { k =>
+      Enumeratee.filter[Log](log => log.message.contains(keywords)) ><> cometEnumeratee
+    }.getOrElse(cometEnumeratee)
+
     AsyncResult {
-      (StoryActor.ref ? (Listen(), 5.seconds)).mapTo[Enumerator[Log]].asPromise.map { 
-        chunks => Ok.stream(chunks &> Comet( callback = "window.parent.session.onReceive"))
+      (StoryActor.ref ? (Listen(), 5.seconds)).mapTo[Enumerator[Log]].asPromise.map {
+        chunks => Ok.stream(chunks &> finalEnumeratee)
       }
     }
   }

@@ -89,7 +89,7 @@ small {
     -moz-user-select: none;
 }
 #stop {
-    float: right;
+    float: left;
     background: #c00;
     color: #fff;
     font-size: 120%;
@@ -101,10 +101,11 @@ small {
 
 #clear {
     float: left;
-    background: #70c111;
+    margin-left: 10px;
+    background: #262626;
     color: #fff;
     font-size: 120%;
-    border: 1px double #70c111;
+    border: 1px double #262626;
     cursor: pointer;
     padding: 3px 8px;
     -moz-user-select: none;

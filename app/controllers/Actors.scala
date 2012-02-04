@@ -13,7 +13,7 @@ import models.Log
 class StoryActor extends Actor {
   
   import StoryActor._
-  
+
   private var logs: Option[Pushee[Log]] = None
   
   def receive = {
