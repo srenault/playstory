@@ -1,7 +1,11 @@
 $(document).ready(function() {
     var session = {};
+
+    session.$matchedLogs = [];
+
     session.onReceive = function(log) {
-        $('#logs ul').append('<li>'+ log.message +'</li>');
+        $('#logs ul').append('<li class="log">'+ log.message +'</li>');
+        $('#logs li.log').last().fadeIn(1000);
     };
 
     session.bindUI = function() {
@@ -18,7 +22,7 @@ $(document).ready(function() {
         };
 
         var inputs = {
-            $keywords: $('div#cmds #narrow input[type="search"]')
+            $keywords: $('div#cmds #narrow input[type="text"]')
         };
 
         var $stream = $('#stream');
@@ -27,8 +31,8 @@ $(document).ready(function() {
             containers.$stopped.hide();
             containers.$started.show();
             var url = 'story/listen';
-            var keywords = inputs.$keywords.val().trim();
-            if(keywords != '') url = url.concat('/{keywords}'.replace('{keywords}', keywords));
+            var keywords = inputs.$keywords.val();
+            if(keywords) url = url.concat('/{keywords}'.replace('{keywords}', keywords));
             $stream.attr('src', url);
         });
         
@@ -41,6 +45,20 @@ $(document).ready(function() {
 
         buttons.$clear.click(function(e) {
             containers.$logs.empty();
+        });
+
+        inputs.$keywords.keyup(function(e) {
+            e.preventDefault();
+            var _this = this;
+            session.$matchedLogs = containers.$logs.find('li.log').filter(function() { 
+               return $(this).text().search($(_this).val()) > -1;
+            });
+            if(session.$matchedLogs.length > 0) {
+                var $firstMatched = session.$matchedLogs.first();
+                $firstMatched.css('background-color', 'blue');
+                var posY = $firstMatched.offset().top - 50; //$firstMatched.css('padding-top') + $firstMatched.css('margin-top');
+                window.scroll(0, posY);
+            }
         });
     };
 
