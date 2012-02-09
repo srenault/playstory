@@ -24,14 +24,11 @@ object Application extends Controller {
   }
 
   def listen(keywords: Option[String]) = Action {
-    implicit val LogComet = Comet.CometMessage[Log] { log =>
-      Logger.info(log.toString)
-      toJson(log).toString
-    }
-
+    implicit val LogComet = Comet.CometMessage[Log](log => toJson(log).toString)
+    Logger.error(keywords.get)
     val cometEnumeratee =  Comet( callback = "window.parent.session.onReceive")
     val finalEnumeratee = keywords.map { k =>
-      Enumeratee.filter[Log](log => log.message.contains(keywords)) ><> cometEnumeratee
+      Enumeratee.filter[Log](log => log.message.toLowerCase().contains(k.toLowerCase())) ><> cometEnumeratee
     }.getOrElse(cometEnumeratee)
 
     AsyncResult {
