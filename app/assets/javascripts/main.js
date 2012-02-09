@@ -37,8 +37,8 @@ $(document).ready(function() {
 
         session.ui.buttons.$stop.click(function(e) {
             e.preventDefault();
-            session.ui.buttons.$start.hide();
-            session.ui.buttons.$stop.show();
+            session.ui.buttons.$start.parent().show();
+            session.ui.buttons.$stop.parent().hide();
             session.ui.containers.$stream.attr('src', '#');
         });
 
