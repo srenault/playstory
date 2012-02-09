@@ -24,7 +24,10 @@ object Application extends Controller {
   }
 
   def listen(keywords: Option[String]) = Action {
-    implicit val LogComet = Comet.CometMessage[Log](dbLog => toJson(dbLog).toString)
+    implicit val LogComet = Comet.CometMessage[Log] { log =>
+      Logger.info(log.toString)
+      toJson(log).toString
+    }
 
     val cometEnumeratee =  Comet( callback = "window.parent.session.onReceive")
     val finalEnumeratee = keywords.map { k =>
@@ -38,22 +41,10 @@ object Application extends Controller {
     }
   }
 
-  def eval() = ToJsObject { json =>
-    println(json)
-    StoryActor.ref ! NewLog(Log.fromJsObject(json))
-    Ok
-  }
-
-  private def ToJsObject(action: JsObject => Result) = Action { implicit request =>
-    Logger.info("entering")
-    Form(("data" -> nonEmptyText)).bindFromRequest.fold(
-      err => BadRequest("Empty json ?"), {
-        case jsonStr => Json.parse(jsonStr) match {
-          case jsObj: JsObject => action(jsObj)
-          case JsUndefined(error) => Logger.info("BadRequest"); BadRequest("Invalid json: " + error)
-          case _ => Logger.info("BadRequest"); BadRequest("Not a json object")
-        }
-      }
-    )
+  def eval() = Action(parse.json) { implicit request =>
+    request.body match {
+      case log: JsObject => StoryActor.ref ! NewLog(Log.fromJsObject(log)); Ok
+      case _ => Logger.warn("Invalid log format"); BadRequest("Invalid Log format")
+    }
   }
 }

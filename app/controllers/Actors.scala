@@ -37,7 +37,7 @@ class StoryActor extends Actor {
     }
     
     case NewLog(log) => {
-      Logger.info("Catch a log : " + log)
+      Logger.info("Catch a log")
       logs.map(_.push(log))
     }
   }

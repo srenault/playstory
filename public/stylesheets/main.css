@@ -53,10 +53,10 @@ small {
 }
 #logs h2 {
     color: #333;
-    font-weight: normal;                  
+    font-weight: normal;
     border-left: 4px solid #ccc; 
     padding-left: 5px;  
-    -moz-user-select: none;      
+    -moz-user-select: none;
 }
 #logs h2 span {
     cursor: pointer;   
@@ -119,6 +119,18 @@ small {
     font-size: 110%;
     color: #999;
 }
+
+.onreceived {
+    position: fixed;
+    background: green;
+    height: 3px;
+    width: 100%;
+    top: 100px;
+    z-index: 100;
+    -moz-box-shadow: 0 -1px 7px #D4D4D4;
+    -webkit-box-shadow: 10px 10px 10px #D4D4D4;
+}
+
 #started {
     display: none;
     float: left;
@@ -151,7 +163,7 @@ small {
     color: #EF6868 !important;
 }
 .touch {
-    color: #bbb;            
+    color: #bbb;
     padding: 2px 10px 2px 5px;
     cursor: default;
     font-family: monospace;
@@ -192,6 +204,11 @@ ul {
     padding-top: 15px;
     min-height: 33px;
     background-color: white;
+}
+
+#logs li.log.found {
+    box-shadow: 0px 0px 10px #0079C2;
+    border-color: #0079C2;
 }
 
 #narrow {
