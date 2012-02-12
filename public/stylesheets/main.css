@@ -211,6 +211,10 @@ ul {
     border-color: #0079C2;
 }
 
+#logs li.log.variable {
+    background-color: #BEE796 !important;
+}
+
 #narrow {
     margin-right: auto;
     margin-left: auto;

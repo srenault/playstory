@@ -25,8 +25,7 @@ object Application extends Controller {
 
   def listen(keywords: Option[String]) = Action {
     implicit val LogComet = Comet.CometMessage[Log](log => toJson(log).toString)
-    Logger.error(keywords.get)
-    val cometEnumeratee =  Comet( callback = "window.parent.session.onReceive")
+    val cometEnumeratee =  Comet( callback = "window.parent.session.observable.log.receive")
     val finalEnumeratee = keywords.map { k =>
       Enumeratee.filter[Log](log => log.message.toLowerCase().contains(k.toLowerCase())) ><> cometEnumeratee
     }.getOrElse(cometEnumeratee)

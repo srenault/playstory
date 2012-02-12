@@ -19,9 +19,19 @@ $(document).ready(function() {
     };
 
     session.onReceive = function(log) {
-        this.ui.containers.$logs.append('<li class="log">'+ log.message +'</li>');
+        var cssID = '',
+            cssClass = 'log',
+            logID = log.message.match('#[\\w]* '),
+            logClass = log.message.match('\\.[\\w]* ');
+
+        if(logClass) cssClass += ' ' + logClass[0].substring(1,logClass[0].length);
+        if(logID) cssID = logID[0].substring(1,logID[0].length);
+        if(logClass || logID) {
+            cssClass += ' variable';
+            log.message = log.message.slice(1);
+        }
+        this.ui.containers.$logs.append('<li class="'+cssClass+'" id="'+cssID+'">'+ log.message +'</li>');
         this.ui.containers.$logs.find('li.log').last().fadeIn(1000);
-        this.ui.containers.$cmds.addClass('onreceived');
     };
 
     var bindUI = function() {
@@ -64,7 +74,7 @@ $(document).ready(function() {
                    session.$matchedLogs.each(function() {
                        $(this).addClass('found');
                    });
-                    $('html, body').animate({ scrollTop: $firstMatched.offset().top - 250}, 'slow');
+                    $('html, body').animate({ scrollTop: $firstMatched.offset().top - 250}, 'fast');
                 }
             } else window.scroll(0, 0);
         });
