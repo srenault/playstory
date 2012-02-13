@@ -37,6 +37,16 @@ object Application extends Controller {
     }
   }
 
+  // val toEventSource = Enumeratee.map[String] { msg => "data:" + toJson(msg)+""""""}
+  // def listenSSE() = Action {
+  //   SimpleResult(
+  //     header = ResponseHeader(OK, Map(
+  //       CONTENT_LENGTH -> "-1",
+  //       CONTENT_TYPE -> "text/event-stream"
+  //     )),
+  //     Streams.getHeap &> toEventSource)
+  // }
+
   def eval() = Action(parse.json) { implicit request =>
     request.body match {
       case log: JsObject => StoryActor.ref ! NewLog(Log.fromJsObject(log)); Ok

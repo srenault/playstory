@@ -531,9 +531,10 @@ var Match = (function(){
 		}, a)
 	}
 
-	M.prototype.regex = function(reg, a){
+	M.prototype.regex = function(reg, a, prop){
 		return this.test(function(v){
-			return reg.test(v)
+            if(prop) return reg.test(v[prop])
+            else return reg.test(v)
 		}, a)
 	}
 	M.prototype.type = TODO
