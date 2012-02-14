@@ -200,10 +200,30 @@ ul {
     border: 1px grey;
     border-radius: 10px;
     border-style: solid groove;
-    padding-left: 10px;
-    padding-top: 15px;
+    padding: 5px;
     min-height: 33px;
     background-color: white;
+    word-wrap: break-word;
+    overflow: auto;
+}
+
+#logs li.log div.name {
+    float: left;
+    border: 1px solid grey;
+    border-right: 25px;
+    padding-right: 10px;
+    min-height: 25px;
+    background-color: #BEE796 !important;
+    border-radius: 9px;
+    padding-top: 8px;
+    text-align: center;
+}
+
+#logs li.log div.value {
+    float: left;
+    width: 99%;
+    margin-left: 10px;
+    padding-top: 8px;
 }
 
 #logs li.log.found {
@@ -212,7 +232,6 @@ ul {
 }
 
 #logs li.log.variable {
-    background-color: #BEE796 !important;
 }
 
 #narrow {

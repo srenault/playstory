@@ -43,18 +43,48 @@ $(document).ready(function() {
         }
     };
 
+    var newLog = function(msg, name, pre) {
+        var $log = $('<li class="log"></li>');
+        if(name) $log.append('<div class="name">'+name+'</div>');
+        if(pre) msg = '<pre>' + msg + '</pre>';
+        $log.append('<div class="value">'+msg+'</div>');
+        return $log;
+    };
+
     session.actions = {
         log: {
             asJson: Action(function(log, n) {
-                session.ui.$logs.append('<li class="log json">'+ log.message +'</li>');
+                var nameValue = log.message.split('=>');
+                var $log = newLog(nameValue[1], nameValue[0], true).addClass('json');
+                try {
+                    JSON.parse(nameValue[1]);
+                    $log.addClass('valid');
+                } catch(e) {
+                    $log.addClass('invalid');
+                }
+                session.ui.$logs.append($log);
+                n(log);
+            }),
+            asXml: Action(function(log, n) {
+                var nameValue = log.message.split('=>');
+                var xml = nameValue[1].replace(/</gm,'&lt;').replace(/>/gm,'&gt;');
+                var $log = newLog(xml, nameValue[0], true).addClass('xml');
+                try {
+                    $.parseXML(nameValue[1]);
+                    $log.addClass('valid');
+                } catch(e) {
+                    $log.addClass('invalid');
+                }
+                session.ui.$logs.append($log);
                 n(log);
             }),
             asVariable: Action(function(log, n) {
-                session.ui.$logs.append('<li class="log variable">'+ log.message +'</li>');
+                var nameValue = log.message.split('=>');
+                session.ui.$logs.append(newLog(nameValue[1], nameValue[0]).addClass('variable'));
                 n(log);
             }),
             asInfo: Action(function(log, n) {
-                session.ui.$logs.append('<li class="log info">'+ log.message +'</li>');
+                session.ui.$logs.append(newLog(log.message)).addClass('info');
                 n(log);
             }),
             display: Action(function(log, n) {
@@ -135,7 +165,8 @@ $(document).ready(function() {
 
     Reactive.on(session.events.log)
     .await(
-        Match.regex(/#[\w]*:json [\w]*/, session.actions.log.asJson, 'message')
+        Match.regex(/#[\w]*:json /, session.actions.log.asJson, 'message')
+             .regex(/#[\w]*:xml /, session.actions.log.asXml, 'message')
              .regex(/#[\w]* [\w]*/, session.actions.log.asVariable, 'message')
              .default(session.actions.log.asInfo).action()
        .then(session.actions.log.display)

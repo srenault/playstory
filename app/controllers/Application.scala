@@ -47,10 +47,11 @@ object Application extends Controller {
   //     Streams.getHeap &> toEventSource)
   // }
 
-  def eval() = Action(parse.json) { implicit request =>
-    request.body match {
+  def eval() = Action { implicit request =>
+    request.body.asJson.get match {
       case log: JsObject => StoryActor.ref ! NewLog(Log.fromJsObject(log)); Ok
-      case _ => Logger.warn("Invalid log format"); BadRequest("Invalid Log format")
+      case log: JsValue => Logger.warn("Log isnt an object: " + log); BadRequest
+      case _ => Logger.warn("Invalid log format: " + request.body); BadRequest("Invalid Log format: " + request.body)
     }
   }
 }
