@@ -45,9 +45,9 @@ $(document).ready(function() {
 
     var newLog = function(msg, name, pre) {
         var $log = $('<li class="log"></li>');
-        if(name) $log.append('<div class="name">'+name+'</div>');
+        if(name) $log.append('<span class="name">'+name+'</div>');
         if(pre) msg = '<pre>' + msg + '</pre>';
-        $log.append('<div class="value">'+msg+'</div>');
+        $log.append('<span class="value">'+msg+'</div>');
         return $log;
     };
 
@@ -55,7 +55,7 @@ $(document).ready(function() {
         log: {
             asJson: Action(function(log, n) {
                 var nameValue = log.message.split('=>');
-                var $log = newLog(nameValue[1], nameValue[0], true).addClass('json');
+                var $log = newLog(nameValue[1], nameValue[0], true).addClass('variable json');
                 try {
                     JSON.parse(nameValue[1]);
                     $log.addClass('valid');
@@ -68,7 +68,7 @@ $(document).ready(function() {
             asXml: Action(function(log, n) {
                 var nameValue = log.message.split('=>');
                 var xml = nameValue[1].replace(/</gm,'&lt;').replace(/>/gm,'&gt;');
-                var $log = newLog(xml, nameValue[0], true).addClass('xml');
+                var $log = newLog(xml, nameValue[0], true).addClass('variable xml');
                 try {
                     $.parseXML(nameValue[1]);
                     $log.addClass('valid');
@@ -76,6 +76,15 @@ $(document).ready(function() {
                     $log.addClass('invalid');
                 }
                 session.ui.$logs.append($log);
+                n(log);
+            }),
+            
+            asGroup: Action(function(log, n) {
+                var nameValue = log.message.split('=>');
+                var $group = session.ui.$logs.find('li.log.'+nameValue[0]);
+                if($group.length > 0) {
+                    $($group[0]).append('<span class="value">'+nameValue[1]+'</span>');
+                } else session.ui.$logs.append(newLog(nameValue[1], nameValue[0]).addClass('group' + ' ' + nameValue[0].substring(1, nameValue[0].length-1)));
                 n(log);
             }),
             asVariable: Action(function(log, n) {
@@ -95,9 +104,9 @@ $(document).ready(function() {
         logs: {
             narrow: {
                 preventEnterKey: Match.on(function(e) {
-                    return e.which;  
+                    return e.which;
                 })
-               .value(13, Action(function(e, n) {e.preventDefault();}))
+               .value(13, Action(function(e, n) {e.preventDefault(); n(e);}))
                .action(),
 
                 submit: Action(function(v, n) {
@@ -165,9 +174,10 @@ $(document).ready(function() {
 
     Reactive.on(session.events.log)
     .await(
-        Match.regex(/#[\w]*:json /, session.actions.log.asJson, 'message')
-             .regex(/#[\w]*:xml /, session.actions.log.asXml, 'message')
-             .regex(/#[\w]* [\w]*/, session.actions.log.asVariable, 'message')
+        Match.regex(/^#[\w]*:json /, session.actions.log.asJson, 'message')
+             .regex(/^#[\w]*:xml / , session.actions.log.asXml, 'message')
+             .regex(/^#[\w]* /, session.actions.log.asVariable, 'message')
+             .regex(/^\.[\w]* /, session.actions.log.asGroup, 'message')
              .default(session.actions.log.asInfo).action()
        .then(session.actions.log.display)
     )
