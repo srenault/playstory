@@ -53,6 +53,13 @@ $(document).ready(function() {
 
     session.actions = {
         log: {
+            asTimestamp: Action(function(log, n) {
+                var nameValue = log.message.split('=>');
+                var msg = nameValue[1] + ' (' + new Date(parseInt(nameValue[1])).toString() + ')';
+                var $log = newLog(msg, nameValue[0], true).addClass('variable timestamp');
+                session.ui.$logs.append($log);
+                n(log);
+            }),
             asJson: Action(function(log, n) {
                 var nameValue = log.message.split('=>');
                 var $log = newLog(nameValue[1], nameValue[0], true).addClass('variable json');
@@ -84,7 +91,7 @@ $(document).ready(function() {
                 var $group = session.ui.$logs.find('li.log.'+nameValue[0]);
                 if($group.length > 0) {
                     $($group[0]).append('<span class="value">'+nameValue[1]+'</span>');
-                } else session.ui.$logs.append(newLog(nameValue[1], nameValue[0]).addClass('group' + ' ' + nameValue[0].substring(1, nameValue[0].length-1)));
+                } else session.ui.$logs.append(newLog(nameValue[1], nameValue[0]).addClass('variable group' + ' ' + nameValue[0].substring(1, nameValue[0].length-1)));
                 n(log);
             }),
             asVariable: Action(function(log, n) {
@@ -93,7 +100,9 @@ $(document).ready(function() {
                 n(log);
             }),
             asInfo: Action(function(log, n) {
-                session.ui.$logs.append(newLog(log.message)).addClass('info');
+                var $log = newLog(log.message).addClass('info');
+                if(log.level === 'ERROR') $log.addClass('error');
+                session.ui.$logs.append($log);
                 n(log);
             }),
             display: Action(function(log, n) {
@@ -169,12 +178,13 @@ $(document).ready(function() {
     .subscribe();
 
     Reactive.on(session.events.cmds.narrow.keyup)
-    .await(session.actions.logs.narrow.submit)
+            .await(session.actions.logs.narrow.submit)
     .subscribe();
 
     Reactive.on(session.events.log)
     .await(
-        Match.regex(/^#[\w]*:json /, session.actions.log.asJson, 'message')
+        Match.regex(/^#[\w]*:ts /, session.actions.log.asTimestamp, 'message')
+             .regex(/^#[\w]*:json /, session.actions.log.asJson, 'message')
              .regex(/^#[\w]*:xml / , session.actions.log.asXml, 'message')
              .regex(/^#[\w]* /, session.actions.log.asVariable, 'message')
              .regex(/^\.[\w]* /, session.actions.log.asGroup, 'message')

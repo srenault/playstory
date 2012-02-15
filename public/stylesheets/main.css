@@ -210,7 +210,6 @@ ul {
     display: inline-block;
     border: 1px solid grey;
     border-right: 25px;
-    background-color: #BEE796 !important;
     border-radius: 9px;
     text-align: center;
     padding: 5px;
@@ -225,14 +224,17 @@ ul {
 }
 
 #logs li.log.found {
-    box-shadow: 0px 0px 10px #0079C2;
-    border-color: #0079C2;
+    box-shadow: 0px 0px 10px #0079C2 !important;
+    border-color: #0079C2 !important;
 }
 
 #logs li.log.variable span.name {
-    background-color: #BEBEBE !important;
+    background-color: #BEBEBE;
 }
 
+#logs li.log.info.error {
+    background-color: #F57E86;
+}
 
 #logs li.log.variable.invalid {
     box-shadow: 0px 0px 4px 1px red !important;
@@ -243,15 +245,19 @@ ul {
 }
 
 #logs li.log.variable.xml span.name {
-    background-color: #96CEC0 !important;
-}
-
-#logs li.log.variable.group span.value {
-    background-color: #F8C83A !important;
+    background-color: #BEE7960 !important;
 }
 
 #logs li.log.variable.json span.name {
-    background-color: #BEE796 !important;
+    background-color: #5298C8 !important;
+}
+
+#logs li.log.variable.timestamp span.name {
+    background-color: #FCD649 !important;
+}
+
+#logs li.log.variable.group span.name {
+    background-color: #C7D1EC !important;
 }
 
 #narrow {
