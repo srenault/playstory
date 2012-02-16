@@ -12,7 +12,10 @@ $(document).ready(function() {
             $start: $('div#cmds #stopped #start'),
             $stop: $('div#cmds #started #stop'),
             $clear: $('div#cmds #started #clear'),
-            $narrow: $('div#cmds #narrow input[type="text"]')
+            narrow: {
+                $get: $('div#cmds #narrow input[type="text"]'),
+                $option: $('div#cmds #narrow input[type="checkbox"]')
+            }
         },
         $logs: $('div#logs ul'),
         $stream: $('iframe#stream')
@@ -37,8 +40,8 @@ $(document).ready(function() {
             stop: function(next) { session.ui.cmds.$stop.click(next); },
             clear: function(next) { session.ui.cmds.$clear.click(next); },
             narrow: {
-                keypress: function(next) { session.ui.cmds.$narrow.keypress(next); },
-                keyup: function(next) { session.ui.cmds.$narrow.keyup(next); }
+                keypress: function(next) { session.ui.cmds.narrow.$get.keypress(next); },
+                keyup: function(next) { session.ui.cmds.narrow.$get.keyup(next); }
             }
         }
     };
@@ -85,7 +88,6 @@ $(document).ready(function() {
                 session.ui.$logs.append($log);
                 n(log);
             }),
-            
             asGroup: Action(function(log, n) {
                 var nameValue = log.message.split('=>');
                 var $group = session.ui.$logs.find('li.log.'+nameValue[0]);
@@ -111,39 +113,56 @@ $(document).ready(function() {
             })
         },
         logs: {
-            narrow: {
-                preventEnterKey: Match.on(function(e) {
-                    return e.which;
-                })
-               .value(13, Action(function(e, n) {e.preventDefault(); n(e);}))
-               .action(),
+            preventEnterKey: Match.on(function(e) {
+                return e.which;
+            })
+            .value(13, Action(function(e, n) {e.preventDefault(); n(e);}))
+            .action(),
 
-                submit: Action(function(v, n) {
-                    var keywords = $.trim(session.ui.cmds.$narrow.val());
-                    $logs = session.ui.$logs.find('li.log');
-                    $logs.removeClass('found');
-                    if(keywords) {
-                        session.$matchedLogs = $logs.filter(function() {
-                            return $(this).text().search(keywords) > -1;
+            find: Action(function(v, n) {
+                var keywords = $.trim(session.ui.cmds.narrow.$get.val());
+                $logs = session.ui.$logs.find('li.log');
+                $logs.removeClass('found');
+                if(keywords) {
+                    session.$matchedLogs = $logs.filter(function() {
+                        return $(this).text().search(keywords) > -1;
+                    });
+                    if(session.$matchedLogs.length > 0) {
+                        var $firstMatched = session.$matchedLogs.first();
+                        session.$matchedLogs.each(function() {
+                            $(this).addClass('found');
                         });
-                        if(session.$matchedLogs.length > 0) {
-                            var $firstMatched = session.$matchedLogs.first();
-                            session.$matchedLogs.each(function() {
-                                $(this).addClass('found');
-                            });
-                            $('html, body').animate({ scrollTop: $firstMatched.offset().top - 250}, 'fast');
-                        }
-                    } else $('html, body').animate({ scrollTop: 0}, 'fast');
-                    n(v);
-                })
-            }
+                        $('html, body').animate({ scrollTop: $firstMatched.offset().top - 250}, 'fast');
+                    }
+                } else $('html, body').animate({ scrollTop: 0}, 'fast');
+                n(v);
+            }),
+
+            filter: Action(function(v, n) {
+                var keywords = $.trim(session.ui.cmds.narrow.$get.val()).split(' ');
+                $logs = session.ui.$logs.find('li.log');
+                $logs.removeClass('found');
+                var flag = true;
+                var $otherLogs = [];
+                var $logsFound = $logs.filter(function() {
+                    var _this = this;
+                    keywords.forEach(function(wd) {
+                        flag = $(_this).attr('class').search(wd) > -1;
+                    });
+                    if(flag) $otherLogs.push(this);
+                    return !flag;
+                }).fadeOut(1000);
+                $otherLogs.forEach(function(ol) {
+                    $(ol).fadeIn(1000);
+                });
+            })
         },
         listen: {
             start: Action(function(v, n) {
                 session.ui.cmds.$start.parent().hide();
                 session.ui.cmds.$stop.parent().show();
                 var url = 'story/listen';
-                var keywords = session.ui.cmds.$narrow.val();
+                var keywords = session.ui.cmds.narrow.$get.val();
                 if(keywords) url = url.concat('/{keywords}'.replace('{keywords}', keywords));
                 session.ui.$stream.attr('src', url);
                 n(v);
@@ -174,23 +193,32 @@ $(document).ready(function() {
     .subscribe();
 
     Reactive.on(session.events.cmds.narrow.keypress)
-    .await(session.actions.listen.preventEnterKey)
+    .await(session.actions.logs.preventEnterKey)
     .subscribe();
 
     Reactive.on(session.events.cmds.narrow.keyup)
-            .await(session.actions.logs.narrow.submit)
+       .await(
+           Match.on(function() {
+               return session.ui.cmds.narrow.$option.is(':checked');
+           })
+           .value(true, session.actions.logs.filter)
+           .default(session.actions.logs.find)
+           .action()
+        )
+    .await(session.actions.logs.preventEnterKey)
     .subscribe();
 
     Reactive.on(session.events.log)
-    .await(
-        Match.regex(/^#[\w]*:ts /, session.actions.log.asTimestamp, 'message')
-             .regex(/^#[\w]*:json /, session.actions.log.asJson, 'message')
-             .regex(/^#[\w]*:xml / , session.actions.log.asXml, 'message')
-             .regex(/^#[\w]* /, session.actions.log.asVariable, 'message')
-             .regex(/^\.[\w]* /, session.actions.log.asGroup, 'message')
-             .default(session.actions.log.asInfo).action()
-       .then(session.actions.log.display)
-    )
+       .await(
+            Match.regex(/^#[\w]*:ts /, session.actions.log.asTimestamp, 'message')
+                 .regex(/^#[\w]*:json /, session.actions.log.asJson, 'message')
+                 .regex(/^#[\w]*:xml / , session.actions.log.asXml, 'message')
+                 .regex(/^#[\w]* /, session.actions.log.asVariable, 'message')
+                 .regex(/^\.[\w]* /, session.actions.log.asGroup, 'message')
+                 .default(session.actions.log.asInfo)
+                 .action()
+                 .then(session.actions.log.display)
+        )
     .subscribe();
 
     window.session = session;
