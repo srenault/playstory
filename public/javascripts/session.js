@@ -58,7 +58,7 @@ $(document).ready(function() {
         log: {
             asTimestamp: Action(function(log, n) {
                 var nameValue = log.message.split('=>');
-                var msg = nameValue[1] + ' (' + new Date(parseInt(nameValue[1])).toString() + ')';
+                var msg = nameValue[1] + ' [' + new Date(parseInt(nameValue[1])).toString() + ']';
                 var $log = newLog(msg, nameValue[0], true).addClass('variable timestamp');
                 session.ui.$logs.append($log);
                 n(log);
@@ -80,7 +80,7 @@ $(document).ready(function() {
                 var xml = nameValue[1].replace(/</gm,'&lt;').replace(/>/gm,'&gt;');
                 var $log = newLog(xml, nameValue[0], true).addClass('variable xml');
                 try {
-                    $.parseXML(nameValue[1]);
+                    $.parseXML(nameValue[1].replace(/<\?.*\?>/,''));
                     $log.addClass('valid');
                 } catch(e) {
                     $log.addClass('invalid');

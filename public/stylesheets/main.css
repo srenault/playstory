@@ -263,7 +263,7 @@ ul {
 #narrow {
     margin-right: auto;
     margin-left: auto;
-    width: 306px;
+    width: 360px;
 }
 
 #narrow input[type="text"] {
@@ -272,6 +272,10 @@ ul {
     border-radius: 5px;
     font-size: 1.2em;
     color: #77787D;
+}
+
+#narrow span {
+    margin-left: 10px;
 }
 
 #narrow input[type="checkbox"] {
