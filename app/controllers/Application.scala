@@ -3,7 +3,7 @@ package controllers
 import play.api._
 import play.api.mvc._
 import play.api.data._
-import play.api.data.Forms
+import play.api.data.Forms._
 import validation.Constraints._
 
 import play.api.libs.iteratee._
@@ -14,18 +14,25 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.templates._
 
+import com.mongodb.casbah.commons.MongoDBObject
+
 import akka.pattern.ask
 import akka.util.duration._
 import akka.util.Timeout
 
 import models.Log
+import models.LogDAO
 import actors.StoryActor
 import actors.StoryActor._
 
 object Application extends Controller {
-  
+
   def index = Action {
     Ok(views.html.index())
+  }
+
+  def story(project: String) = Action {
+    Ok(views.html.story(project))
   }
 
   def playPulling(chunks: Enumerator[Log])(implicit request: Request[AnyContent]) = {
@@ -45,16 +52,22 @@ object Application extends Controller {
     }).orElse(None)
   }
 
-  def listen() = Action { implicit request =>
+  def listen(project: String) = Action { implicit request =>
     AsyncResult {
       implicit val timeout = Timeout(5 second)
-      (StoryActor.ref ? Listen()).mapTo[Enumerator[Log]].asPromise.map { chunks =>
+      (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
         playPulling(chunks).getOrElse(BadRequest)
       }
     }
   }
 
+  def last(project: String) = Action {
+    val logsByProject = LogDAO.find(ref = MongoDBObject("project" -> project)).toList
+    Ok(views.html.last(project, logsByProject))
+  }
+
   def eval() = Action { implicit request =>
+    Logger.error("Log for eval")
     request.body.asJson.get match {
       case log: JsObject => StoryActor.ref ! NewLog(Log.fromJsObject(log)); Ok
       case log: JsValue => BadRequest("Not a json object")

@@ -9,36 +9,37 @@ import play.api.Play.current
 import akka.actor._
 import akka.actor.Actor._
 
-import models.Log
+import models._
 
 class StoryActor extends Actor {
   
   import StoryActor._
 
-  private var logs: Option[Pushee[Log]] = None
+  private var projects: Map[String,Pushee[Log]] = Map.empty
   
   def receive = {
-    case Listen() => {
+    case Listen(project: String) => {
       lazy val channel: Enumerator[Log] = Enumerator.pushee(
-        pushee => self ! Init(pushee),
-        onComplete = self ! Quit()
+        pushee => self ! Init(project, pushee),
+        onComplete = self ! Stop(project)
       )
-      Logger.error("New debugging session")
+      Logger.error("New debugging session for " + project)
       sender ! channel
     }
 
-    case Init(pushee) => {
-      logs = Some(pushee)
+    case Init(project, pushee) => {
+      projects += project -> pushee
     }
 
-    case Quit() => {
+    case Stop(project: String) => {
       Logger.info("Debugging session has been stopped ...")
-      logs=None
+      projects = projects.filter(p => p._1 != project)
     }
     
-    case NewLog(log) => {
-      Logger.info("Catch a log")
-      logs.map(_.push(log))
+    case NewLog(log: Log) => {
+      Logger.info("Catch a log for " + log.project)
+      LogDAO.insert(log)
+      projects.filter(p => p._1 == log.project).map(p => p._2.push(log))
     }
   }
 }
@@ -46,10 +47,10 @@ class StoryActor extends Actor {
 object StoryActor {
   import play.api.Play.current
   trait Event
-  case class Listen() extends Event
-  case class Quit() extends Event
+  case class Listen(project: String) extends Event
+  case class Stop(project: String) extends Event
   case class NewLog(log: Log)
-  case class Init(p: Pushee[Log])
+  case class Init(project: String, p: Pushee[Log])
   lazy val system = ActorSystem("debugroom")
   lazy val ref = Akka.system.actorOf(Props[StoryActor])
 }

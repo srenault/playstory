@@ -1,11 +1,17 @@
-$(document).ready(function() {
-    var session = {
-        $matchedLogs: [],
-        ui: {},
-        observable: {},
-        events: {}
-    };
+var session = {
+    init: function() {},
+    $matchedLogs: [],
+    ui: {},
+    observable: {},
+    events: {}
+};
 
+session.init = function(listenURL) {
+    alert(listenURL);
+    this.listenURL = listenURL;
+};
+
+$(document).ready(function() {
     session.ui = {
         cmds: {
             $get: $('div#cmds'),
@@ -162,7 +168,7 @@ $(document).ready(function() {
             start: Action(function(v, n) {
                 session.ui.cmds.$start.parent().hide();
                 session.ui.cmds.$stop.parent().show();
-                var url = 'story/listen';
+                var url = session.listenURL;
                 if(EventSource) {
                     var source = new EventSource(url);
                     source.onmessage = session.observable.log.receive;
@@ -224,6 +230,4 @@ $(document).ready(function() {
                  .then(session.actions.log.display)
         )
     .subscribe();
-
-    window.session = session;
 });

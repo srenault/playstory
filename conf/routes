@@ -3,11 +3,11 @@
 # ~~~~
 
 # Home page
-GET     /                                 controllers.Application.index()
-GET     /story/listen                     controllers.Application.listen()
-
-GET     /story/listen                     controllers.Application.listen()
-POST    /story/eval                       controllers.Application.eval()
+GET     /                                controllers.Application.index()
+GET     /story/:project                  controllers.Application.story(project)
+GET     /story/:project/listen           controllers.Application.listen(project)
+GET     /story/:project/last             controllers.Application.last(project)
+POST    /story/eval                      controllers.Application.eval()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                    controllers.Assets.at(path="/public", file)

@@ -1,0 +1,47 @@
+@(project: String)
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <title>Play! Story</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=${_response_encoding}"/>
+        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/procrastination.js")"></script>
+        <!--<script type="text/javascript" src="@routes.Assets.at("javascripts/main.js")"></script>-->
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/session.js")"></script>
+    </head>
+    <body>
+        <div id="header" class="block">
+            <h1>Play! Story</h1>
+            <p>
+                <strong>To listen stories from your app</strong>, click [Start] and enjoy
+            </p>
+            <div id="loading">waiting ...</div>
+        </div>
+        <div id="cmds" class="block">
+            <div id="stopped">
+                <span id="start">Start !</span>
+            </div>
+            <div id="started">
+                <span id="stop">Stop...</span>
+                <span id="clear">Clear</span>
+            </div>
+            <div id="narrow">
+              <form>
+                <input id="keywords" type="text" />
+                <span>filter</span>
+                <input type="checkbox" />
+              </form>
+            </div>
+        </div>
+        <div id="logs" class="block">
+          <ul>
+          </ul>
+        </div>
+        <iframe id="stream" src="#" style="display: none;"></iframe>
+        <script type="text/javascript">
+          session.init('@routes.Application.listen(project)');
+        </script>
+    </body>
+</html>
