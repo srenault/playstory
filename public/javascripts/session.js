@@ -23,12 +23,13 @@ $(document).ready(function() {
 
     session.observable = {
         log: new function() {
-            this.subscribers = [];
+            var subscribers = [];
             this.onReceive = function(f) {
-                this.subscribers.push(f);
+                subscribers.push(f);
             };
             this.receive = function(log) {
-                this.subscribers.forEach(function(cb) { cb(log); });
+                if(EventSource) log = JSON.parse(log.data);
+                subscribers.forEach(function(cb) { cb(log); });
             };
         }
     };
@@ -60,7 +61,7 @@ $(document).ready(function() {
                 var nameValue = log.message.split('=>');
                 var msg = nameValue[1] + ' [' + new Date(parseInt(nameValue[1])).toString() + ']';
                 var $log = newLog(msg, nameValue[0], true).addClass('variable timestamp');
-                session.ui.$logs.append($log);
+                session.ui.$logs.prepend($log);
                 n(log);
             }),
             asJson: Action(function(log, n) {
@@ -72,7 +73,7 @@ $(document).ready(function() {
                 } catch(e) {
                     $log.addClass('invalid');
                 }
-                session.ui.$logs.append($log);
+                session.ui.$logs.prepend($log);
                 n(log);
             }),
             asXml: Action(function(log, n) {
@@ -85,30 +86,30 @@ $(document).ready(function() {
                 } catch(e) {
                     $log.addClass('invalid');
                 }
-                session.ui.$logs.append($log);
+                session.ui.$logs.prepend($log);
                 n(log);
             }),
             asGroup: Action(function(log, n) {
                 var nameValue = log.message.split('=>');
                 var $group = session.ui.$logs.find('li.log.'+nameValue[0]);
                 if($group.length > 0) {
-                    $($group[0]).append('<span class="value">'+nameValue[1]+'</span>');
-                } else session.ui.$logs.append(newLog(nameValue[1], nameValue[0]).addClass('variable group' + ' ' + nameValue[0].substring(1, nameValue[0].length-1)));
+                    $($group[0]).prepend('<span class="value">'+nameValue[1]+'</span>');
+                } else session.ui.$logs.prepend(newLog(nameValue[1], nameValue[0]).addClass('variable group' + ' ' + nameValue[0].substring(1, nameValue[0].length-1)));
                 n(log);
             }),
             asVariable: Action(function(log, n) {
                 var nameValue = log.message.split('=>');
-                session.ui.$logs.append(newLog(nameValue[1], nameValue[0]).addClass('variable'));
+                session.ui.$logs.prepend(newLog(nameValue[1], nameValue[0]).addClass('variable'));
                 n(log);
             }),
             asInfo: Action(function(log, n) {
                 var $log = newLog(log.message).addClass('info');
                 if(log.level === 'ERROR') $log.addClass('error');
-                session.ui.$logs.append($log);
+                session.ui.$logs.prepend($log);
                 n(log);
             }),
             display: Action(function(log, n) {
-                session.ui.$logs.find('li.log').last().fadeIn(1000);
+                session.ui.$logs.find('li.log').first().fadeIn(1000);
                 n(log);
             })
         },
@@ -162,9 +163,12 @@ $(document).ready(function() {
                 session.ui.cmds.$start.parent().hide();
                 session.ui.cmds.$stop.parent().show();
                 var url = 'story/listen';
-                var keywords = session.ui.cmds.narrow.$get.val();
-                if(keywords) url = url.concat('/{keywords}'.replace('{keywords}', keywords));
-                session.ui.$stream.attr('src', url);
+                if(EventSource) {
+                    var source = new EventSource(url);
+                    source.onmessage = session.observable.log.receive;
+                } else {
+                    session.ui.$stream.attr('src', url);
+                }
                 n(v);
             }),
             stop: Action(function(v, n) {
