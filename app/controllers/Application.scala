@@ -48,7 +48,10 @@ object Application extends Controller {
             CONTENT_TYPE -> "text/event-stream"
           )),chunks &> EventSource[Log]())
       }
-      case _ => Ok.stream(chunks &> comet)
+      case _ => {
+        Logger.debug("commet");
+        Ok.stream(chunks &> comet)
+      }
     }).orElse(None)
   }
 

@@ -9,7 +9,8 @@ GET     /story/:project/listen           controllers.Application.listen(project)
 GET     /story/:project/last             controllers.Application.last(project)
 POST    /story/eval                      controllers.Application.eval()
 
-#GET     /story/:project/:log/share       controllers.Application.share()
+GET     /story/share/google/signin      controllers.Google.signIn()
+GET     /story/share/google/callback    controllers.Google.signInCallback(code: Option[String] ?= None, error: Option[String] ?= None)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                    controllers.Assets.at(path="/public", file)
