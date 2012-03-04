@@ -19,25 +19,30 @@ object Google extends Controller {
   }
   
   def signInCallback(code: Option[String], error: Option[String]) = Action { implicit request =>
-    code.map { authorizeToken =>
-      GoogleOAuth.accessToken(authorizeToken).map { response =>
-        response.onRedeem { accessToken =>
-          Logger.debug("access token " + Json.parse(accessToken.body) \ "access_token")
-          Logger.debug("access token " + Json.stringify(accessToken.json \ "access_token"))
-          contacts(Json.stringify(accessToken.json \ "access_token"))
-        }
-      }
-      Ok
-    }.getOrElse(Unauthorized(error.getOrElse("Reason undefined")))
+    Logger.info("Getting authorization code " + code + " error: " + error)
+    code.map { authorizeToken => //use flatmap ?
+      GoogleOAuth.accessToken(authorizeToken).map { accessToken =>
+        accessToken.await.fold(
+           failed => Unauthorized("Failed getting access token: " + failed.getMessage),
+           accessToken => (accessToken.json \ "access_token").asOpt[String].map { ac =>
+              Ok.withSession("access_token" -> ac)
+           }.getOrElse(Unauthorized("Failed getting access token: cannot parse token in :" + accessToken.json))
+        )
+      }.getOrElse(Unauthorized("Failed getting access token. Be sure to have id & secret client in application.conf"))
+     }.getOrElse(Unauthorized(error.getOrElse("Failed getting authorization code")))
   }
 
-  def contacts(accessToken: String) = Action {
-    Logger.debug("Getting gmail contacts list")
-    WS.url(URL_CONTACTS).withQueryString("access_token" -> accessToken).get.orTimeout("Ooppss", 1000).map { r =>
-      Logger.debug("got a response")
-      //r.xml
-    }
-    Ok
+  def contacts() = Action { implicit request =>
+    Logger.info("Getting gmail contacts list")
+    request.session.get("access_token").map { accessToken =>
+      WS.url(URL_CONTACTS).withQueryString("access_token" -> accessToken).get.await.fold(
+        failed => InternalServerError(failed.getMessage),
+        cts => {
+          Logger.debug(cts.body)
+          Ok(cts.xml)
+        }
+      )
+    }.getOrElse(InternalServerError("No access token in the user session"))
   }
 
   def sendEmail = Action {
