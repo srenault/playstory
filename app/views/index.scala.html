@@ -1,10 +1,63 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+@(signinForm: Form[(String, String)], signupForm: Form[User])
+
+<!DOCTYPE html>
+<html>
     <head>
-        <title>Play! Story</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=${_response_encoding}"/>
+        <title></title>
     </head>
     <body>
-      Welcome !
+      <fieldset class="signin">
+        <legend>Sign In</legend>
+        <form action="@routes.Application.signin()" method="POST">
+          @signinForm.forField("pseudo") { field =>
+          <label>Pseudo   <input type="text" name="pseudo" value="@field.value" required /></label>
+          <ul class="errors">
+            @field.error.map { error =>
+            <li>@error</li>
+            }
+          </ul>
+          }
+          @signinForm.forField("password") { field =>
+          <label>Password <input type="password" name="password" value="@field.value" required /></label>
+          <ul class="errors">
+            @field.error.map { error =>
+            <li>@error</li>
+            }
+          </ul>
+          }
+          <button>Sign In</button>
+        </form>
+      </fieldset>
+
+      <fieldset class="signup">
+        <legend>Sign Up</legend>
+        <form action="@routes.Application.signup()" method="POST">
+          @signupForm.forField("pseudo") { field =>
+          <label>Pseudo <input type="text" name="@field.name" value="@field.value" /></label>
+          <ul class="errors">
+            @field.error.map { error =>
+            <li>@error</li>
+            }
+          </ul>
+          }
+          @signupForm.forField("email") { field =>
+          <label>Email <input type="email" name="@field.name" value="@field.value" /></label>
+          <ul class="errors">
+            @field.error.map { error =>
+            <li>@error</li>
+            }
+          </ul>
+          }
+          @signupForm.forField("password") { field =>
+          <label>Password <input type="password" name="@field.name" value="@field.value" /></label>
+          <ul class="errors">
+            @field.error.map { error =>
+            <li>@error</li>
+            }
+          </ul>
+          }
+          <button>Sign Up</button>
+        </form>
+      </fieldset>
     </body>
 </html>
