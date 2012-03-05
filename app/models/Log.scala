@@ -1,6 +1,5 @@
 package models
 
-import play.Logger
 import play.api.libs.json._
 import play.api.libs.json.Json._
 
@@ -11,7 +10,10 @@ import com.novus.salat.dao._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
 
-case class Log(project: String,
+import db.MongoDB
+
+case class Log(@Key("_id") id: Int = 1,
+               project: String,
                logger: String,
                className: String,
                date: String,
@@ -27,9 +29,9 @@ object Log {
   def fromJsObject(json: JsObject) = fromJson[Log](json)(LogFormat)
 
   import play.api.libs.json.Generic._
-
   implicit object LogFormat extends Format[Log] {
     def reads(json: JsValue): Log = Log(
+      (json \ "_id").as[Int],
       (json \ "project").as[String],
       (json \ "logger").as[String],
       (json \ "class").asOpt[String].getOrElse(""),
