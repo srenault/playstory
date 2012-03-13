@@ -8,6 +8,7 @@ POST    /signin                          controllers.Application.signin()
 GET     /signout                         controllers.Application.signout()
 POST    /signup                          controllers.Application.signup()
 
+GET     /story/home                      controllers.Story.home()
 GET     /story/:project                  controllers.Story.index(project)
 GET     /story/:project/listen           controllers.Story.listen(project)
 GET     /story/:project/last             controllers.Story.last(project)
@@ -15,7 +16,7 @@ POST    /story/eval                      controllers.Story.eval()
 
 GET     /story/share/google/signin      controllers.Google.signIn()
 GET     /story/share/google/callback    controllers.Google.signInCallback(code: Option[String] ?= None, error: Option[String] ?= None)
-GET     /story/share/google/contacts    controllers.Google.contacts(max: Int ?= 100)
+GET     /story/share/google/contacts    controllers.Google.contacts()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                    controllers.Assets.at(path="/public", file)

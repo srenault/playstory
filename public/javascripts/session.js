@@ -7,7 +7,6 @@ var session = {
 };
 
 session.init = function(listenURL) {
-    alert(listenURL);
     this.listenURL = listenURL;
 };
 

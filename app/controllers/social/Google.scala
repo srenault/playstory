@@ -5,55 +5,95 @@ import play.api.libs.ws._
 import play.api.libs.concurrent._
 import play.api.libs.json.Json
 import play.api.mvc.{Controller, Action, Request, AnyContent}
+import play.api.libs.json._
+import play.api.libs.json.Json._
 
 import play.api.Play.current
+import models.User
 
 object Google extends Controller {
 
-  private val URL_CONTACTS = "https://www.google.com/m8/feeds/contacts/default/full"
+  private val ACCESS_TOKEN_JSON = "access_token"
 
   def signIn() = Action { implicit request =>
     GoogleOAuth.signInURL.map { url =>
       SeeOther(url)
     }.getOrElse(InternalServerError)
   }
-  
+
   def signInCallback(code: Option[String], error: Option[String]) = Action { implicit request =>
     Logger.info("Getting authorization code " + code + " error: " + error)
     code.map { authorizeToken =>
       GoogleOAuth.accessToken(authorizeToken).map { accessToken =>
         accessToken.await.fold(
-           failed => Unauthorized("Failed getting access token: " + failed.getMessage),
+          failed => Unauthorized("Failed getting access token: " + failed.getMessage),
           response => {
+            val jsonAccessToken = (response.json \ "access_token").asOpt[String]
+            val jsonRefreshToken = (response.json \ "refresh_token").asOpt[String]
             (for {
-              ac <- (response.json \ "access_token").asOpt[String]
-              rt <- (response.json \ "refresh_token").asOpt[String]
+              at <- jsonAccessToken
+              rt <- jsonRefreshToken
             } yield {
-              Ok.withSession("access_token" -> ac,
-                             "refresh_token" -> rt)
-            }).getOrElse(InternalServerError("Failed getting access token: cannot parse token in :" + response.json))
+              //At the first time, we get access and refresh token
+              Logger.info("Access token got " + at + " Refresh token got too : " + rt)
+              Redirect(routes.Story.home()).withSession("access_token" -> at,
+                                                        "refresh_token" -> rt)
+            }).getOrElse {
+              jsonAccessToken.map { at =>
+                //Then, we have only access token
+                Logger.info("Access token got " + at)
+                Redirect(routes.Story.home()).withSession("access_token" -> at)
+              }.getOrElse(InternalServerError("Failed getting access token: cannot parse token in :" + response.json))
+            }
           }
         )
       }.getOrElse(Unauthorized("Failed getting access token. Be sure to have id & secret client in the application.conf file"))
-     }.getOrElse(Unauthorized(error.getOrElse("Failed getting authorization code")))
+    }.getOrElse(Unauthorized(error.getOrElse("Failed getting authorization code")))
   }
 
-  def contacts(max: Int) = Action { implicit request =>
+  def contacts = Action { implicit request =>
+    Logger.info("Getting contacts...")
+    val pseudo = Some("popo")//request.session.get("pseudo")
+    val accessToken = request.session.get("access_token")
+    (for {
+      ps <- pseudo
+      at <- accessToken
+    } yield {
+      User.byPseudo(ps).map { user =>
+        user.contacts(at, 100).fold(
+          error => {
+            Logger.warn("Failed getting contacts: error from google")
+            InternalServerError
+          },
+          cts => Ok(toJson(cts))
+        )
+      }.getOrElse {
+        Logger.warn("Failed getting contacts: Are you really login ?")
+        InternalServerError
+      }
+    }).getOrElse {
+      Logger.warn("Failed getting contacts: preconditions failed. Pseudo => " + pseudo + " accessToken => " + accessToken)
+      InternalServerError
+    }
+  }
+}
+
+object GoogleAPI extends Controller {
+
+  private val URL_CONTACTS = "https://www.google.com/m8/feeds/contacts/default/full"
+  
+  /*
+   * Retrieve all gmail contacts.
+   */
+  def contacts(accessToken: String, max: Int): Promise[scala.xml.Elem] = {
     Logger.info("Getting gmail contacts list")
-    request.session.get("access_token").map { accessToken =>
-      WS.url(URL_CONTACTS).withQueryString("max-results" -> max.toString)
-                          .withQueryString("access_token" -> accessToken).get.await.fold(
-        failed => InternalServerError(failed.getMessage),
-        cts => {
-          Logger.debug(cts.body)
-          Ok(cts.xml)
-        }
-      )
-    }.getOrElse(InternalServerError("No access token in the user session"))
-  }
-
-  def sendEmail = Action {
-    Ok
+    var result = Promise[scala.xml.Elem]()
+    WS.url(URL_CONTACTS).withQueryString("max-results" -> max.toString)
+    .withQueryString("access_token" -> accessToken).get.await.fold(
+      failed => result.redeem(throw GoogleOAuth.GoogleOAuthException(failed.getMessage)),
+      cts => result.redeem(cts.xml)
+    )
+    result
   }
 }
 
@@ -65,7 +105,10 @@ object GoogleOAuth {
   private val URL_ACCESS_TOKEN =  "https://accounts.google.com/o/oauth2/token"
   private val SCOPE_CONTACTS   =  "https://www.google.com/m8/feeds"
 
+  case class GoogleOAuthException(message: String) extends Throwable
+
   def signInURL(implicit request: Request[AnyContent]): Option[String] = {
+    play.Logger.info("Getting signin google URL...")
     APP_ID.map { id =>
       URL_AUTHORIZE + "?"+
       "response_type=code" +
@@ -79,6 +122,7 @@ object GoogleOAuth {
   def callbackURL(implicit request: Request[AnyContent]): String = "http://" + request.host + "/story/share/google/callback"
 
   def accessToken(authorizationCode: String)(implicit request: Request[AnyContent]): Option[Promise[Response]] = {
+    Logger.info("Getting access token...")
     (for {
       id <- APP_ID
       secret <- APP_SECRET
@@ -92,10 +136,15 @@ object GoogleOAuth {
           "redirect_uri"  -> Seq(callbackURL)
         )
       }
-    }).orElse(None)
+    }).orElse {
+      Logger.warn("Getting access token failed. Preconditions failed: id => " + APP_ID + " secret => " + APP_SECRET)
+      None
+    }
   }
 
-  def renewAccessToken(refreshToken: String)(implicit request: Request[AnyContent]): Option[Promise[Response]] = {
+  def accessToken_(authorizationCode: String)(implicit request: Request[AnyContent]): Promise[(String, Option[String])] = {
+    Logger.info("Getting access token...")
+    var result = Promise[(String, Option[String])]()
     (for {
       id <- APP_ID
       secret <- APP_SECRET
@@ -103,11 +152,58 @@ object GoogleOAuth {
       WS.url(URL_ACCESS_TOKEN).post {
         Map(
           "grant_type"    -> Seq("authorization_code"),
+          "code"          -> Seq(authorizationCode),
+          "client_id"     -> Seq(id),
+          "client_secret" -> Seq(secret),
+          "redirect_uri"  -> Seq(callbackURL)
+        )
+      }
+    }).map { response =>
+      response.await.fold(
+        failed => Left(GoogleOAuthException("Failed renewing access token: " + failed.getMessage)),
+        response => {
+          (response.json \ "access_token").asOpt[String].map { at =>
+            result.redeem((at, (response.json \ "refresh_token").asOpt[String]))
+          }.getOrElse {
+            result.redeem(throw GoogleOAuthException("Failed getting access token : error while parsing access token"))
+          }
+        }
+      )
+    }.getOrElse {
+      result.redeem(throw GoogleOAuthException("Failed renewing access token: preconditions failed"))
+    }
+    result
+  }
+
+  def renewAccessToken(refreshToken: String)(implicit request: Request[AnyContent]): Promise[String] = {
+    Logger.info("Renewing access token...")
+    var result = Promise[String]()
+    (for {
+      id <- APP_ID
+      secret <- APP_SECRET
+    } yield {
+      WS.url(URL_ACCESS_TOKEN).post {
+        Map(
+          "grant_type"    -> Seq("refresh_token"),
           "refresh_token" -> Seq(refreshToken),
           "client_id"     -> Seq(id),
           "client_secret" -> Seq(secret)
         )
       }
-    }).orElse(None)
+    }).map { response =>
+      response.await.fold(
+        failed => Left(GoogleOAuthException("Failed renewing access token: " + failed.getMessage)),
+        response => {
+          (response.json \ "access_token").asOpt[String].map { at =>
+            result.redeem(at)
+          }.getOrElse {
+            result.redeem(throw GoogleOAuthException("Failed getting access token : error while parsing access token"))
+          }
+        }
+      )
+    }.getOrElse {
+      result.redeem(throw GoogleOAuthException("Failed renewing access token: preconditions failed"))
+    }
+    result
   }
 }

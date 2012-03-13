@@ -20,14 +20,22 @@ import akka.util.Timeout
 
 import com.mongodb.casbah.commons.MongoDBObject
 
-import models.Log
-import models.LogDAO
+import models.{Log, LogDAO, User}
 import actors.StoryActor
 import actors.StoryActor._
 
 object Story extends Controller {
 
-  def index(project: String) = Action {
+  def home() = Action { implicit request =>
+    (for {
+      accessToken <- request.session.get("access_token")
+      refreshToken <- request.session.get("refresh_token")
+    } yield {
+      Ok("access token: " + accessToken + " refresh_token " + refreshToken)
+    }).getOrElse(Ok(request.session.get("access_token").getOrElse("error")))
+  }
+
+  def index(project: String) = Action { implicit request =>
     Ok(views.html.story(project))
   }
 

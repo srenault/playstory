@@ -17,7 +17,7 @@ object Application extends Controller {
 
   val signinForm = Form[(String, String)](
     tuple(
-      "email" -> email,
+      "pseudo" -> nonEmptyText,
       "password" -> nonEmptyText
     )
   )
@@ -28,7 +28,7 @@ object Application extends Controller {
       {
         case (pseudo, password) => User.authenticate(pseudo, password).map { u=>
           play.Logger.info("Authentication successful.")
-          Redirect(routes.Story.index("onconnect"))
+          Redirect(routes.Story.home()).withSession("pseudo" -> pseudo)
         }.getOrElse(Unauthorized("Authentication failed"))
       }
     )
@@ -38,20 +38,20 @@ object Application extends Controller {
     Ok
   }
 
-  val signupForm = Form[User](
-    mapping(
+  val signupForm = Form[(String, String, String)](
+    tuple(
       "pseudo" -> nonEmptyText,
-      "password" -> nonEmptyText,
-      "email" -> email
-    )(User.apply)(User.unapply)
+      "email" -> email,
+      "password" -> nonEmptyText
+    )
   )
 
   def signup = Action { implicit request =>
     signupForm.bindFromRequest.fold(
       error => BadRequest("Please fill correctly pseudo, password and email"),
       {
-        case u: User => UserDAO.insert(u)
-        Redirect(routes.Story.index("onconnect"))
+        case (pseudo, email, password) => UserDAO.insert(User(pseudo, email, password))
+        Ok(views.html.index(signinForm, signupForm))
       }
     )
   }
