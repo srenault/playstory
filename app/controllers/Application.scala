@@ -12,6 +12,7 @@ import models.UserDAO
 object Application extends Controller {
 
   def index = Action {
+    Logger.info("Welcome unknown")
     Ok(views.html.index(signinForm, signupForm))
   }
 
@@ -23,6 +24,7 @@ object Application extends Controller {
   )
 
   def signin = Action { implicit request =>
+    Logger.info("Authenticating user...")
     signinForm.bindFromRequest.fold(
       error => Unauthorized("Please fill correctly pseudo and password"),
       {
@@ -35,7 +37,8 @@ object Application extends Controller {
   }
 
   def signout = Action {
-    Ok
+    Logger.info("Bye bye !")
+    Ok //TODO
   }
 
   val signupForm = Form[(String, String, String)](
@@ -47,6 +50,7 @@ object Application extends Controller {
   )
 
   def signup = Action { implicit request =>
+    Logger.info("Registering a new user")
     signupForm.bindFromRequest.fold(
       error => BadRequest("Please fill correctly pseudo, password and email"),
       {

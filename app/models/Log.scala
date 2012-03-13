@@ -26,6 +26,9 @@ case class Log(@Key("_id") id: Int = 1,
                thread: String)
 
 object Log {
+
+  def byProject(project: String): List[Log] = LogDAO.find(ref = MongoDBObject("project" -> project)).toList
+  
   def fromJsObject(json: JsObject) = fromJson[Log](json)(LogFormat)
 
   import play.api.libs.json.Generic._

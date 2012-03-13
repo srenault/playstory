@@ -24,9 +24,10 @@ import models.{Log, LogDAO, User}
 import actors.StoryActor
 import actors.StoryActor._
 
-object Story extends Controller {
+object Story extends Controller with Secured {
 
-  def home() = Action { implicit request =>
+  def home() = Authenticated { implicit request =>
+    Logger.info("Welcome : " + request.user)
     (for {
       accessToken <- request.session.get("access_token")
       refreshToken <- request.session.get("refresh_token")
@@ -35,7 +36,8 @@ object Story extends Controller {
     }).getOrElse(Ok(request.session.get("access_token").getOrElse("error")))
   }
 
-  def index(project: String) = Action { implicit request =>
+  def story(project: String) = Authenticated { implicit request =>
+    Logger.info("Viewing specific project : " + project)
     Ok(views.html.story(project))
   }
 
@@ -59,7 +61,8 @@ object Story extends Controller {
     }).orElse(None)
   }
 
-  def listen(project: String) = Action { implicit request =>
+  def listen(project: String) = Authenticated { implicit request =>
+    Logger.info("Waitings logs...")
     AsyncResult {
       implicit val timeout = Timeout(5 second)
       (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
@@ -68,13 +71,14 @@ object Story extends Controller {
     }
   }
 
-  def last(project: String) = Action {
-    val logsByProject = LogDAO.find(ref = MongoDBObject("project" -> project)).toList
-    Ok(views.html.last(project, logsByProject))
+  def last(project: String) = Authenticated { implicit request =>
+    Logger.info("Getting history of : " + project)
+    val logs = Log.byProject(project)
+    Ok(views.html.last(project, logs))
   }
 
-  def eval() = Action { implicit request =>
-    Logger.error("Log for eval")
+  def eval() = Authenticated { implicit request =>
+    Logger.info("Evaluating a log ...")
     request.body.asJson.get match {
       case log: JsObject => StoryActor.ref ! NewLog(Log.fromJsObject(log)); Ok
       case log: JsValue => BadRequest("Not a json object")
