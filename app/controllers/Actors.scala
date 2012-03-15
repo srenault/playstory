@@ -23,7 +23,7 @@ class StoryActor extends Actor {
         pushee => self ! Init(project, pushee),
         onComplete = self ! Stop(project)
       )
-      Logger.error("New debugging session for " + project)
+      Logger.info("New debugging session for " + project)
       sender ! channel
     }
 
@@ -38,8 +38,13 @@ class StoryActor extends Actor {
     
     case NewLog(log: Log) => {
       Logger.info("Catch a log for " + log.project)
-      LogDAO.insert(log)
-      projects.filter(p => p._1 == log.project).map(p => p._2.push(log))
+      Project.createIfNot(Project(log.project))
+      Log.create(log).map { createdLog =>
+        projects.filter(p => p._1 == log.project).map(p => p._2.push(createdLog))
+      }.orElse {
+         Logger.warn("Log not successfully persisted")
+         None
+      }
     }
   }
 }

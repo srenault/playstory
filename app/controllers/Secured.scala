@@ -8,7 +8,7 @@ import models.User
 trait Secured {
 
   def Authenticated(securedAction: AuthenticatedRequest => Result) = Security.Authenticated(
-    requestHeader => requestHeader.session.get("pseudo"),
+    requestHeader => Some("popo"),//TODO requestHeader.session.get("pseudo"),
     requestHeader => askSignIn)(pseudo => Action { request =>
       User.byPseudo(pseudo).map { u =>
         securedAction(AuthenticatedRequest(u, request))

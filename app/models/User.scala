@@ -16,7 +16,7 @@ import controllers.GoogleOAuth.GoogleOAuthException
 
 case class User(pseudo: String, email: String, password: String, refreshToken: Option[String]=None) {
 
-  def refreshToken_(value: String): User = {
+  def saveRefreshToken(value: String): User = {
     UserDAO.update(MongoDBObject("pseudo" -> pseudo),
                    MongoDBObject("refresh_token" -> value), false, false)
     User(pseudo, email, password, Some(value))
@@ -53,6 +53,8 @@ object User {
   def authenticate(pseudo: String, password: String): Option[User] = {
     UserDAO.findOne(MongoDBObject("pseudo" -> pseudo, "password" -> password))
   }
+
+  def create(user: User) = UserDAO.insert(user)
 }
 
 object UserDAO extends SalatDAO[User, Int](collection = MongoConnection()("playstory")("users"))

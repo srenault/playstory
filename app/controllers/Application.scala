@@ -54,7 +54,7 @@ object Application extends Controller {
     signupForm.bindFromRequest.fold(
       error => BadRequest("Please fill correctly pseudo, password and email"),
       {
-        case (pseudo, email, password) => UserDAO.insert(User(pseudo, email, password))
+        case (pseudo, email, password) => User.create(User(pseudo, email, password))
         Ok(views.html.index(signinForm, signupForm))
       }
     )

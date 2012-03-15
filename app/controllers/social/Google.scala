@@ -35,6 +35,8 @@ object Google extends Controller with Secured {
 
   private val ACCESS_TOKEN_JSON = "access_token"
 
+  private def homePage = routes.Story.home()
+  
   def signIn() = Action { implicit request =>
     GoogleOAuth.signInURL.map { url =>
       SeeOther(url)
@@ -45,11 +47,21 @@ object Google extends Controller with Secured {
     Logger.info("Getting authorization code " + code + " error: " + error)
     code.map { authorizeToken =>
       GoogleOAuth.accessToken(authorizeToken).await.fold(
-        error => Unauthorized,
+        error => {
+          Logger.warn("Failed getting accessToken : " + error.getMessage());
+          Unauthorized
+        },
         tokens => tokens match {
-          case (accessToken, None) => Redirect(routes.Story.home()).withSession("access_token" -> accessToken)
-          case (accessToken, Some(refreshToken)) => Redirect(routes.Story.home())
-                                                      .withSession("access_token" -> accessToken, "refresh_token" -> refreshToken)
+          case (accessToken, None) => {
+            Logger.info("AccessToken got : " + accessToken)
+            Redirect(homePage).withSession("access_token" -> accessToken)
+          }
+          case (accessToken, Some(refreshToken)) => {
+            Logger.info("AccessToken got : " + accessToken + " and refresh got : " + refreshToken)
+            request.user.saveRefreshToken(refreshToken)
+            Redirect(homePage).withSession("access_token" -> accessToken,
+                                           "refresh_token" -> refreshToken)
+          }
         }
       )
     }.getOrElse(Unauthorized(("Failed getting authorization code")))
@@ -57,13 +69,11 @@ object Google extends Controller with Secured {
 
   def contacts = Authenticated { implicit request =>
     Logger.info("Getting contacts...")
-    val pseudo = Some("popo")//request.session.get("pseudo")
     val accessToken = request.session.get("access_token")
     (for {
-      ps <- pseudo
       at <- accessToken
     } yield {
-      User.byPseudo(ps).map { user =>
+      User.byPseudo(request.user.pseudo).map { user =>
         user.contacts(at, 100).fold(
           error => {
             Logger.warn("Failed getting contacts: error from google")
@@ -76,7 +86,7 @@ object Google extends Controller with Secured {
         InternalServerError
       }
     }).getOrElse {
-      Logger.warn("Failed getting contacts: preconditions failed. Pseudo => " + pseudo + " accessToken => " + accessToken)
+      Logger.warn("Failed getting contacts: preconditions failed. accessToken => " + accessToken)
       InternalServerError
     }
   }

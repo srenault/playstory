@@ -1,4 +1,4 @@
-@(project: String)
+@(project: String, contacts: Seq[models.Contact])
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -8,7 +8,6 @@
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
         <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")"></script>
         <script type="text/javascript" src="@routes.Assets.at("javascripts/procrastination.js")"></script>
-        <!--<script type="text/javascript" src="@routes.Assets.at("javascripts/main.js")"></script>-->
         <script type="text/javascript" src="@routes.Assets.at("javascripts/session.js")"></script>
     </head>
     <body>
@@ -34,6 +33,11 @@
                 <input type="checkbox" />
               </form>
             </div>
+        </div>
+        <div style="display: none;">
+          @contacts.map { contact =>
+           <li><span>@contact.title</span><span>@contact.email</span></li>
+          }
         </div>
         <div id="logs" class="block">
           <ul>

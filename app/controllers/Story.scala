@@ -20,7 +20,7 @@ import akka.util.Timeout
 
 import com.mongodb.casbah.commons.MongoDBObject
 
-import models.{Log, LogDAO, User}
+import models.{Log, LogDAO, User, Project}
 import actors.StoryActor
 import actors.StoryActor._
 
@@ -28,20 +28,54 @@ object Story extends Controller with Secured {
 
   def home() = Authenticated { implicit request =>
     Logger.info("Welcome : " + request.user)
-    (for {
-      accessToken <- request.session.get("access_token")
-      refreshToken <- request.session.get("refresh_token")
-    } yield {
-      Ok("access token: " + accessToken + " refresh_token " + refreshToken)
-    }).getOrElse(Ok(request.session.get("access_token").getOrElse("error")))
+    val projects = Seq[Project]()
+    Ok(views.html.home(Project.all))
   }
 
-  def story(project: String) = Authenticated { implicit request =>
+  def view(project: String) = Authenticated { implicit request =>
     Logger.info("Viewing specific project : " + project)
-    Ok(views.html.story(project))
+    Project.createIfNot(Project(project))
+    val contacts = request.session.get("access_token").map { accessToken =>
+      request.user.contacts(accessToken, 100).fold(
+        error => {
+          Logger.warn("Failed getting user contacts")
+          Nil
+        },
+        identity
+      )
+    }.getOrElse {
+      Logger.warn("Failed getting user contacts: no access token")
+      Nil
+    }
+    Ok(views.html.story(project, contacts))
   }
 
-  def playPulling(chunks: Enumerator[Log])(implicit request: Request[AnyContent]) = {
+  def listen(project: String) = Authenticated { implicit request =>
+    Logger.info("Waitings logs...")
+    AsyncResult {
+      implicit val timeout = Timeout(5 second)
+      (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
+        playPulling(chunks).getOrElse(BadRequest)
+      }
+    }
+  }
+
+  def last(project: String) = Authenticated { implicit request =>
+    Logger.info("Getting history of : " + project)
+    val logs = Log.byProject(project)
+    Ok(views.html.last(project, logs))
+  }
+
+  def eval() = Action { implicit request =>
+    Logger.info("Evaluating a log ...")
+    request.body.asJson.get match {
+      case log: JsObject => StoryActor.ref ! NewLog(Log.fromJsObject(log)); Ok
+      case log: JsValue => BadRequest("Not a json object")
+      case _ => BadRequest("Invalid Log format: " + request.body)
+    }
+  }
+
+  private def playPulling(chunks: Enumerator[Log])(implicit request: Request[AnyContent]) = {
     implicit val LogComet = Comet.CometMessage[Log](log => toJson(log).toString)
     val comet = Comet(callback = "window.parent.session.observable.log.receive")
     request.headers.get("ACCEPT").map( _ match {
@@ -61,28 +95,4 @@ object Story extends Controller with Secured {
     }).orElse(None)
   }
 
-  def listen(project: String) = Authenticated { implicit request =>
-    Logger.info("Waitings logs...")
-    AsyncResult {
-      implicit val timeout = Timeout(5 second)
-      (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
-        playPulling(chunks).getOrElse(BadRequest)
-      }
-    }
-  }
-
-  def last(project: String) = Authenticated { implicit request =>
-    Logger.info("Getting history of : " + project)
-    val logs = Log.byProject(project)
-    Ok(views.html.last(project, logs))
-  }
-
-  def eval() = Authenticated { implicit request =>
-    Logger.info("Evaluating a log ...")
-    request.body.asJson.get match {
-      case log: JsObject => StoryActor.ref ! NewLog(Log.fromJsObject(log)); Ok
-      case log: JsValue => BadRequest("Not a json object")
-      case _ => BadRequest("Invalid Log format: " + request.body)
-    }
-  }
 }

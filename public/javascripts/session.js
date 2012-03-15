@@ -40,7 +40,10 @@ $(document).ready(function() {
     };
 
     session.events = {
-        log: function(next) { session.observable.log.onReceive(next); },
+        log: {
+            receive: function(next) { session.observable.log.onReceive(next); },
+            select: function(next) { session.ui.$logs.find('li').click(next); }
+        },
         cmds: {
             start: function(next) { session.ui.cmds.$start.click(next); },
             stop: function(next) { session.ui.cmds.$stop.click(next); },
@@ -52,8 +55,8 @@ $(document).ready(function() {
         }
     };
 
-    var newLog = function(msg, name, pre) {
-        var $log = $('<li class="log"></li>');
+    var newLog = function(id, msg, name, pre) {
+        var $log = $('<li id="'+id+'" class="log"></li>');
         if(name) $log.append('<span class="name">'+name+'</div>');
         if(pre) msg = '<pre>' + msg + '</pre>';
         $log.append('<span class="value">'+msg+'</div>');
@@ -65,13 +68,13 @@ $(document).ready(function() {
             asTimestamp: Action(function(log, n) {
                 var nameValue = log.message.split('=>');
                 var msg = nameValue[1] + ' [' + new Date(parseInt(nameValue[1])).toString() + ']';
-                var $log = newLog(msg, nameValue[0], true).addClass('variable timestamp');
+                var $log = newLog(log.id, msg, nameValue[0], true).addClass('variable timestamp');
                 session.ui.$logs.prepend($log);
                 n(log);
             }),
             asJson: Action(function(log, n) {
                 var nameValue = log.message.split('=>');
-                var $log = newLog(nameValue[1], nameValue[0], true).addClass('variable json');
+                var $log = newLog(log.id, nameValue[1], nameValue[0], true).addClass('variable json');
                 try {
                     JSON.parse(nameValue[1]);
                     $log.addClass('valid');
@@ -84,7 +87,7 @@ $(document).ready(function() {
             asXml: Action(function(log, n) {
                 var nameValue = log.message.split('=>');
                 var xml = nameValue[1].replace(/</gm,'&lt;').replace(/>/gm,'&gt;');
-                var $log = newLog(xml, nameValue[0], true).addClass('variable xml');
+                var $log = newLog(log.id, xml, nameValue[0], true).addClass('variable xml');
                 try {
                     $.parseXML(nameValue[1].replace(/<\?.*\?>/,''));
                     $log.addClass('valid');
@@ -99,16 +102,16 @@ $(document).ready(function() {
                 var $group = session.ui.$logs.find('li.log.'+nameValue[0]);
                 if($group.length > 0) {
                     $($group[0]).prepend('<span class="value">'+nameValue[1]+'</span>');
-                } else session.ui.$logs.prepend(newLog(nameValue[1], nameValue[0]).addClass('variable group' + ' ' + nameValue[0].substring(1, nameValue[0].length-1)));
+                } else session.ui.$logs.prepend(newLog(log.id, nameValue[1], nameValue[0]).addClass('variable group' + ' ' + nameValue[0].substring(1, nameValue[0].length-1)));
                 n(log);
             }),
             asVariable: Action(function(log, n) {
                 var nameValue = log.message.split('=>');
-                session.ui.$logs.prepend(newLog(nameValue[1], nameValue[0]).addClass('variable'));
+                session.ui.$logs.prepend(newLog(log.id, nameValue[1], nameValue[0]).addClass('variable'));
                 n(log);
             }),
             asInfo: Action(function(log, n) {
-                var $log = newLog(log.message).addClass('info');
+                var $log = newLog(log.id, log.message).addClass('info');
                 if(log.level === 'ERROR') $log.addClass('error');
                 session.ui.$logs.prepend($log);
                 n(log);
@@ -186,6 +189,11 @@ $(document).ready(function() {
                 session.ui.$logs.empty();
                 n(v);
             })
+        },
+        nav: {
+            updateHash: function() {
+                window.location.hash='1234567890';
+            }
         }
     };
 
@@ -206,18 +214,18 @@ $(document).ready(function() {
     .subscribe();
 
     Reactive.on(session.events.cmds.narrow.keyup)
-       .await(
-           Match.on(function() {
-               return session.ui.cmds.narrow.$option.is(':checked');
-           })
-           .value(true, session.actions.logs.filter)
-           .default(session.actions.logs.find)
-           .action()
+        .await(
+            Match.on(function() {
+                return session.ui.cmds.narrow.$option.is(':checked');
+            })
+            .value(true, session.actions.logs.filter)
+            .default(session.actions.logs.find)
+            .action()
         )
     .await(session.actions.logs.preventEnterKey)
     .subscribe();
 
-    Reactive.on(session.events.log)
+    Reactive.on(session.events.log.receive)
        .await(
             Match.regex(/^#[\w]*:ts /, session.actions.log.asTimestamp, 'message')
                  .regex(/^#[\w]*:json /, session.actions.log.asJson, 'message')
@@ -229,4 +237,8 @@ $(document).ready(function() {
                  .then(session.actions.log.display)
         )
     .subscribe();
+
+    Reactive.on(session.events.log.select)
+      .await(session.actions.nav.updateHash)
+      .subscribe();
 });

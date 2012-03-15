@@ -9,7 +9,7 @@ GET     /signout                         controllers.Application.signout()
 POST    /signup                          controllers.Application.signup()
 
 GET     /story/home                      controllers.Story.home()
-GET     /story/:project                  controllers.Story.story(project)
+GET     /story/:project                  controllers.Story.view(project)
 GET     /story/:project/listen           controllers.Story.listen(project)
 GET     /story/:project/last             controllers.Story.last(project)
 POST    /story/eval                      controllers.Story.eval()

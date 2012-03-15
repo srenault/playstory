@@ -1,10 +1,16 @@
-@()
+@(projects: Seq[Project])
 <!DOCTYPE html>
 <html>
     <head>
         <title></title>
     </head>
     <body>
-      Welcome !
+      <p>Welcome !</p>
+      <p>Here are some projects you can follow: </p>
+      <ul>
+        @projects.map { project =>
+        <li><a href="@routes.Story.view(project.name)">@project.name</a></li>
+        }
+      </ul>
     </body>
 </html>

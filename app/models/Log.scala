@@ -12,7 +12,7 @@ import com.mongodb.casbah.MongoConnection
 
 import db.MongoDB
 
-case class Log(@Key("_id") id: Int = 1,
+case class Log(@Key("_id") id: Option[ObjectId],
                project: String,
                logger: String,
                className: String,
@@ -27,6 +27,23 @@ case class Log(@Key("_id") id: Int = 1,
 
 object Log {
 
+  def create(log: Log): Option[Log] = {
+    LogDAO.insert(log).map { id =>
+      Log(Some(id),
+          log.project,
+          log.logger,
+          log.className,
+          log.date,
+          log.file,
+          log.location,
+          log.line,
+          log.message,
+          log.method,
+          log.level,
+          log.thread)
+    }.orElse(None)
+  }
+
   def byProject(project: String): List[Log] = LogDAO.find(ref = MongoDBObject("project" -> project)).toList
   
   def fromJsObject(json: JsObject) = fromJson[Log](json)(LogFormat)
@@ -34,7 +51,7 @@ object Log {
   import play.api.libs.json.Generic._
   implicit object LogFormat extends Format[Log] {
     def reads(json: JsValue): Log = Log(
-      (json \ "_id").as[Int],
+      (json \ "id").asOpt[String].map(new ObjectId(_)),
       (json \ "project").as[String],
       (json \ "logger").as[String],
       (json \ "class").asOpt[String].getOrElse(""),
@@ -49,6 +66,7 @@ object Log {
     )
 
     def writes(l: Log): JsValue = JsObject(Seq(
+      "id" -> JsString(l.id.get.toString),
       "project" -> JsString(l.project),
       "logger" -> JsString(l.logger),
       "class" -> JsString(l.className),
@@ -60,8 +78,8 @@ object Log {
       "method" -> JsString(l.method),
       "level" -> JsString(l.level),
       "thread" -> JsString(l.thread)
-    ))  
+    ))
   }
 }
 
-object LogDAO extends SalatDAO[Log, Int](collection = MongoConnection()("playstory")("logs"))
+object LogDAO extends SalatDAO[Log, ObjectId](collection = MongoConnection()("playstory")("logs"))
