@@ -8,14 +8,14 @@
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
         <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")"></script>
         <script type="text/javascript" src="@routes.Assets.at("javascripts/procrastination.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/http-jquery.procrastination.js")"></script>
         <script type="text/javascript" src="@routes.Assets.at("javascripts/session.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/history.js")"></script>
     </head>
     <body>
         <div id="header" class="block">
             <h1>Play! Story</h1>
-            <p>
-                <strong>To listen stories from your app</strong>, click [Start] and enjoy
-            </p>
+            <p><strong>To listen stories from your app</strong>, click [Start] and enjoy</p>
             <div id="loading">waiting ...</div>
         </div>
         <div id="cmds" class="block">
@@ -33,19 +33,28 @@
                 <input type="checkbox" />
               </form>
             </div>
+            <ul class="tab">
+              <li id="tab_live">Live</li>
+              <li id="tab_past">Past</li>
+            </ul>
         </div>
         <div style="display: none;">
           @contacts.map { contact =>
            <li><span>@contact.title</span><span>@contact.email</span></li>
           }
         </div>
-        <div id="logs" class="block">
+        <div id="logs_live" class="block">
+          <ul>
+          </ul>
+        </div>
+        <div id="logs_past" class="block">
           <ul>
           </ul>
         </div>
         <iframe id="stream" src="#" style="display: none;"></iframe>
         <script type="text/javascript">
           session.init('@routes.Story.listen(project)');
+          history.init('@routes.Story.listen(project)');
         </script>
     </body>
 </html>

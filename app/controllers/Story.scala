@@ -60,10 +60,10 @@ object Story extends Controller with Secured {
     }
   }
 
-  def last(project: String) = Authenticated { implicit request =>
+  def last(project: String) = Action { implicit request =>
     Logger.info("Getting history of : " + project)
     val logs = Log.byProject(project)
-    Ok(views.html.last(project, logs))
+    Ok(toJson(logs))
   }
 
   def eval() = Action { implicit request =>

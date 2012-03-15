@@ -11,6 +11,7 @@ session.init = function(listenURL) {
 };
 
 $(document).ready(function() {
+
     session.ui = {
         cmds: {
             $get: $('div#cmds'),
@@ -20,9 +21,10 @@ $(document).ready(function() {
             narrow: {
                 $get: $('div#cmds #narrow input[type="text"]'),
                 $option: $('div#cmds #narrow input[type="checkbox"]')
-            }
+            },
+            $live: $('ul.tab #tab_live')
         },
-        $logs: $('div#logs ul'),
+        $logs: $('div#logs_live ul'),
         $stream: $('iframe#stream')
     };
 
@@ -42,7 +44,7 @@ $(document).ready(function() {
     session.events = {
         log: {
             receive: function(next) { session.observable.log.onReceive(next); },
-            select: function(next) { session.ui.$logs.find('li').click(next); }
+            select: function(next) { session.ui.$logs.find('li').live('click', next); }
         },
         cmds: {
             start: function(next) { session.ui.cmds.$start.click(next); },
@@ -51,7 +53,8 @@ $(document).ready(function() {
             narrow: {
                 keypress: function(next) { session.ui.cmds.narrow.$get.keypress(next); },
                 keyup: function(next) { session.ui.cmds.narrow.$get.keyup(next); }
-            }
+            },
+            live: function(next) { session.ui.cmds.$live.click(next); }
         }
     };
 
@@ -117,7 +120,9 @@ $(document).ready(function() {
                 n(log);
             }),
             display: Action(function(log, n) {
-                session.ui.$logs.find('li.log').first().fadeIn(1000);
+                var $lastLog = session.ui.$logs.find('li.log').first();
+                $lastLog.data('timestamp', log.date);
+                $lastLog.fadeIn(1000);
                 n(log);
             })
         },
@@ -191,9 +196,20 @@ $(document).ready(function() {
             })
         },
         nav: {
-            updateHash: function() {
-                window.location.hash='1234567890';
-            }
+            updateHash: Action(function(v, n) {
+                window.location.hash = $(v.currentTarget).attr('id');
+                n(v);
+            }),
+            viewLivePage: Action(function(v, n) {
+                if(session.ui.cmds.$live.hasClass('selected')) {
+                    session.ui.cmds.$live.removeClass('selected');
+                    session.ui.$logs.hide();
+                } else {
+                    session.ui.cmds.$live.addClass('selected');
+                    session.ui.$logs.show();
+                }
+                n(v);
+            })
         }
     };
 
@@ -239,6 +255,10 @@ $(document).ready(function() {
     .subscribe();
 
     Reactive.on(session.events.log.select)
-      .await(session.actions.nav.updateHash)
-      .subscribe();
+    .await(session.actions.nav.updateHash)
+    .subscribe();
+
+    Reactive.on(session.events.cmds.live)
+    .await(session.actions.nav.viewLivePage)
+    .subscribe();
 });

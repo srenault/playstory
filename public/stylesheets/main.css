@@ -7,6 +7,8 @@ html, body {
 }
 a {
     outline: none;
+    text-decoration: none;
+    color: grey;
 }
 .block {
     padding: 20px;
@@ -31,7 +33,7 @@ a {
 #cmds {
     background: #f6f6f6;
     position: fixed;
-    height: 20px;
+    height: 60px;
     width: 100%;
     top: 100px;
 }
@@ -48,17 +50,17 @@ small {
     position: relative;
     top: -3px;
 }
-#logs {
-    padding-top: 165px;
+#logs_live {
+    padding-top: 200px;
 }
-#logs h2 {
+#logs_live h2 {
     color: #333;
     font-weight: normal;
     border-left: 4px solid #ccc; 
     padding-left: 5px;  
     -moz-user-select: none;
 }
-#logs h2 span {
+#logs_live h2 span {
     cursor: pointer;   
 }
 .log a {
@@ -193,20 +195,20 @@ ul {
     padding-left: 20px;
 }
 
-#logs li.log {
+#logs_live li.log {
     display: none;
     margin-bottom: 10px;
     margin-top: 10px;
     border: 1px grey;
     border-radius: 10px;
-    border-style: solid groove;
+    border-style: solid;
     padding: 5px;
     min-height: 33px;
     background-color: white;
     word-wrap: break-word;
 }
 
-#logs li.log span.name {
+#logs_live li.log span.name {
     display: inline-block;
     border: 1px solid grey;
     border-right: 25px;
@@ -216,47 +218,47 @@ ul {
     height: 20px;
 }
 
-#logs li.log span.value {
+#logs_live li.log span.value {
     display: inline-block;
     width: 98%;
     margin-left: 10px;
     padding-top: 8px;
 }
 
-#logs li.log.found {
+#logs_live li.log.found {
     box-shadow: 0px 0px 10px #0079C2 !important;
     border-color: #0079C2 !important;
 }
 
-#logs li.log.variable span.name {
+#logs_live li.log.variable span.name {
     background-color: #BEBEBE;
 }
 
-#logs li.log.info.error {
+#logs_live li.log.info.error {
     background-color: #F57E86;
 }
 
-#logs li.log.variable.invalid {
+#logs_live li.log.variable.invalid {
     box-shadow: 0px 0px 4px 1px red !important;
 }
 
-#logs li.log.variable.valid {
+#logs_live li.log.variable.valid {
     box-shadow: 0px 0px 4px 1px green !important;
 }
 
-#logs li.log.variable.xml span.name {
+#logs_live li.log.variable.xml span.name {
     background-color: #BEE7960 !important;
 }
 
-#logs li.log.variable.json span.name {
+#logs_live li.log.variable.json span.name {
     background-color: #5298C8 !important;
 }
 
-#logs li.log.variable.timestamp span.name {
+#logs_live li.log.variable.timestamp span.name {
     background-color: #FCD649 !important;
 }
 
-#logs li.log.variable.group span.name {
+#logs_live li.log.variable.group span.name {
     background-color: #C7D1EC !important;
 }
 
@@ -281,4 +283,29 @@ ul {
 #narrow input[type="checkbox"] {
     width: 15px;
     height: 15px;
+}
+
+ul.tab {
+    padding: 0;
+    margin-top: 18px;
+    margin-left: 20px;
+}
+
+ul.tab li {
+    float: left;
+    color: grey;
+    font-size: 120%;
+    border: 1px double grey;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 3px 8px;
+}
+
+ul.tab li:last-child {
+    margin-left: 20px;
+}
+
+ul.tab li.selected {
+    background-color: grey;
+    color: white;
 }
