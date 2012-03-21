@@ -11,7 +11,8 @@ import models.UserDAO
 
 object Application extends Controller {
 
-  def index = Action {
+  def index = Action { implicit request =>
+    request
     Logger.info("Welcome unknown")
     Ok(views.html.index(signinForm, signupForm))
   }

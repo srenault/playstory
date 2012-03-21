@@ -8,7 +8,7 @@
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
         <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")"></script>
         <script type="text/javascript" src="@routes.Assets.at("javascripts/procrastination.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/http-jquery.procrastination.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/commons.js")"></script>
         <script type="text/javascript" src="@routes.Assets.at("javascripts/session.js")"></script>
         <script type="text/javascript" src="@routes.Assets.at("javascripts/history.js")"></script>
     </head>
@@ -53,8 +53,8 @@
         </div>
         <iframe id="stream" src="#" style="display: none;"></iframe>
         <script type="text/javascript">
-          session.init('@routes.Story.listen(project)');
-          history.init('@routes.Story.listen(project)');
+          session.init('@routes.Story.view(project)');
+          history.init('@routes.Story.view(project)');
         </script>
     </body>
 </html>

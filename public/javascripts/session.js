@@ -7,11 +7,10 @@ var session = {
 };
 
 session.init = function(listenURL) {
-    this.listenURL = listenURL;
+    this.listenURL = listenURL + '/listen';
 };
 
 $(document).ready(function() {
-
     session.ui = {
         cmds: {
             $get: $('div#cmds'),
@@ -58,74 +57,8 @@ $(document).ready(function() {
         }
     };
 
-    var newLog = function(id, msg, name, pre) {
-        var $log = $('<li id="'+id+'" class="log"></li>');
-        if(name) $log.append('<span class="name">'+name+'</div>');
-        if(pre) msg = '<pre>' + msg + '</pre>';
-        $log.append('<span class="value">'+msg+'</div>');
-        return $log;
-    };
-
     session.actions = {
-        log: {
-            asTimestamp: Action(function(log, n) {
-                var nameValue = log.message.split('=>');
-                var msg = nameValue[1] + ' [' + new Date(parseInt(nameValue[1])).toString() + ']';
-                var $log = newLog(log.id, msg, nameValue[0], true).addClass('variable timestamp');
-                session.ui.$logs.prepend($log);
-                n(log);
-            }),
-            asJson: Action(function(log, n) {
-                var nameValue = log.message.split('=>');
-                var $log = newLog(log.id, nameValue[1], nameValue[0], true).addClass('variable json');
-                try {
-                    JSON.parse(nameValue[1]);
-                    $log.addClass('valid');
-                } catch(e) {
-                    $log.addClass('invalid');
-                }
-                session.ui.$logs.prepend($log);
-                n(log);
-            }),
-            asXml: Action(function(log, n) {
-                var nameValue = log.message.split('=>');
-                var xml = nameValue[1].replace(/</gm,'&lt;').replace(/>/gm,'&gt;');
-                var $log = newLog(log.id, xml, nameValue[0], true).addClass('variable xml');
-                try {
-                    $.parseXML(nameValue[1].replace(/<\?.*\?>/,''));
-                    $log.addClass('valid');
-                } catch(e) {
-                    $log.addClass('invalid');
-                }
-                session.ui.$logs.prepend($log);
-                n(log);
-            }),
-            asGroup: Action(function(log, n) {
-                var nameValue = log.message.split('=>');
-                var $group = session.ui.$logs.find('li.log.'+nameValue[0]);
-                if($group.length > 0) {
-                    $($group[0]).prepend('<span class="value">'+nameValue[1]+'</span>');
-                } else session.ui.$logs.prepend(newLog(log.id, nameValue[1], nameValue[0]).addClass('variable group' + ' ' + nameValue[0].substring(1, nameValue[0].length-1)));
-                n(log);
-            }),
-            asVariable: Action(function(log, n) {
-                var nameValue = log.message.split('=>');
-                session.ui.$logs.prepend(newLog(log.id, nameValue[1], nameValue[0]).addClass('variable'));
-                n(log);
-            }),
-            asInfo: Action(function(log, n) {
-                var $log = newLog(log.id, log.message).addClass('info');
-                if(log.level === 'ERROR') $log.addClass('error');
-                session.ui.$logs.prepend($log);
-                n(log);
-            }),
-            display: Action(function(log, n) {
-                var $lastLog = session.ui.$logs.find('li.log').first();
-                $lastLog.data('timestamp', log.date);
-                $lastLog.fadeIn(1000);
-                n(log);
-            })
-        },
+        log: new commons.actions.log(session.ui.$logs),
         logs: {
             preventEnterKey: Match.on(function(e) {
                 return e.which;

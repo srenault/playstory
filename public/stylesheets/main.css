@@ -195,7 +195,7 @@ ul {
     padding-left: 20px;
 }
 
-#logs_live li.log {
+li.log {
     display: none;
     margin-bottom: 10px;
     margin-top: 10px;
@@ -208,7 +208,7 @@ ul {
     word-wrap: break-word;
 }
 
-#logs_live li.log span.name {
+li.log span.name {
     display: inline-block;
     border: 1px solid grey;
     border-right: 25px;
@@ -218,47 +218,52 @@ ul {
     height: 20px;
 }
 
-#logs_live li.log span.value {
+li.log span.value {
     display: inline-block;
     width: 98%;
     margin-left: 10px;
     padding-top: 8px;
 }
 
-#logs_live li.log.found {
+li.log.found {
     box-shadow: 0px 0px 10px #0079C2 !important;
     border-color: #0079C2 !important;
 }
 
-#logs_live li.log.variable span.name {
+li.log.selected {
+    box-shadow: 0px 0px 10px #FF7F00 !important;
+    border-color: #FF7F00 !important;
+}
+
+li.log.variable span.name {
     background-color: #BEBEBE;
 }
 
-#logs_live li.log.info.error {
+li.log.info.error {
     background-color: #F57E86;
 }
 
-#logs_live li.log.variable.invalid {
+li.log.variable.invalid {
     box-shadow: 0px 0px 4px 1px red !important;
 }
 
-#logs_live li.log.variable.valid {
+li.log.variable.valid {
     box-shadow: 0px 0px 4px 1px green !important;
 }
 
-#logs_live li.log.variable.xml span.name {
+li.log.variable.xml span.name {
     background-color: #BEE7960 !important;
 }
 
-#logs_live li.log.variable.json span.name {
+li.log.variable.json span.name {
     background-color: #5298C8 !important;
 }
 
-#logs_live li.log.variable.timestamp span.name {
+li.log.variable.timestamp span.name {
     background-color: #FCD649 !important;
 }
 
-#logs_live li.log.variable.group span.name {
+li.log.variable.group span.name {
     background-color: #C7D1EC !important;
 }
 
