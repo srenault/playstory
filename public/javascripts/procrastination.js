@@ -487,7 +487,7 @@ var Match = (function(){
 	function M(ts, lambda, def){
 		this.predicates = ts || []
 		this.lambda = lambda || identity
-		this.def = def || Action() //returned valued if matched
+		this.def = def || Action //returned valued if matched
 	}
 
 	M.prototype.action = function(){

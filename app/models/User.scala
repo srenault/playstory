@@ -14,12 +14,12 @@ import db.MongoDB
 import controllers.{ GoogleAPI, GoogleOAuth }
 import controllers.GoogleOAuth.GoogleOAuthException
 
-case class User(pseudo: String, email: String, password: String, refreshToken: Option[String]=None) {
+case class User(lastname: String, firstname: String, email: String, language: String, refreshToken: Option[String]=None) {
 
   def saveRefreshToken(value: String): User = {
-    UserDAO.update(MongoDBObject("pseudo" -> pseudo),
+    UserDAO.update(MongoDBObject("email" -> email),
                    MongoDBObject("refresh_token" -> value), false, false)
-    User(pseudo, email, password, Some(value))
+    User(lastname, firstname, email, language, Some(value))
   }
 
   def renewAccessToken(implicit request: Request[AnyContent]): Either[Throwable, String] = {
@@ -48,7 +48,7 @@ case class User(pseudo: String, email: String, password: String, refreshToken: O
 
 object User {
 
-  def byPseudo(pseudo: String): Option[User] =  UserDAO.findOne(MongoDBObject("pseudo" -> pseudo))
+  def byEmail(email: String): Option[User] =  UserDAO.findOne(MongoDBObject("email" -> email))
 
   def authenticate(pseudo: String, password: String): Option[User] = {
     UserDAO.findOne(MongoDBObject("pseudo" -> pseudo, "password" -> password))

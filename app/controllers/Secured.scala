@@ -8,14 +8,14 @@ import models.User
 trait Secured {
 
   def Authenticated(securedAction: AuthenticatedRequest => Result) = Security.Authenticated(
-    requestHeader => Some("popo"),//TODO requestHeader.session.get("pseudo"),
-    requestHeader => askSignIn)(pseudo => Action { request =>
-      User.byPseudo(pseudo).map { u =>
+    requestHeader => requestHeader.session.get("user"),
+    requestHeader => askSignIn)(email => Action { request =>
+      User.byEmail(email).map { u =>
         securedAction(AuthenticatedRequest(u, request))
       }.getOrElse(askSignIn)
     })
 
-  def askSignIn = Redirect(routes.Application.signin)
+  def askSignIn = Redirect(routes.Application.index)
 }
 
 case class AuthenticatedRequest(user: User, request: Request[AnyContent]) extends WrappedRequest(request)

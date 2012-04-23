@@ -73,7 +73,7 @@ object Google extends Controller with Secured {
     (for {
       at <- accessToken
     } yield {
-      User.byPseudo(request.user.pseudo).map { user =>
+      User.byEmail(request.user.email).map { user =>
         user.contacts(at, 100).fold(
           error => {
             Logger.warn("Failed getting contacts: error from google")

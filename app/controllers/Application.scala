@@ -5,6 +5,7 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import validation.Constraints._
+import play.api.libs.openid.OpenID
 
 import models.User
 import models.UserDAO
@@ -12,52 +13,56 @@ import models.UserDAO
 object Application extends Controller {
 
   def index = Action { implicit request =>
-    request
-    Logger.info("Welcome unknown")
-    Ok(views.html.index(signinForm, signupForm))
+    Logger.info("Welcome unauthenticated user !")
+    Ok(views.html.index())
   }
 
-  val signinForm = Form[(String, String)](
-    tuple(
-      "pseudo" -> nonEmptyText,
-      "password" -> nonEmptyText
-    )
-  )
+  def procrastination = Action {
+    Ok(views.html.procrastination())
+  }
 
   def signin = Action { implicit request =>
-    Logger.info("Authenticating user...")
-    signinForm.bindFromRequest.fold(
-      error => Unauthorized("Please fill correctly pseudo and password"),
-      {
-        case (pseudo, password) => User.authenticate(pseudo, password).map { u=>
-          play.Logger.info("Authentication successful.")
-          Redirect(routes.Story.home()).withSession("pseudo" -> pseudo)
-        }.getOrElse(Unauthorized("Authentication failed"))
+    Logger.info("[OpenID] Starting OAuth process...")
+    OpenID.redirectURL("https://www.google.com/accounts/o8/id",
+                        routes.Application.signinCallback.absoluteURL(),
+                        Seq(
+                          ("email", "http://axschema.org/contact/email"),
+                          ("firstname", "http://axschema.org/namePerson/first"),
+                          ("lastname", "http://axschema.org/namePerson/last"),
+                          ("language", "http://axschema.org/pref/language")
+                        )).await.fold (
+      error => Redirect(routes.Application.index),
+      url => Redirect(url)
+    )
+  }
+
+  def signinCallback = Action { implicit request =>
+    Logger.info("[OpenID] Receiving user info...")
+    OpenID.verifiedId.await.fold (
+      error => {
+        Logger.info("[OpenID] Authentication failed")
+        Redirect(routes.Application.index)
+      },
+      userInfo => {
+        (for {
+          lastname  <- userInfo.attributes.get("lastname")
+          firstname <- userInfo.attributes.get("firstname")
+          email     <- userInfo.attributes.get("email")
+          language  <- userInfo.attributes.get("language")
+        } yield {
+          User.create(User(lastname, firstname, email, language))
+          Logger.info("[OpenID] Authentication successful")
+          Redirect(routes.Story.home).withSession("user" -> email)
+        }) getOrElse {
+          Logger.info("[OpenID] Authentication successful but some required fields miss")
+          Redirect(routes.Application.index)
+        }
       }
     )
   }
 
   def signout = Action {
     Logger.info("Bye bye !")
-    Ok //TODO
-  }
-
-  val signupForm = Form[(String, String, String)](
-    tuple(
-      "pseudo" -> nonEmptyText,
-      "email" -> email,
-      "password" -> nonEmptyText
-    )
-  )
-
-  def signup = Action { implicit request =>
-    Logger.info("Registering a new user")
-    signupForm.bindFromRequest.fold(
-      error => BadRequest("Please fill correctly pseudo, password and email"),
-      {
-        case (pseudo, email, password) => User.create(User(pseudo, email, password))
-        Ok(views.html.index(signinForm, signupForm))
-      }
-    )
+    Redirect(routes.Application.index) withNewSession
   }
 }

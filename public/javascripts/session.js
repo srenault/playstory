@@ -163,15 +163,14 @@ $(document).ready(function() {
     .subscribe();
 
     Reactive.on(session.events.cmds.narrow.keyup)
-        .await(
+        .match(
             Match.on(function() {
                 return session.ui.cmds.narrow.$option.is(':checked');
             })
             .value(true, session.actions.logs.filter)
-            .default(session.actions.logs.find)
-            .action()
+            .def(session.actions.logs.find)
         )
-    .await(session.actions.logs.preventEnterKey)
+//    .await(session.actions.logs.preventEnterKey)
     .subscribe();
 
     Reactive.on(session.events.log.receive)

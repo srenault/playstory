@@ -26,32 +26,31 @@ import actors.StoryActor._
 
 object Story extends Controller with Secured {
 
-  def home() = Authenticated { implicit request =>
-    Logger.info("Welcome : " + request.user)
-    val projects = Seq[Project]()
+  def home = Authenticated { implicit request =>
+    Logger.info("[Story] Welcome : " + request.user)
     Ok(views.html.home(Project.all))
   }
 
   def view(project: String) = Authenticated { implicit request =>
-    Logger.info("Viewing specific project : " + project)
-    Project.createIfNot(Project(project))
+    Logger.info("[Story] Viewing specific project : " + project)
+    Project createIfNot(Project(project))
     val contacts = request.session.get("access_token").map { accessToken =>
       request.user.contacts(accessToken, 100).fold(
         error => {
-          Logger.warn("Failed getting user contacts")
+          Logger.warn("[Story] Failed getting user contacts")
           Nil
         },
         identity
       )
     }.getOrElse {
-      Logger.warn("Failed getting user contacts: no access token")
+      Logger.warn("[Story] Failed getting user contacts: no access token")
       Nil
     }
     Ok(views.html.story(project, contacts))
   }
 
   def listen(project: String) = Authenticated { implicit request =>
-    Logger.info("Waitings logs...")
+    Logger.info("[Story] Waitings logs...")
     AsyncResult {
       implicit val timeout = Timeout(5 second)
       (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
@@ -61,17 +60,17 @@ object Story extends Controller with Secured {
   }
 
   def last(project: String) = Action { implicit request =>
-    Logger.info("Getting history of : " + project)
+    Logger.info("[Story] Getting history of : " + project)
     val logs = Log.byProject(project)
     Ok(toJson(logs))
   }
 
   def eval() = Action { implicit request =>
-    Logger.info("Evaluating a log ...")
+    Logger.info("[Story] Evaluating a log ...")
     request.body.asJson.get match {
       case log: JsObject => StoryActor.ref ! NewLog(Log.fromJsObject(log)); Ok
-      case log: JsValue => BadRequest("Not a json object")
-      case _ => BadRequest("Invalid Log format: " + request.body)
+      case log: JsValue => BadRequest("[Story] Not a json object")
+      case _ => BadRequest("[Story] Invalid Log format: " + request.body)
     }
   }
 
@@ -80,16 +79,11 @@ object Story extends Controller with Secured {
     val comet = Comet(callback = "window.parent.session.observable.log.receive")
     request.headers.get("ACCEPT").map( _ match {
       case "text/event-stream" => {
-        Logger.debug("server sent event");
-        SimpleResult(
-          header = ResponseHeader(OK, Map(
-            CONTENT_LENGTH -> "-1",
-            CACHE_CONTROL -> "no-cache",
-            CONTENT_TYPE -> "text/event-stream"
-          )),chunks &> EventSource[Log]())
+        Logger.debug("[Story] Pushing data using Server Sent Event");
+        Ok.stream(chunks &> EventSource()) withHeaders(CONTENT_TYPE -> "text/event-stream")
       }
       case _ => {
-        Logger.debug("commet");
+        Logger.debug("[Story] Pushing data using Commet");
         Ok.stream(chunks &> comet)
       }
     }).orElse(None)

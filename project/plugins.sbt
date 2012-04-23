@@ -8,6 +8,6 @@ resolvers ++= Seq(
     "repo.novus snaps" at "http://repo.novus.com/snapshots/"
 )
 
-addSbtPlugin("play" % "sbt-plugin" % "2.0-RC3-SNAPSHOT")
+addSbtPlugin("play" % "sbt-plugin" % "2.1-SNAPSHOT")
 
 addSbtPlugin("org.ensime" % "ensime-sbt-cmd" % "0.0.7")

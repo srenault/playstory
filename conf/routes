@@ -4,9 +4,11 @@
 
 # Home page
 GET     /                                controllers.Application.index()
-POST    /signin                          controllers.Application.signin()
+GET     /procrastination                 controllers.Application.procrastination()
+GET     /signin                          controllers.Application.signin()
+GET     /signin/callback                 controllers.Application.signinCallback()
+
 GET     /signout                         controllers.Application.signout()
-POST    /signup                          controllers.Application.signup()
 
 GET     /story/home                      controllers.Story.home()
 GET     /story/:project                  controllers.Story.view(project)

@@ -21,9 +21,9 @@ class StoryActor extends Actor {
     case Listen(project: String) => {
       lazy val channel: Enumerator[Log] = Enumerator.pushee(
         pushee => self ! Init(project, pushee),
-        onComplete = self ! Stop(project)
+        onComplete = () => self ! Stop(project)
       )
-      Logger.info("New debugging session for " + project)
+      Logger.info("[Actor] New debugging session for " + project)
       sender ! channel
     }
 
@@ -32,17 +32,17 @@ class StoryActor extends Actor {
     }
 
     case Stop(project: String) => {
-      Logger.info("Debugging session has been stopped ...")
+      Logger.info("[Actor] Debugging session has been stopped ...")
       projects = projects.filter(p => p._1 != project)
     }
     
     case NewLog(log: Log) => {
-      Logger.info("Catch a log for " + log.project)
+      Logger.info("[Actor] Catch a log for " + log.project)
       Project.createIfNot(Project(log.project))
       Log.create(log).map { createdLog =>
         projects.filter(p => p._1 == log.project).map(p => p._2.push(createdLog))
       }.orElse {
-         Logger.warn("Log not successfully persisted")
+         Logger.warn("[Actor] Log not successfully persisted")
          None
       }
     }
