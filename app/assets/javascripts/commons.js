@@ -16,7 +16,6 @@ var commons = {
         var $logs = $ui;
         return {
             asTimestamp: Action(function(log, n) {
-                console.log('[commons.actions.log] ### asTimestamp');
                 var nameValue = log.message.split('=>');
                 var msg = nameValue[1] + ' [' + new Date(parseInt(nameValue[1])).toString() + ']';
                 var $log = newLog(log.id, msg, nameValue[0], true).addClass('variable timestamp');
@@ -24,7 +23,6 @@ var commons = {
                 n(log);
             }),
             asJson: Action(function(log, n) {
-                console.log('[commons.actions.log] ### asJson');
                 var nameValue = log.message.split('=>');
                 var $log = newLog(log.id, nameValue[1], nameValue[0], true).addClass('variable json');
                 try {
@@ -37,7 +35,6 @@ var commons = {
                 n(log);
             }),
             asXml: Action(function(log, n) {
-                console.log('[commons.actions.log] ### asXml');
                 var nameValue = log.message.split('=>');
                 var xml = nameValue[1].replace(/</gm,'&lt;').replace(/>/gm,'&gt;');
                 var $log = newLog(log.id, xml, nameValue[0], true).addClass('variable xml');
@@ -51,7 +48,6 @@ var commons = {
                 n(log);
             }),
             asGroup: Action(function(log, n) {
-                console.log('[commons.actions.log] ### asGroup');
                 var nameValue = log.message.split('=>');
                 var $group = session.ui.$logs.find('li.log.'+nameValue[0]);
                 if($group.length > 0) {
@@ -60,20 +56,17 @@ var commons = {
                 n(log);
             }),
             asVariable: Action(function(log, n) {
-                console.log('[commons.actions.log] ### asVariable');
                 var nameValue = log.message.split('=>');
                 $logs.prepend(newLog(log.id, nameValue[1], nameValue[0]).addClass('variable'));
                 n(log);
             }),
             asInfo: Action(function(log, n) {
-                console.log('[commons.actions.log] ### asInfo');
                 var $log = newLog(log.id, log.message).addClass('info');
                 if(log.level === 'ERROR') $log.addClass('error');
                 $logs.prepend($log);
                 n(log);
             }),
             display: Action(function(log, n) {
-                console.log('[commons.actions.log] ### display');
                 var $lastLog = $logs.find('li.log').first();
                 $lastLog.data('timestamp', log.date);
                 $lastLog.fadeIn(1000);

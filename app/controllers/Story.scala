@@ -51,7 +51,7 @@ object Story extends Controller with Secured {
     Ok(views.html.story(project, Nil))
   }
 
-  def listen(project: String) = Authenticated { implicit request =>
+  def listen(project: String) = Action { implicit request =>//Authenticated { implicit request =>
     Logger.info("[Story] Waitings logs...")
     AsyncResult {
       implicit val timeout = Timeout(5 second)

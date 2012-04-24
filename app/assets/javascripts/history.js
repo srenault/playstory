@@ -27,7 +27,6 @@ $(document).ready(function() {
                 receiveSubscribers.push(f);
             };
             this.receive = function(logs, callback) {
-                console.log('[history.observable.receive] ### receiving logs');
                 receiveSubscribers.forEach(function(cb) {
                     logs.forEach(function(log) {
                         cb(log);
