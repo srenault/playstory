@@ -6,10 +6,10 @@
         <title>Play! Story</title>
         <meta http-equiv="Content-Type" content="text/html; charset=${_response_encoding}"/>
         <link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/procrastination_last.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/libs/jquery-1.7.1.min.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/libs/procrastination_last.js")"></script>
         <script type="text/javascript" src="@routes.Assets.at("javascripts/commons.js")"></script>
-        <script type="text/javascript" src="@routes.Assets.at("javascripts/session.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("javascripts/story.js")"></script>
         <script type="text/javascript" src="@routes.Assets.at("javascripts/history.js")"></script>
     </head>
     <body>
@@ -53,7 +53,7 @@
         </div>
         <iframe id="stream" src="#" style="display: none;"></iframe>
         <script type="text/javascript">
-          session.init('@routes.Story.view(project)');
+          session.init('@routes.Story.view(project)'); //do like scan'up with data template ?
           history.init('@routes.Story.view(project)');
         </script>
     </body>

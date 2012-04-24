@@ -37,5 +37,36 @@ $(document).ready(function() {
         })
         .match(customerRoute)
         .subscribe();
+
+    var Story = function(options) {
+        //deps
+        this.modules = {
+        };
+
+        //attributes module
+        this.init = function() { //Constructor
+        };
+
+        this.routes = { //Matchers
+            //subscription to global routes
+        },
+
+        this.models = { //Models
+        },
+
+        this.actions = { //Actions
+        };
+
+        this.events = { //Events
+            //not the router
+        };
+
+        this.ui = { //Selectors
+            $el: ''
+        };
+
+        this.process = { //Reactif / When
+        };
+    };
 });
 

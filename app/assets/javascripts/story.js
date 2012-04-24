@@ -146,51 +146,51 @@ $(document).ready(function() {
         }
     };
 
-    Reactive.on(session.events.cmds.start)
+    When(session.events.cmds.start)
     .await(session.actions.listen.start)
     .subscribe();
 
-    Reactive.on(session.events.cmds.stop)
+    When(session.events.cmds.stop)
     .await(session.actions.listen.stop)
     .subscribe();
 
-    Reactive.on(session.events.cmds.clear)
+    When(session.events.cmds.clear)
     .await(session.actions.listen.clear)
     .subscribe();
 
-    Reactive.on(session.events.cmds.narrow.keypress)
+    When(session.events.cmds.narrow.keypress)
     .await(session.actions.logs.preventEnterKey)
     .subscribe();
 
-    Reactive.on(session.events.cmds.narrow.keyup)
+    When(session.events.cmds.narrow.keyup)
         .match(
             Match.on(function() {
                 return session.ui.cmds.narrow.$option.is(':checked');
             })
             .value(true, session.actions.logs.filter)
-            .def(session.actions.logs.find)
+            .dft(session.actions.logs.find)
         )
 //    .await(session.actions.logs.preventEnterKey)
     .subscribe();
 
-    Reactive.on(session.events.log.receive)
+    When(session.events.log.receive)
        .await(
             Match.regex(/^#[\w]*:ts /, session.actions.log.asTimestamp, 'message')
                  .regex(/^#[\w]*:json /, session.actions.log.asJson, 'message')
                  .regex(/^#[\w]*:xml / , session.actions.log.asXml, 'message')
                  .regex(/^#[\w]* /, session.actions.log.asVariable, 'message')
                  .regex(/^\.[\w]* /, session.actions.log.asGroup, 'message')
-                 .default(session.actions.log.asInfo)
+                 .dft(session.actions.log.asInfo)
                  .action()
                  .then(session.actions.log.display)
         )
     .subscribe();
 
-    Reactive.on(session.events.log.select)
+    When(session.events.log.select)
     .await(session.actions.nav.updateHash)
     .subscribe();
 
-    Reactive.on(session.events.cmds.live)
+    When(session.events.cmds.live)
     .await(session.actions.nav.viewLivePage)
     .subscribe();
 });

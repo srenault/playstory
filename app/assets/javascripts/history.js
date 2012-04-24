@@ -30,10 +30,8 @@ $(document).ready(function() {
                 console.log('[history.observable.receive] ### receiving logs');
                 receiveSubscribers.forEach(function(cb) {
                     logs.forEach(function(log) {
-                        console.log('[history.observable.receive] ### forEach');
                         cb(log);
                     });
-                    console.log('[history.observable.receive] ### forEach OK');
                 });
                 this.display();
                 callback();
@@ -128,30 +126,30 @@ $(document).ready(function() {
         }
     };
 
-    Reactive.on(history.events.cmds.past)
+    When(history.events.cmds.past)
     .await(history.actions.nav.viewPastPage)
     .subscribe();
 
-    Reactive.on(history.events.nav.url.hasHash)
+    When(history.events.nav.url.hasHash)
     .await(
         history.actions.http.logs
     )
     .subscribe();
 
-    Reactive.on(history.events.log.receive)
+    When(history.events.log.receive)
        .await(
             Match.regex(/^#[\w]*:ts /, history.actions.log.asTimestamp, 'message')
                  .regex(/^#[\w]*:json /, history.actions.log.asJson, 'message')
                  .regex(/^#[\w]*:xml / , history.actions.log.asXml, 'message')
                  .regex(/^#[\w]* /, history.actions.log.asVariable, 'message')
                  .regex(/^\.[\w]* /, history.actions.log.asGroup, 'message')
-                 .default(history.actions.log.asInfo)
+                 .dft(history.actions.log.asInfo)
                  .action()
                  .then(history.actions.log.display)
         )
     .subscribe();
 
-    Reactive.on(history.events.logs.display)
+    When(history.events.logs.display)
     .await(history.actions.nav.go)
     .subscribe();
 

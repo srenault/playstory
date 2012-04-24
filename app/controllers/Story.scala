@@ -31,22 +31,24 @@ object Story extends Controller with Secured {
     Ok(views.html.home(Project.all))
   }
 
-  def view(project: String) = Authenticated { implicit request =>
+//  def view(project: String) = Authenticated { implicit request =>
+  def view(project: String) = Action { implicit request =>
     Logger.info("[Story] Viewing specific project : " + project)
     Project createIfNot(Project(project))
-    val contacts = request.session.get("access_token").map { accessToken =>
-      request.user.contacts(accessToken, 100).fold(
-        error => {
-          Logger.warn("[Story] Failed getting user contacts")
-          Nil
-        },
-        identity
-      )
-    }.getOrElse {
-      Logger.warn("[Story] Failed getting user contacts: no access token")
-      Nil
-    }
-    Ok(views.html.story(project, contacts))
+    // val contacts = request.session.get("access_token").map { accessToken =>
+    //   request.user.contacts(accessToken, 100).fold(
+    //     error => {
+    //       Logger.warn("[Story] Failed getting user contacts")
+    //       Nil
+    //     },
+    //     identity
+    //   )
+    // }.getOrElse {
+    //   Logger.warn("[Story] Failed getting user contacts: no access token")
+    //   Nil
+    // }
+    //Ok(views.html.story(project, contacts))
+    Ok(views.html.story(project, Nil))
   }
 
   def listen(project: String) = Authenticated { implicit request =>
