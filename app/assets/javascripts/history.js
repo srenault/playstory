@@ -130,22 +130,15 @@ $(document).ready(function() {
     .subscribe();
 
     When(history.events.nav.url.hasHash)
-    .await(
-        history.actions.http.logs
-    )
+    .await(history.actions.http.logs)
     .subscribe();
 
     When(history.events.log.receive)
-       .await(
-            Match.regex(/^#[\w]*:ts /, history.actions.log.asTimestamp, 'message')
-                 .regex(/^#[\w]*:json /, history.actions.log.asJson, 'message')
-                 .regex(/^#[\w]*:xml / , history.actions.log.asXml, 'message')
-                 .regex(/^#[\w]* /, history.actions.log.asVariable, 'message')
-                 .regex(/^\.[\w]* /, history.actions.log.asGroup, 'message')
-                 .dft(history.actions.log.asInfo)
-                 .action()
-                 .then(history.actions.log.display)
-        )
+    .await(
+         session.actions.log.asInfo.then(
+             session.actions.log.display
+         )
+     )
     .subscribe();
 
     When(history.events.logs.display)

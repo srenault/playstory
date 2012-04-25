@@ -57,8 +57,24 @@ $(document).ready(function() {
         }
     };
 
+    var newLog = function(id, msg, name, pre) {
+        var $log = $('<li id="'+id+'" class="log"></li>');
+        if(name) $log.append('<span class="name">'+name+'</div>');
+        if(pre) msg = '<pre>' + msg + '</pre>';
+        $log.append('<span class="value">'+msg+'</div>');
+        return $log;
+    };
+
     session.actions = {
-        log: new commons.actions.log(session.ui.$logs),
+        log: new commons.actions.log(history.ui.$logs)// ,{
+        //     asInfo: Action(function(log, n) {
+        //         var $log = newLog(log.id, log.message).addClass('info');
+        //         if(log.level === 'ERROR') $log.addClass('error');
+        //         $logs.prepend($log);
+        //         n(log);
+        //     })
+        // }
+        ,
         logs: {
             preventEnterKey: Match.on(function(e) {
                 return e.which;
@@ -170,20 +186,14 @@ $(document).ready(function() {
             .value(true, session.actions.logs.filter)
             .dft(session.actions.logs.find)
         )
-//    .await(session.actions.logs.preventEnterKey)
     .subscribe();
 
     When(session.events.log.receive)
-       .await(
-            Match.regex(/^#[\w]*:ts /, session.actions.log.asTimestamp, 'message')
-                 .regex(/^#[\w]*:json /, session.actions.log.asJson, 'message')
-                 .regex(/^#[\w]*:xml / , session.actions.log.asXml, 'message')
-                 .regex(/^#[\w]* /, session.actions.log.asVariable, 'message')
-                 .regex(/^\.[\w]* /, session.actions.log.asGroup, 'message')
-                 .dft(session.actions.log.asInfo)
-                 .action()
-                 .then(session.actions.log.display)
+    .await(
+        session.actions.log.asInfo.then(
+            session.actions.log.display
         )
+    )
     .subscribe();
 
     When(session.events.log.select)

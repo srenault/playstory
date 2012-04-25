@@ -1,12 +1,16 @@
 @()
 
-<!DOCTYPE html>
-<html>
-    <head>
-        <title></title>
-    </head>
-    <body>
-      <h1>Playstory</h1>
-      <a href="@controllers.routes.Application.signin">Sign In</a>
-    </body>
-</html>
+@main("Play Story > Sign in") {
+    <p>
+      Instantly <span class="important_2">follow</span> all yours applications.<br/>
+      Identify, share and resolve malicious <span class="important_1">bugs</span>.
+    </p>
+    <p>
+      <a href="@controllers.routes.Application.signin">Sign in</a>
+    </p>
+}{
+    <!--Sign in CSS imports -->
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/signin.css")">
+}{
+    <!--Sign in javascript imports -->
+}

@@ -1,15 +1,31 @@
-@(title: String)(content: Html)
+@(title: String)(content: Html)(css: Html)(scripts: Html)
 
 <!DOCTYPE html>
 
 <html>
     <head>
         <title>@title</title>
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+        <!-- CSS -->
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/layout.css")">
+        @css
+        <!-- Javascript libs -->
         <script src="@routes.Assets.at("javascripts/libs/jquery-1.7.1.min.js")" type="text/javascript"></script>
     </head>
     <body>
+      <header>
+        <h1>Play Story</h1>
+      </header>
+
+      <section class="content">
         @content
+      </section>
+
+      <footer>
+        <p>
+          <span>Zenexity - <a href="http://github/srenault">http://github/srenault</a></span>
+        </p>
+      </footer>
+      @scripts
     </body>
 </html>

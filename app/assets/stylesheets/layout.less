@@ -1,0 +1,52 @@
+/**
+   Colors
+**/
+
+@import "variables.less";
+
+body {
+     background-color: @blueEmacs;
+     font-family: Monaco;
+     margin: 0;
+}
+
+h1 {
+    color: @orangeEmacs;
+}
+
+p {
+    color: white;
+}
+
+a {
+    text-decoration: none;
+    color: @greenEmacs;
+
+    &:hover {
+      &:after {
+          content:" >"
+      }
+    }
+}
+
+.content {
+    padding: 8px;
+    background: #253868;
+}
+
+footer {
+    span {
+        color: @greyEmacs;
+        font-size: 0.8em;
+    }
+}
+
+span {
+    &.important_2 {
+        color: @yellowEmacs;
+    }
+
+    &.important_1 {
+        color: @redEmacs;
+    }
+}
