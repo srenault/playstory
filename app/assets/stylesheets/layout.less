@@ -4,63 +4,54 @@
 
 @import "variables.less";
 
-body {
-     background-color: @blueEmacs;
-     font-family: Monaco;
-     margin: 0;
-}
-
-h1 {
-    color: @orangeEmacs;
-}
-
-p {
-    color: white;
+html {
+    body {
+        margin: 0;
+        padding: 0;
+        background: @greyPlay;
+    }
 }
 
 a {
     text-decoration: none;
-    color: @greenEmacs;
+}
 
-    &:hover {
-      &:after {
-          content:" >"
-      }
-    }
+h1 {
+    font-size: 3em;
 }
 
 ul {
     list-style: none;
 }
 
-.container {
-    padding: 8px;
+header {
+    padding: 15px;
+    background: url('/assets/images/commons/stripes.png');
+    text-align: center;
+
+    h1 {
+        margin: 0;
+        color: @redPlay;
+    }
 }
 
 .content {
-    .container;
-    background: @blueLightEmacs;
-    border: 1px solid #677896;
-}
-
-header {
-    .container;
+    min-height: 100%;
+    margin-bottom: -75px;
 }
 
 footer {
-    .container;
-    span {
-        color: @greyEmacs;
-        font-size: 0.8em;
-    }
-}
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    border-top: 2px solid white;
+    padding-left: 10px;
+    height: 75px;
+    color: white;
+    background: @blackPlay;
 
-span {
-    &.important_2 {
-        color: @yellowEmacs;
-    }
-
-    &.important_1 {
-        color: @redEmacs;
+    a {
+        color: white;
     }
 }

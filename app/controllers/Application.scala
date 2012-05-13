@@ -14,7 +14,7 @@ object Application extends Controller {
 
   def index = Action { implicit request =>
     Logger.info("Welcome unauthenticated user !")
-    Ok(views.html.index())
+    Ok(views.html.signin())
   }
 
   def procrastination = Action {
