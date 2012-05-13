@@ -29,12 +29,26 @@ a {
     }
 }
 
-.content {
+ul {
+    list-style: none;
+}
+
+.container {
     padding: 8px;
-    background: #253868;
+}
+
+.content {
+    .container;
+    background: @blueLightEmacs;
+    border: 1px solid #677896;
+}
+
+header {
+    .container;
 }
 
 footer {
+    .container;
     span {
         color: @greyEmacs;
         font-size: 0.8em;
