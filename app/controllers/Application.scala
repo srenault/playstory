@@ -17,10 +17,6 @@ object Application extends Controller {
     Ok(views.html.signin())
   }
 
-  def procrastination = Action {
-    Ok(views.html.procrastination())
-  }
-
   def signin = Action { implicit request =>
     Logger.info("[OpenID] Starting OAuth process...")
     OpenID.redirectURL("https://www.google.com/accounts/o8/id",

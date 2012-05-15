@@ -1,16 +1,239 @@
 @(projects: Seq[Project])
-<!DOCTYPE html>
-<html>
-    <head>
-        <title></title>
-    </head>
-    <body>
-      <p>Welcome !</p>
-      <p>Here are some projects you can follow: </p>
-      <ul>
-        @projects.map { project =>
-        <li><a href="@routes.Story.view(project.name)">@project.name</a></li>
-        }
-      </ul>
-    </body>
-</html>
+
+@main("Play Story > Home") {
+
+<section class="column-left">
+  <div class="inbox">
+    <h3>INBOX</h3>
+    <ul>
+      <li><a href="#">ALL (1102)</a></li>
+      <li><a href="#">ERROR (0)</a></li>
+      <li><a href="#">WARN (2)</a></li>
+      <li><a href="#">INFO (1000)</a></li>
+      <li><a href="#">FAVOURS (99)</a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="column-middle">
+  <div class="feeds">
+    <ul>
+      <li class="feed">
+        <div class="avatar">
+          <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">Play Story</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[info]</span>
+            <span class="message">application - [Story] Welcome : User(Renault,Sébastien,sre(at)zenexity.com,fr-FR,None)</span>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> | <a class="share" href="#">Share</a> | <a class="bookmark" href="#">Bookmark</a> | <a class="bookmark" href="#">Related</a>
+          </div>
+      </li>
+
+      <li class="feed">
+        <div class="avatar">
+          <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">Play Story</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[info]</span>
+            <span class="message">application - [Story] Welcome : User(Renault,Sébastien,sre(at)zenexity.com,fr-FR,None)</span>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> | <a class="share" href="#">Share</a> | <a class="bookmark" href="#">Bookmark</a>
+          </div>
+      </li>
+
+      <li class="feed">
+        <div class="avatar">
+          <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">Play Story</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[info]</span>
+            <span class="message">application - [Story] Welcome : User(Renault,Sébastien,sre(at)zenexity.com,fr-FR,None)</span>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> | <a class="share" href="#">Share</a> | <a class="bookmark" href="#">Bookmark</a>
+          </div>
+      </li>
+
+      <li class="feed">
+        <div class="avatar">
+          <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">Play Story</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[info]</span>
+            <span class="message">application - [Story] Welcome : User(Renault,Sébastien,sre(at)zenexity.com,fr-FR,None)</span>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> | <a class="share" href="#">Share</a> | <a class="bookmark" href="#">Bookmark</a>
+          </div>
+      </li>
+
+      <li class="feed">
+        <div class="avatar">
+          <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">Play Story</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[info]</span>
+            <span class="message">application - [Story] Welcome : User(Renault,Sébastien,sre(at)zenexity.com,fr-FR,None)</span>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> | <a class="share" href="#">Share</a> | <a class="bookmark" href="#">Bookmark</a>
+          </div>
+      </li>
+
+      <li class="feed">
+        <div class="avatar">
+          <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">Play Story</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[info]</span>
+            <span class="message">application - [Story] Welcome : User(Renault,Sébastien,sre(at)zenexity.com,fr-FR,None)</span>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> | <a class="share" href="#">Share</a> | <a class="bookmark" href="#">Bookmark</a>
+          </div>
+      </li>
+
+      <li class="feed">
+        <div class="avatar">
+          <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">Play Story</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[info]</span>
+            <span class="message">application - [Story] Welcome : User(Renault,Sébastien,sre(at)zenexity.com,fr-FR,None)</span>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> | <a class="share" href="#">Share</a> | <a class="bookmark" href="#">Bookmark</a>
+          </div>
+      </li>
+
+      <li class="feed">
+        <div class="avatar">
+          <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">Play Story</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[info]</span>
+            <span class="message">application - [Story] Welcome : User(Renault,Sébastien,sre(at)zenexity.com,fr-FR,None)</span>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> | <a class="share" href="#">Share</a> | <a class="bookmark" href="#">Bookmark</a>
+          </div>
+      </li>
+
+      <li class="feed">
+        <div class="avatar">
+          <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">Play Story</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[info]</span>
+            <span class="message">application - [Story] Welcome : User(Renault,Sébastien,sre(at)zenexity.com,fr-FR,None)</span>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> | <a class="share" href="#">Share</a> | <a class="bookmark" href="#">Bookmark</a>
+          </div>
+      </li>
+
+      <li class="feed">
+        <div class="avatar">
+          <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">Play Story</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[info]</span>
+            <span class="message">application - [Story] Welcome : User(Renault,Sébastien,sre(at)zenexity.com,fr-FR,None)</span>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> | <a class="share" href="#">Share</a> | <a class="bookmark" href="#">Bookmark</a>
+          </div>
+      </li>
+
+      <li class="feed">
+        <div class="avatar">
+          <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">Play Story</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[info]</span>
+            <span class="message">application - [Story] Welcome : User(Renault,Sébastien,sre(at)zenexity.com,fr-FR,None)</span>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> | <a class="share" href="#">Share</a> | <a class="bookmark" href="#">Bookmark</a>
+          </div>
+      </li>
+    </ul>
+</section>
+
+<section class="column-right">
+  <div class="apps">
+    <h3>APPS</h3>
+    <ul>
+      <li><a href="#">DISCOVER</a></li>
+      <li><a href="#">GEONAUTE</a></li>
+      <li><a href="#">SCAN'UP</a></li>
+      <li><a href="#">IDOO</a></li>
+      <li><a href="#">SEMATIC</a></li>
+    </ul>
+  </div>
+</section>
+
+}{
+<!--Home CSS imports -->
+<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/story/home.css")">
+}{
+<!--Home javascript imports -->
+}

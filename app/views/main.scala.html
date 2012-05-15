@@ -7,20 +7,30 @@
         <title>@title</title>
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
         <!-- CSS -->
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/layout.css")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/story/layout.css")">
         @css
         <!-- Javascript libs -->
         <script type="text/javascript" src="@routes.Assets.at("javascripts/libs/procrastination.js")"></script>
     </head>
     <body>
       <header>
-        <h1>Play Story</h1>
+        <div class="profil">
+          <h1>Play Story</h1>
+          <div class="signout">
+            <a href="#">Sébastien RENAULT</a>
+          </div>
+        </div>
+        <div class="gap">
+        </div>
+        <div class="search">
+          <form action="#" method="POST">
+            <input type="text" name="search" placeholder="Search" />
+          </form>
+        </div>
       </header>
-
       <section class="content">
         @content
       </section>
-
       <footer>
         <p>
           <span>Zenexity - <a href="http://github/srenault">http://github/srenault</a></span>

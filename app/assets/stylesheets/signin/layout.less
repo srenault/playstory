@@ -2,10 +2,12 @@
    Colors
 **/
 
-@import "variables.less";
+@import "../variables.less";
 
 html {
+    height: 100%;
     body {
+        height: 100%;
         margin: 0;
         padding: 0;
         background: @greyPlay;
@@ -22,9 +24,14 @@ h1 {
 
 ul {
     list-style: none;
+    padding: 0px;
 }
 
 header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     padding: 15px;
     background: url('/assets/images/commons/stripes.png');
     text-align: center;
@@ -36,8 +43,8 @@ header {
 }
 
 .content {
-    min-height: 100%;
-    margin-bottom: -75px;
+    height: 100%;
+    margin-top: 100px;
 }
 
 footer {

@@ -4,7 +4,6 @@
 
 # Home page
 GET     /                                controllers.Application.index()
-GET     /procrastination                 controllers.Application.procrastination()
 GET     /signin                          controllers.Application.signin()
 GET     /signin/callback                 controllers.Application.signinCallback()
 

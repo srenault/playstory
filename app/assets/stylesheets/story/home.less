@@ -1,0 +1,114 @@
+@import "../variables.less";
+
+.box {
+    padding: 15px;
+    border: 1px dotted @redPlay;
+    background: url('/assets/images/commons/stripes.png');
+    color: @blackPlay;
+    text-align: center;
+
+    h3 {
+        border-bottom: grey solid 1px;
+        margin-top: 0;
+        margin-bottom: 5px;
+        text-transform: capitalize;
+    }
+
+    ul {
+        margin: 0;
+        li {
+            padding: 5px;
+            a {
+                color: @blueEmacs;
+            }
+        }
+    }
+}
+
+.column-left {
+    float: left;
+    margin-right: 50px;
+    background: white;
+
+    .inbox {
+        .box
+    }
+}
+
+.column-middle {
+    float: left;
+    .feeds {
+        width: 700px;
+
+        .feed {
+            margin-top: 15px;
+            background: white;
+            padding: 15px;
+            border-radius: 2px;
+            box-shadow: 4px 4px 5px #888;
+            overflow: hidden;
+
+            div.avatar {
+                float: left;
+                img {
+                    border-radius: 5px;
+                }     
+            }
+            
+            div.log {
+                padding-left: 8px;
+                float: left;
+                width: 600px;
+
+                .message {
+                    color: #353635;
+                }
+
+                .header {
+                    overflow: hidden;
+                    border-bottom: 1px solid @greyLightIPlay;
+                    padding-bottom: 2px;
+
+                    .project {
+                        display: block;
+                        color: @blackPlay;
+                        font-weight: bold;
+                        float: left;
+                    }
+
+                    .time {
+                        float: right;
+                        color: @blueEmacs;
+                        font-size: 0.7em;
+                    }
+                }
+
+                .content {
+                    padding-top: 8px;
+                    .level {
+                        color: @redPlay;
+                    }
+                }
+
+                .footer {
+                    margin-top: 12px;
+
+                    a {
+                        color: @blueEmacs;
+                        font-size: 0.9em;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.column-right {
+    float: left;
+    margin-left: 50px;
+    background: white;
+
+    .apps {
+        .box
+    }
+}
