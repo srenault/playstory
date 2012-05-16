@@ -10,7 +10,7 @@ import play.api.libs.openid.OpenID
 import models.User
 import models.UserDAO
 
-object Application extends Controller {
+object Application extends Controller with GoogleOpenID {
 
   def index = Action { implicit request =>
     Logger.info("Welcome unauthenticated user !")
@@ -18,17 +18,13 @@ object Application extends Controller {
   }
 
   def signin = Action { implicit request =>
-    Logger.info("[OpenID] Starting OAuth process...")
-    OpenID.redirectURL("https://www.google.com/accounts/o8/id",
-                        routes.Application.signinCallback.absoluteURL(),
-                        Seq(
-                          ("email", "http://axschema.org/contact/email"),
-                          ("firstname", "http://axschema.org/namePerson/first"),
-                          ("lastname", "http://axschema.org/namePerson/last"),
-                          ("language", "http://axschema.org/pref/language")
-                        )).await.fold (
-      error => Redirect(routes.Application.index),
-      url => Redirect(url)
+    signinWithGoogle(
+      routes.Application.signinCallback.absoluteURL(),
+      url => Redirect(url),
+      error => {
+        Logger.error("[OpenID] Failed to sign in with Google")
+        Redirect(routes.Application.index)
+      }
     )
   }
 
