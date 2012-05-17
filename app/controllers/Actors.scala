@@ -29,12 +29,12 @@ class StoryActor extends Actor {
     }
 
     case Init(project, pushee) => {
-      if(projects.exists { case (proj, _) => proj == project}) {
+      //if(projects.exists { case (proj, _) => proj == project}) {
         Logger.info("[Actor] New project added")
         projects += project -> pushee
-      } else {
-        Logger.warn("[Actor] Project already added")
-      }
+//      } else {
+//        Logger.warn("[Actor] Project already added")
+//      }
     }
 
     case Stop(project: String) => {

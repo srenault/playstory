@@ -15,7 +15,7 @@ trait Pulling {
 
   protected def playPulling(chunks: Enumerator[Log])(implicit request: Request[AnyContent]) = {
     implicit val LogComet = Comet.CometMessage[Log](log => toJson(log).toString)
-    val comet = Comet(callback = "window.parent.session.observable.log.receive")
+    val comet = Comet(callback = "window.parent.PlayStory.Home.Feeds.server.streamFeeds")
     request.headers.get("ACCEPT").map( _ match {
       case "text/event-stream" => {
         Logger.debug("[Story] Pushing data using Server Sent Event");

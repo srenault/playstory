@@ -1,7 +1,6 @@
 @import "../variables.less";
 
 .box {
-    padding: 15px;
     border: 1px dotted @redPlay;
     background: url('/assets/images/commons/stripes.png');
     color: @blackPlay;
@@ -17,7 +16,10 @@
     ul {
         margin: 0;
         li {
-            padding: 5px;
+            padding-right: 10px;
+            padding-left: 10px;
+            padding-top: 4px;
+            padding-bottom: 5px;
             a {
                 color: @blueEmacs;
             }
@@ -47,6 +49,8 @@
             border-radius: 2px;
             box-shadow: 4px 4px 5px #888;
             overflow: hidden;
+            opacity: 0;
+            -webkit-transition: opacity 2s ease 1s;
 
             div.avatar {
                 float: left;
