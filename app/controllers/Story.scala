@@ -28,13 +28,12 @@ object Story extends Controller with Secured with Pulling {
 
   def home = Authenticated { implicit request =>
     Logger.info("[Story] Welcome : " + request.user)
-    Ok(views.html.home(Project.all))
+    Ok(views.html.home.home(Project.all))
   }
 
   def view(project: String) = Authenticated { implicit request =>
     Logger.info("[Story] Viewing specific project : " + project)
-    Project createIfNot(Project(project))
-    Ok(views.html.story(project, Nil))
+    Ok
   }
 
   def listen(project: String) = Authenticated { implicit request =>
@@ -54,7 +53,6 @@ object Story extends Controller with Secured with Pulling {
   }
 
   def eval() = Action { implicit request =>
-    Logger.info("[Story] Evaluating a log ...")
     request.body.asJson.get match {
       case log: JsObject => StoryActor.ref ! NewLog(Log.fromJsObject(log)); Ok
       case log: JsValue => BadRequest("[Story] Not a json object")

@@ -8,7 +8,6 @@
         console.log("[Feeds.View] Init feeds view");
 
         //Init
-        this.collection = [];
         this.dom = new Feeds.FeedsDOM(),
         this.server = new Feeds.FeedsServer();
         this.model = new Feeds.FeedsModel();

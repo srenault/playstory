@@ -75,7 +75,7 @@ object Google extends Controller with Secured {
           }
           case (accessToken, Some(refreshToken)) => {
             Logger.info("AccessToken got : " + accessToken + " and refresh got : " + refreshToken)
-            request.user.saveRefreshToken(refreshToken)
+            //request.user.saveRefreshToken(refreshToken)
             Redirect(homePage).withSession("access_token" -> accessToken,
                                            "refresh_token" -> refreshToken)
           }
@@ -91,20 +91,21 @@ object Google extends Controller with Secured {
       at <- accessToken
     } yield {
       User.byEmail(request.user.email).map { user =>
-        user.contacts(at, 100).fold(
-          error => {
-            Logger.warn("Failed getting contacts: error from google")
-            InternalServerError
-          },
-          cts => Ok(toJson(cts))
-        )
+        // user.contacts(at, 100).fold(
+        //   error => {
+        //     Logger.warn("Failed getting contacts: error from google")
+        //     InternalServerError
+        //   },
+        //   cts => Ok(toJson(cts))
+        // )
+        Ok
       }.getOrElse {
         Logger.warn("Failed getting contacts: Are you really login ?")
-        InternalServerError
+        BadRequest("Failed getting contacts: Are you really login ?")
       }
     }).getOrElse {
       Logger.warn("Failed getting contacts: preconditions failed. accessToken => " + accessToken)
-      InternalServerError
+      BadRequest("Failed getting contacts: preconditions failed. accessToken => " + accessToken)
     }
   }
 }

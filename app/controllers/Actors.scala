@@ -22,7 +22,9 @@ class StoryActor extends Actor {
       lazy val channel: Enumerator[Log] = Enumerator.pushee(
         pushee => self ! Init(project, pushee),
         onComplete = () => self ! Stop(project),
-        onError = { case(error, _) => Logger.error("[Actor] Error during stream log : " + error) }
+        onError = { case(error, _) =>
+          Logger.error("[Actor] Error during stream log for %s : %s".format(project,error)) 
+        }
       )
       Logger.info("[Actor] New debugging session for " + project)
       sender ! channel
@@ -31,10 +33,10 @@ class StoryActor extends Actor {
     case Init(project, pushee) => {
       //if(projects.exists { case (proj, _) => proj == project}) {
         Logger.info("[Actor] New project added")
-        projects += project -> pushee
-//      } else {
-//        Logger.warn("[Actor] Project already added")
-//      }
+        projects += (project -> pushee)
+    //} else {
+      //Logger.warn("[Actor] Project already added")
+      //}
     }
 
     case Stop(project: String) => {
@@ -43,8 +45,7 @@ class StoryActor extends Actor {
     }
     
     case NewLog(log: Log) => {
-      Logger.info("[Actor] Catch a log for " + log.project)
-      Project.createIfNot(Project(log.project))
+        Project.createIfNot(Project(log.project))
       Log.create(log).map { createdLog =>
         projects.filter(p => p._1 == log.project).map(p => p._2.push(createdLog))
       }.orElse {
