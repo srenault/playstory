@@ -22,6 +22,9 @@
             padding-bottom: 5px;
             a {
                 color: @blueEmacs;
+                &:hover {
+                    text-decoration: underline;
+                }
             }
         }
     }
@@ -39,6 +42,49 @@
 
 .column-middle {
     float: left;
+
+    ul.tabs {
+        margin: 0;
+        overflow: hidden;
+        li {
+            text-align: center;
+            width: 75px;
+            background: url('/assets/images/commons/stripes.png');
+            color: @blackPlay;
+            border: 1px solid white;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            float: left;
+
+            &:first-child {
+                border-bottom-left-radius: 3px;
+            }
+
+            &:last-child {
+                border-bottom-right-radius: 3px;
+            }
+
+            &.on {
+                background: @orangePlay;
+                a {
+                    color: white;
+                }
+            }
+        }
+    }
+
+    .more-feeds {
+        margin-top: 15px;
+        background: white;
+        color: @blackPlay;
+        text-align: center;
+        padding: 7px;
+        border-top: solid 1px @greyLightPlay;
+        border-bottom: solid 1px @greyLightPlay;
+    }
+
     .feeds {
         width: 700px;
 
@@ -91,6 +137,10 @@
                     .level {
                         color: @redPlay;
                     }
+                }
+
+                .comments {
+                    display: none;
                 }
 
                 .footer {

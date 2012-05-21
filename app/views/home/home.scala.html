@@ -1,4 +1,4 @@
-@(projects: Seq[Project])
+@(logsProjects: Map[Log, Project])
 
 @main("Play Story > Home") {
 
@@ -16,15 +16,59 @@
 </section>
 
 <section class="column-middle">
-  <div class="feeds">
-    <ul></ul>
+  <ul class="tabs">
+    <li class="past on"><a href="#past">PAST</a></li>
+    <li class="present"><a href="#present">PRESENT</a></li>
+  </ul>
+  <div class="more-feeds">
+    <a href="#">3 more logs...</a>
+  </div>
+  <div class="feeds past">
+    <ul>
+      @logsProjects.map { case (log, project) =>
+      <li class="feed">
+        <div class="avatar">
+          <img src="@project.avatar.getOrElse("/assets/images/commons/avatar.png")" width="50px" height="50px" alt="@project.realName"/>
+        </div>
+        <div class="log">
+          <div class="header">
+            <a class="project" href="#">@project.realName</a>
+            <span class="time">Today, 16h01</span>
+          </div>
+          <div class="content">
+            <span class="level">[@log.level]</span>
+            <span class="message">@log.message</span>
+          </div>
+          <div class="comments">
+            <div class="comment">
+              <div class="avatar">
+                <img src="/assets/images/commons/avatar.png" width="30px" height="30px" alt="play story"/>
+              </div>
+              <textarea placeholder="Write a comment..."></textarea>
+            </div>
+          </div>
+          <div class="footer">
+            <a class="comment" href="#">Comment</a> |
+            <a class="share" href="#">Share</a> |
+            <a class="bookmark" href="#">Bookmark</a> |
+            <a class="bookmark" href="#">Related</a>
+          </div>
+      </li>
+      }
+    </ul>
+    <div class="feeds present">
+      <ul>
+      </ul>
+    </div>
 </section>
 
 <section class="column-right">
   <div class="apps">
     <h3>APPS</h3>
     <ul>
+      <li><a href="#">CREATE</a></li>
       <li><a href="#">DISCOVER</a></li>
+      <li><hr/></li>
       <li><a href="#">ALL</a></li>
       <li><a href="#">GEONAUTE</a></li>
       <li><a href="#">SCAN'UP</a></li>
@@ -42,10 +86,15 @@
 @feeds()
 <!-- Home javascript imports -->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/Router.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsDOM.js")"></script>
+<!-- Tabs -->
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsDOM.js")"></script>
+<!-- Feeds -->
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPresentDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPastDOM.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsModel.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsServer.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPastView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPresentView.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/home.js")"></script>
 }

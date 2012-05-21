@@ -1,40 +1,63 @@
 package models
 
-import play.api.libs.json._
-import play.api.libs.json.Json._
-
-import com.novus.salat._
-import com.novus.salat.global._
-import com.novus.salat.annotations._
-import com.novus.salat.dao._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
+import scalaz.OptionW
+import scalaz.Scalaz._
+import play.api.libs.json._
+import play.api.libs.json.Json._
+import play.Logger
+import db.MongoDB
 
-case class Project(name: String)
+case class Project(name: String, realName: String, avatar: Option[String] = None) {
 
-object Project {
-
-  def createIfNot(project: Project) = {
-    if(!Project.exist(project.name)) ProjectDAO.insert(project)
-    None
-  }
-
-  def byName(name: String): Option[Project] = ProjectDAO.findOne(MongoDBObject("name" -> name))
-
-  def all: List[Project] = ProjectDAO.find(MongoDBObject("name" -> ".*".r)).toList
-
-  def exist(name : String): Boolean = byName(name).isDefined
-
-  import play.api.libs.json.Generic._
-  implicit object ProjectFormat extends Format[Project] {
-    def reads(json: JsValue): Project = Project(
-      (json \ "name").as[String]
-    )
-
-    def writes(p: Project): JsValue = JsObject(Seq(
-      "name" -> JsString(p.name)
-    ))
+  def asMongoDBObject: MongoDBObject = {
+    val project = MongoDBObject.newBuilder
+    project += "name" -> name
+    project += "realName" -> realName
+    project += "avatar" -> avatar
+    project.result
   }
 }
 
-object ProjectDAO extends SalatDAO[Project, Int](collection = MongoConnection()("playstory")("projects"))
+object Project extends MongoDB("projects") {
+  import play.api.libs.json.Generic._
+
+  def createIfNot(project: Project) = {
+    findOne("name" -> project.name).ifNone(save(project.asMongoDBObject))
+  }
+
+  def byName(name: String): Option[Project] = {
+    findOne("name" -> name).flatMap(fromMongoDBObject(_))
+  }
+
+  def all(max: Int = 50): List[Project] = {
+    Logger.debug(">>>>>>>>>>>>")
+    val projects = find()(max).map(fromMongoDBObject(_))
+    Logger.debug(projects.toString)
+    projects.flatten
+  }
+
+  def exist(name : String): Boolean = byName(name).isDefined
+
+  def fromMongoDBObject(project: MongoDBObject): Option[Project] = {
+    for {
+      name     <- project.getAs[String]("name")
+      realName <- project.getAs[String]("realName")
+    } yield(Project(name, realName, project.getAs[String]("avatar")))
+  }
+
+  implicit object ProjectFormat extends Format[Project] {
+    def reads(json: JsValue): Project = Project(
+      (json \ "name").as[String],
+      (json \ "realName").as[String],
+      (json \ "avatar").as[Option[String]]
+    )
+
+    def writes(p: Project): JsValue = JsObject(Seq(
+      "name" -> JsString(p.name),
+      "realName" -> JsString(p.realName),
+      "avatar" -> p.avatar.map(JsString(_)).getOrElse(JsNull)
+    ))
+  }
+}

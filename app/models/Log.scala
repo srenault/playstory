@@ -1,57 +1,81 @@
 package models
 
-import play.api.libs.json._
-import play.api.libs.json.Json._
-
-import com.novus.salat._
-import com.novus.salat.global._
-import com.novus.salat.annotations._
-import com.novus.salat.dao._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
-
+import play.api.libs.json._
+import play.api.libs.json.Json._
 import db.MongoDB
 
-case class Log(@Key("_id") id: Option[ObjectId],
-               project: String,
-               logger: String,
-               className: String,
-               date: String,
-               file: String,
-               location: String,
-               line: String,
-               message: String,
-               method: String,
-               level: String,
-               thread: String)
+case class Log(
+  _id: ObjectId,
+  project: String,
+  logger: String,
+  className: String,
+  date: String,
+  file: String,
+  location: String,
+  line: String,
+  message: String,
+  method: String,
+  level: String,
+  thread: String
+) {
 
-object Log {
+  def asMongoDBObject: MongoDBObject = {
+    val log = MongoDBObject.newBuilder
+    log += "_id" -> _id
+    log += "project" -> project
+    log += "logger" -> logger
+    log += "className" -> className
+    log += "date" -> date
+    log += "file" -> file
+    log += "location" -> location
+    log += "line" -> line
+    log += "message" -> message
+    log += "method" -> method
+    log += "level" -> level
+    log += "thread" -> thread
+    log.result
+  }
+}
 
-  def create(log: Log): Option[Log] = {
-    LogDAO.insert(log).map { id =>
-      Log(Some(id),
-          log.project,
-          log.logger,
-          log.className,
-          log.date,
-          log.file,
-          log.location,
-          log.line,
-          log.message,
-          log.method,
-          log.level,
-          log.thread)
-    }.orElse(None)
+object Log extends MongoDB("logs") {
+
+  def all(max: Int = 50): List[Log] = {
+    find()(max).toList.map(fromMongoDBObject(_)).flatten
   }
 
-  def byProject(project: String): List[Log] = LogDAO.find(ref = MongoDBObject("project" -> project)).toList
+  def byProject(project: String, max: Int = 50): List[Log] = {
+    find("project" -> project)(max).map(fromMongoDBObject(_)).flatten
+  }
+
+  def create(log: Log) = save(log.asMongoDBObject)
 
   def fromJsObject(json: JsObject) = fromJson[Log](json)(LogFormat)
+
+  def fromMongoDBObject(log: MongoDBObject): Option[Log] = {
+    for {
+      _id        <- log.getAs[ObjectId]("_id")
+      project   <- log.getAs[String]("project")
+      logger    <- log.getAs[String]("logger")
+      className <- log.getAs[String]("className")
+      date      <- log.getAs[String]("date")
+      file      <- log.getAs[String]("file")
+      location  <- log.getAs[String]("location")
+      line      <- log.getAs[String]("line")
+      message   <- log.getAs[String]("message")
+      method    <- log.getAs[String]("method")
+      level     <- log.getAs[String]("level")
+      thread    <- log.getAs[String]("thread")
+    } yield {
+      Log(_id, project, logger, className, date, file, location, line, message, method, level, thread)
+    }
+  }
 
   import play.api.libs.json.Generic._
   implicit object LogFormat extends Format[Log] {
     def reads(json: JsValue): Log = Log(
-      (json \ "id").asOpt[String].map(new ObjectId(_)),
+      (json \ "_id").asOpt[String].map(new ObjectId(_)).getOrElse(new ObjectId),
       (json \ "project").as[String],
       (json \ "logger").as[String],
       (json \ "class").asOpt[String].getOrElse(""),
@@ -66,7 +90,7 @@ object Log {
     )
 
     def writes(l: Log): JsValue = JsObject(Seq(
-      "id" -> JsString(l.id.get.toString),
+      "_id" -> JsString(l._id.toString),
       "project" -> JsString(l.project),
       "logger" -> JsString(l.logger),
       "class" -> JsString(l.className),
@@ -81,5 +105,3 @@ object Log {
     ))
   }
 }
-
-object LogDAO extends SalatDAO[Log, ObjectId](collection = MongoConnection()("playstory")("logs"))

@@ -20,7 +20,7 @@ import akka.util.Timeout
 
 import com.mongodb.casbah.commons.MongoDBObject
 
-import models.{Log, LogDAO, User, Project}
+import models.{Log, User, Project}
 import actors.StoryActor
 import actors.StoryActor._
 
@@ -28,7 +28,13 @@ object Story extends Controller with Secured with Pulling {
 
   def home = Authenticated { implicit request =>
     Logger.info("[Story] Welcome : " + request.user)
-    Ok(views.html.home.home(Project.all))
+    val projects = Project.all()
+    val logsProjects = Log.all().map { log =>
+      projects.find(p => p.name == log.project).map { project =>
+        (log, project)
+      }
+    }.flatten.toMap
+    Ok(views.html.home.home(logsProjects))
   }
 
   def view(project: String) = Authenticated { implicit request =>

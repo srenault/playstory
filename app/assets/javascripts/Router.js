@@ -5,12 +5,13 @@
 window.PlayStory = window.PlayStory || {};
 window.PlayStory.Init = window.PlayStory.Init || {};
 window.PlayStory.Init.Home = window.PlayStory.Init.Home || {};
+window.PlayStory.Init.Home.Tabs = window.PlayStory.Init.Home.Tabs || {};
 window.PlayStory.Init.Home.Feeds = window.PlayStory.Init.Home.Feeds || {};
 
 (function(PlayStory) {
 
      PlayStory.Router = (function() {
-         console.log("[Home.HomeRouter] Init Home router");
+         console.log("[PlayStory.Router] Init play story router");
 
          var onRouteChange = function(next) { 
              window.addEventListener('hashchange', next);

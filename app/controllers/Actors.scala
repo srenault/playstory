@@ -3,7 +3,6 @@ package actors
 import play.api._
 import play.api.libs.iteratee._
 import play.api.libs.iteratee.Enumerator.Pushee
-
 import play.api.libs.concurrent._
 import play.api.Play.current
 import akka.actor._
@@ -12,11 +11,11 @@ import akka.actor.Actor._
 import models._
 
 class StoryActor extends Actor {
-  
+
   import StoryActor._
 
   private var projects: Map[String,Pushee[Log]] = Map.empty
-  
+
   def receive = {
     case Listen(project: String) => {
       lazy val channel: Enumerator[Log] = Enumerator.pushee(
@@ -31,27 +30,18 @@ class StoryActor extends Actor {
     }
 
     case Init(project, pushee) => {
-      //if(projects.exists { case (proj, _) => proj == project}) {
         Logger.info("[Actor] New project added")
         projects += (project -> pushee)
-    //} else {
-      //Logger.warn("[Actor] Project already added")
-      //}
     }
 
     case Stop(project: String) => {
       Logger.info("[Actor] Debugging session has been stopped ...")
       projects = projects.filter(p => p._1 != project)
     }
-    
+
     case NewLog(log: Log) => {
-        Project.createIfNot(Project(log.project))
-      Log.create(log).map { createdLog =>
-        projects.filter(p => p._1 == log.project).map(p => p._2.push(createdLog))
-      }.orElse {
-         Logger.warn("[Actor] Log not successfully persisted")
-         None
-      }
+      Project.createIfNot(Project(log.project, "Play Story"))
+      Log.create(log)
     }
   }
 }

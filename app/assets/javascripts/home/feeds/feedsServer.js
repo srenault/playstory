@@ -31,4 +31,4 @@
          };
      };
 
- })(window.PlayStory.Init.Home.Feeds || {});
+ })(window.PlayStory.Init.Home.Feeds);

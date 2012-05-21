@@ -1,11 +1,11 @@
 /**
- * feedsDOM.js
+ * feedsPresentDOM.js
  */
 
 (function(Feeds) {
      
-     Feeds.FeedsDOM = function() {
-         console.log("[Feeds.DOM] Init feeds DOM");
+     Feeds.FeedsPresentDOM = function() {
+         console.log("[Feeds.DOM] Init feeds present DOM");
 
          //Subscriptions
          var subscriptions = [];
@@ -16,20 +16,25 @@
 
          //DOM elements
          var elts = {
-             $feeds: $('.feeds ul')
+             $feeds: $('.feeds .present')
          };
 
          //Actions
          this.createFeed = Action(function(feed, next) {
              console.log(feed);
-             elts.$feeds.prepend(_.template($("#feed_tmpl").html()));
+             elts.$feeds.find('ul').prepend(_.template($("#feed_tmpl").html()));
              next(feed);
          });
 
-         this.viewFeed = Action(function(evt, next) {
-             console.log('viewing feed #1');
+         this.viewFeeds = Action(function(evt, next) {
+             elts.$feeds.show();
+             next(evt);
+         });
+
+         this.hideFeeds = Action(function(evt, next) {
+             elts.$feeds.hide();
              next(evt);
          });
      };
 
- })(window.PlayStory.Init.Home.Feeds || {});
+ })(window.PlayStory.Init.Home.Feeds);

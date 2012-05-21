@@ -9,7 +9,7 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.libs.openid.OpenID
 import play.api.Play.current
-import models.User
+import models.{ User, UserDAO}
 
 trait GoogleOpenID {
   self: Controller =>
@@ -90,7 +90,7 @@ object Google extends Controller with Secured {
     (for {
       at <- accessToken
     } yield {
-      User.byEmail(request.user.email).map { user =>
+      UserDAO.byEmail(request.user.email).map { user =>
         // user.contacts(at, 100).fold(
         //   error => {
         //     Logger.warn("Failed getting contacts: error from google")
