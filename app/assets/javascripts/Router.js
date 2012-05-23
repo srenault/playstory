@@ -2,11 +2,19 @@
  * Router.js
  */
 
-window.PlayStory = window.PlayStory || {};
-window.PlayStory.Init = window.PlayStory.Init || {};
-window.PlayStory.Init.Home = window.PlayStory.Init.Home || {};
-window.PlayStory.Init.Home.Tabs = window.PlayStory.Init.Home.Tabs || {};
-window.PlayStory.Init.Home.Feeds = window.PlayStory.Init.Home.Feeds || {};
+window.PlayStory = {
+    Init: {
+        Home: {
+            Tabs: {},
+            Feeds : {
+                FeedsPast: {},
+                FeedsPresent: {}
+            }
+        },
+        Models: {
+        }
+    }
+};
 
 (function(PlayStory) {
 

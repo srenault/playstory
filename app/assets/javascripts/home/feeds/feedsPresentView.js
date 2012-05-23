@@ -2,7 +2,7 @@
  * feedsPresentView.js
  */
 
-(function(Feeds, Router) {
+(function(Feeds, Router, Models) {
 
     Feeds.FeedsPresentView = function(Tabs) {
         console.log("[FeedsPresent.View] Init feeds present view");
@@ -11,7 +11,7 @@
         //Init
         this.dom = new Feeds.FeedsPresentDOM(),
         this.server = new Feeds.FeedsServer();
-        this.model = new Feeds.FeedsModel();
+        this.model = new Models.FeedsModel();
 
         //Routes
         Router.put('present', this.dom.viewFeeds);
@@ -26,10 +26,13 @@
        .await(this.dom.hideFeeds)
        .subscribe();
 
-        When(this.server.onReceiveFeed) //How to pass some parameters like project name ?
+        When(this.server.onReceiveFeed)
        .map(this.model.asFeed)
-       .await(this.dom.createFeed)
+       .map(this.model.fifo)
+       .await(this.dom.fifo)
        .subscribe();
     };
 
-})(window.PlayStory.Init.Home.Feeds, window.PlayStory.Router);
+})(window.PlayStory.Init.Home.Feeds,
+   window.PlayStory.Router,
+   window.PlayStory.Init.Models);

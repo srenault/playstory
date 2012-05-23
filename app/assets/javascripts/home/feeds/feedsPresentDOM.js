@@ -22,11 +22,15 @@
          var template = _.template($("#feed_tmpl").html());
 
          //Actions
-         this.createFeed = Action(function(feed, next) {
+         this.fifo = Action(function(fifo, next) {
              elts.$feeds.find('ul').prepend(template({
-                 feed: feed
+                 feed: fifo.newFeed
              }));
-             next(feed);
+
+             if(fifo.isFull) {
+                 elts.$feeds.find('ul li:last').remove();
+             }
+             next(fifo);
          });
 
          this.viewFeeds = Action(function(evt, next) {

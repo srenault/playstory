@@ -3,7 +3,7 @@
  */
 
 (function(Feeds) {
-     
+
      Feeds.FeedsPastDOM = function() {
          console.log("[FeedsPast.DOM] Init feeds past DOM");
 

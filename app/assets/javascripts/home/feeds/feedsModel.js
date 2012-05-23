@@ -2,11 +2,26 @@
  * feedsModel.js
  */
 
-(function(Feeds) {
+(function(Models) {
 
-    Feeds.FeedsModel = function() {
+    Models.FeedsModel = function() {
         var self = this;
-        this.collection = [];
+        var collection = [];
+
+        this.fifo = function(feed) {
+            var isFull = false;
+            collection.unshift(feed);
+
+            if(collection.length > 10) {
+                isFull = true;
+                collection.pop();
+            }
+
+            return {
+                newFeed: feed,
+                isFull: isFull
+            };
+        };
 
         this.asFeed = function(data) {
             var feed = {
@@ -17,15 +32,14 @@
                 level: data.log.method,
                 message: data.log.message
             };
-            self.collection.push(feed);
             return feed;
         };
 
         this.findOne = function(id) {
-            var foundFeed = this.collection.filter(function(feed) {
+            var foundFeed = collection.filter(function(feed) {
                 return feed.id === id;
             });
             return (foundFeed.length == 1) ? foundFeed[0] : null;
         };
     };
-})(window.PlayStory.Init.Home.Feeds);
+})(window.PlayStory.Init.Models);

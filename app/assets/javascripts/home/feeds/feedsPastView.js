@@ -2,7 +2,7 @@
  * feedsPastView.js
  */
 
-(function(Feeds, Router, Tabs) {
+(function(Feeds, Router, Models) {
 
     Feeds.FeedsPastView = function(Tabs) {
         console.log("[FeedsPast.View] Init feeds past view");
@@ -10,8 +10,7 @@
 
         //Init
         this.dom = new Feeds.FeedsPastDOM(),
-        this.server = new Feeds.FeedsServer();
-        this.model = new Feeds.FeedsModel();
+        this.model = new Models.FeedsModel();
 
         //Routes
         Router.put('past', this.dom.viewFeeds);
@@ -27,4 +26,6 @@
        .subscribe();
     };
 
-})(window.PlayStory.Init.Home.Feeds, window.PlayStory.Router);
+})(window.PlayStory.Init.Home.Feeds,
+   window.PlayStory.Router,
+   window.PlayStory.Init.Models);
