@@ -75,18 +75,33 @@
         }
     }
 
-    .more-feeds {
-        margin-top: 15px;
-        background: white;
-        color: @blackPlay;
-        text-align: center;
-        padding: 7px;
-        border-top: solid 1px @greyLightPlay;
-        border-bottom: solid 1px @greyLightPlay;
-    }
-
     .feeds {
         width: 700px;
+
+        .top-feeds {
+            margin-top: 15px;
+            background: white;
+            color: @blackPlay;
+            text-align: center;
+            padding: 7px;
+            border-top: solid 1px @greyLightPlay;
+            border-bottom: solid 1px @greyLightPlay;
+        }
+
+
+        &.past {
+            .more-feeds {
+                .top-feeds
+            }
+        }
+
+        &.present {
+            display: none;
+
+            .waiting-feeds {
+                .top-feeds
+            }
+        }
 
         .feed {
             margin-top: 15px;

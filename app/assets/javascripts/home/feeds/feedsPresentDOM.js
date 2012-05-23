@@ -5,7 +5,7 @@
 (function(Feeds) {
      
      Feeds.FeedsPresentDOM = function() {
-         console.log("[Feeds.DOM] Init feeds present DOM");
+         console.log("[FeedsPresent.DOM] Init feeds present DOM");
 
          //Subscriptions
          var subscriptions = [];
@@ -16,7 +16,7 @@
 
          //DOM elements
          var elts = {
-             $feeds: $('.feeds .present')
+             $feeds: $('.feeds.present')
          };
 
          //Actions

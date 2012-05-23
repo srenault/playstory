@@ -7,7 +7,7 @@ import play.api.data.Forms._
 import validation.Constraints._
 import play.api.libs.openid.OpenID
 
-import models.{User, UserDAO}
+import models.User
 
 object Application extends Controller with GoogleOpenID {
 
@@ -41,7 +41,7 @@ object Application extends Controller with GoogleOpenID {
           email     <- userInfo.attributes.get("email")
           language  <- userInfo.attributes.get("language")
         } yield {
-          UserDAO.create(User(lastname, firstname, email, language))
+          User.create(User(lastname, firstname, email, language))
           Logger.info("[OpenID] Authentication successful")
           Redirect(routes.Story.home).withSession("user" -> email)
         }) getOrElse {

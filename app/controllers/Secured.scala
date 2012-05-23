@@ -3,14 +3,14 @@ package controllers
 import play.api.mvc.Results._
 import play.api.mvc._
 
-import models.{User, UserDAO}
+import models.User
 
 trait Secured {
 
   def Authenticated(securedAction: AuthenticatedRequest => Result) = Security.Authenticated(
     requestHeader => requestHeader.session.get("user"),
     requestHeader => askSignIn)(email => Action { request =>
-      UserDAO.byEmail(email).map { u =>
+      User.byEmail(email).map { u =>
         securedAction(AuthenticatedRequest(u, request))
       }.getOrElse(askSignIn)
     })

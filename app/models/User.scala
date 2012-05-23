@@ -23,7 +23,7 @@ case class User(
   }
 }
 
-object User {
+object User extends MongoDB("users") {
 
   def fromMongoDBObject(user: MongoDBObject): Option[User] = {
     for {
@@ -33,9 +33,6 @@ object User {
       language  <- user.getAs[String]("language")
     } yield(User(lastname, firstname, email, language))
   }
-}
-
-object UserDAO extends MongoDB("users") {
 
   def byEmail(email: String): Option[User] = {
     findOne("email" -> email).flatMap { u =>

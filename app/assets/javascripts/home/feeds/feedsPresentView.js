@@ -5,7 +5,7 @@
 (function(Feeds, Router) {
 
     Feeds.FeedsPresentView = function(Tabs) {
-        console.log("[Feeds.View] Init feeds present view");
+        console.log("[FeedsPresent.View] Init feeds present view");
         var self = this;
 
         //Init
@@ -15,8 +15,8 @@
 
         //Routes
         Router.put('present', this.dom.viewFeeds);
+        Router.put('past', this.dom.hideFeeds);
 
-        console.log("sdfsdf");
         //Interactions
         When(Tabs.dom.onPresentTabClick)
        .await(this.dom.viewFeeds)

@@ -5,11 +5,11 @@
 (function(Feeds) {
      
      Feeds.FeedsPastDOM = function() {
-         console.log("[Feeds.DOM] Init feeds past DOM");
+         console.log("[FeedsPast.DOM] Init feeds past DOM");
 
          //DOM elements
          var elts = {
-             $feeds: $('.feeds .past ul')
+             $feeds: $('.feeds.past')
          };
 
          //Actions

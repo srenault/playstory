@@ -14,11 +14,11 @@
          };
 
          this.onPastTabClick = function(next) {
-             elts.$pastTab.click(next);
+             elts.$pastTab.find('a').click(next);
          };
 
          this.onPresentTabClick = function(next) {
-             elts.$presentTab.click(next);
+             elts.$presentTab.find('a').click(next);
          };
 
          this.turnOnPastTab = Action(function(evt, next) {

@@ -20,10 +20,15 @@
     <li class="past on"><a href="#past">PAST</a></li>
     <li class="present"><a href="#present">PRESENT</a></li>
   </ul>
-  <div class="more-feeds">
-    <a href="#">3 more logs...</a>
+  <div class="feeds present">
+    <div class="waiting-feeds">Waiting feeds ...</div>
+    <ul>
+    </ul>
   </div>
   <div class="feeds past">
+    <div class="more-feeds">
+      <a href="#">3 more logs...</a>
+    </div>
     <ul>
       @logsProjects.map { case (log, project) =>
       <li class="feed">
@@ -56,10 +61,6 @@
       </li>
       }
     </ul>
-    <div class="feeds present">
-      <ul>
-      </ul>
-    </div>
 </section>
 
 <section class="column-right">

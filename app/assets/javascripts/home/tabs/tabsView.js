@@ -2,7 +2,7 @@
  * tabsView.js
  */
 
-(function(Tabs) {
+(function(Tabs, Router) {
 
     Tabs.TabsView = function() {
         console.log("[Tabs.View] Init tabs view");
@@ -11,14 +11,9 @@
         //Init
         this.dom = new Tabs.TabsDOM();
 
-        //Interactions
-        When(this.dom.onPastTabClick)
-       .await(this.dom.turnOnPastTab)
-       .subscribe();
-
-        When(this.dom.onPresentTabClick)
-       .await(this.dom.turnOnPresentTab)
-       .subscribe();
+        //Routes
+        Router.put('past', this.dom.turnOnPastTab);
+        Router.put('present', this.dom.turnOnPresentTab);
     };
 
-})(window.PlayStory.Init.Home.Tabs);
+})(window.PlayStory.Init.Home.Tabs, window.PlayStory.Router);
