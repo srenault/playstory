@@ -47,6 +47,12 @@ object Story extends Controller with Secured with Pulling {
     AsyncResult {
       implicit val timeout = Timeout(5 second)
       (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
+        implicit val LogComet = Comet.CometMessage[Log] { log =>
+          JsObject(Seq(
+            "log" -> toJson(log),
+            "project" -> toJson(Project.byName(log.project))
+          )).toString
+        }
         playPulling(chunks).getOrElse(BadRequest)
       }
     }

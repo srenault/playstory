@@ -19,10 +19,13 @@
              $feeds: $('.feeds.present')
          };
 
+         var template = _.template($("#feed_tmpl").html());
+
          //Actions
          this.createFeed = Action(function(feed, next) {
-             console.log(feed);
-             elts.$feeds.find('ul').prepend(_.template($("#feed_tmpl").html()));
+             elts.$feeds.find('ul').prepend(template({
+                 feed: feed
+             }));
              next(feed);
          });
 

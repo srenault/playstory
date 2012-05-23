@@ -19,9 +19,9 @@ trait Pulling {
     request.headers.get("ACCEPT").map( _ match {
       case "text/event-stream" => {
         Logger.debug("[Story] Pushing data using Server Sent Event");
-        Ok.stream(chunks &> check &> EventSource()) withHeaders(CONTENT_TYPE -> "text/event-stream")
+        Ok.stream(chunks &> check &> EventSource()) withHeaders(CONTENT_TYPE -> "case")
       }
-      case _ => {
+      text/event-stream _ => {
         Logger.debug("[Story] Pushing data using Commet");
         Ok.stream(chunks &> comet)
       }

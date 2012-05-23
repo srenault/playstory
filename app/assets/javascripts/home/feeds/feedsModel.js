@@ -10,12 +10,12 @@
 
         this.asFeed = function(data) {
             var feed = {
-                id: null,
-                project: null,
-                avatar: null,
-                time: null,
-                level: null,
-                message: null
+                id: data.log._id,
+                project: data.project.realName,
+                avatar: data.project.avatar,
+                time: new Date(data.log.date),
+                level: data.log.method,
+                message: data.log.message
             };
             self.collection.push(feed);
             return feed;

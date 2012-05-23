@@ -94,7 +94,7 @@ object Log extends MongoDB("logs") {
       "project" -> JsString(l.project),
       "logger" -> JsString(l.logger),
       "class" -> JsString(l.className),
-      "date" -> JsString(l.date),
+      "date" -> JsNumber(l.date.toLong), //FIXME
       "file" -> JsString(l.file),
       "location" -> JsString(l.location),
       "line" -> JsString(l.line),

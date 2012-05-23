@@ -17,7 +17,7 @@
              if(EventSource) feed = JSON.parse(feed.data);
              var subscribers = subscriptions['onReceiveFeed'] || [];
              subscribers.forEach(function(s) {
-                 s.apply(null, feed);
+                 s(feed);
              });
          };
 
