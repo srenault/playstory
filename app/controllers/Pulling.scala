@@ -14,7 +14,7 @@ trait Pulling {
   self: Controller =>
 
   protected def playPulling(chunks: Enumerator[Log])(implicit request: Request[AnyContent], cometMessage: Comet.CometMessage[Log]) = {
-    val comet = Comet(callback = "window.parent.PlayStory.Home.Feeds.server.streamFeeds")
+    val comet = Comet(callback = "window.parent.PlayStory.Home.FeedsPresent.server.fromPulling")
     val check = Enumeratee.filter[Log](l => Project.byName(l.project).isDefined)
     request.headers.get("ACCEPT").map( _ match {
       case "text/event-stream" => {

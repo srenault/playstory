@@ -5,8 +5,31 @@
 (function(Models) {
 
     Models.FeedsModel = function() {
-        var self = this;
-        var collection = [];
+        var self = this,
+            collection = [];
+
+        this.collection = function() {
+            return collection;
+        };
+
+        this.asFeeds = function(data) {
+            console.log(data);
+            return data.map(function(feed) {
+                return self.asFeed(feed);
+            });
+        },
+
+        this.asFeed = function(data) {
+            var feed = {
+                id: data.log._id,
+                project: data.project.realName,
+                avatar: data.project.avatar,
+                time: new Date(data.log.date),
+                level: data.log.method,
+                message: data.log.message
+            };
+            return feed;
+        };
 
         this.fifo = function(feed) {
             var isFull = false;
@@ -21,18 +44,6 @@
                 newFeed: feed,
                 isFull: isFull
             };
-        };
-
-        this.asFeed = function(data) {
-            var feed = {
-                id: data.log._id,
-                project: data.project.realName,
-                avatar: data.project.avatar,
-                time: new Date(data.log.date),
-                level: data.log.method,
-                message: data.log.message
-            };
-            return feed;
         };
 
         this.findOne = function(id) {

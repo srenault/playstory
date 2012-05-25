@@ -10,7 +10,7 @@
 
         //Init
         this.dom = new Feeds.FeedsPresentDOM(),
-        this.server = new Feeds.FeedsServer();
+        this.server = new Feeds.FeedsPresentServer();
         this.model = new Models.FeedsModel();
 
         //Routes

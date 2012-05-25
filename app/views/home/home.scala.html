@@ -1,4 +1,4 @@
-@(logsProjects: Map[Log, Project])
+@(lastFeeds: play.api.libs.json.JsValue)
 
 @main("Play Story > Home") {
 
@@ -30,36 +30,6 @@
       <a href="#">3 more logs...</a>
     </div>
     <ul>
-      @logsProjects.map { case (log, project) =>
-      <li class="feed">
-        <div class="avatar">
-          <img src="@project.avatar.getOrElse("/assets/images/commons/avatar.png")" width="50px" height="50px" alt="@project.realName"/>
-        </div>
-        <div class="log">
-          <div class="header">
-            <a class="project" href="#">@project.realName</a>
-            <span class="time">Today, 16h01</span>
-          </div>
-          <div class="content">
-            <span class="level">[@log.level]</span>
-            <span class="message">@log.message</span>
-          </div>
-          <div class="comments">
-            <div class="comment">
-              <div class="avatar">
-                <img src="/assets/images/commons/avatar.png" width="30px" height="30px" alt="play story"/>
-              </div>
-              <textarea placeholder="Write a comment..."></textarea>
-            </div>
-          </div>
-          <div class="footer">
-            <a class="comment" href="#">Comment</a> |
-            <a class="share" href="#">Share</a> |
-            <a class="bookmark" href="#">Bookmark</a> |
-            <a class="bookmark" href="#">Related</a>
-          </div>
-      </li>
-      }
     </ul>
 </section>
 
@@ -91,11 +61,22 @@
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsView.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsDOM.js")"></script>
 <!-- Feeds -->
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsServer.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPresentServer.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPastServer.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPresentDOM.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPastDOM.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsModel.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPastView.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPresentView.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/home.js")"></script>
+
+<!-- Init Home page -->
+<script type="text/javascript">
+$(document).ready(function() {
+    var lastFeeds = @Html(lastFeeds.toString);
+    lastFeeds.forEach(function(feed) {
+        PlayStory.Home.FeedsPast.server.fromTemplate(feed);
+    });
+});
+</script>
 }
