@@ -27,7 +27,7 @@
   </div>
   <div class="feeds past">
     <div class="more-feeds">
-      <a href="#">3 more logs...</a>
+      <a href="#"><span class="counter"></span> more logs...</a>
     </div>
     <ul>
     </ul>
@@ -75,7 +75,7 @@
 $(document).ready(function() {
     var lastFeeds = @Html(lastFeeds.toString);
     lastFeeds.forEach(function(feed) {
-        PlayStory.Home.FeedsPast.server.fromTemplate(feed);
+        PlayStory.Home.FeedsPast.pastServer.fromTemplate(feed);
     });
 });
 </script>

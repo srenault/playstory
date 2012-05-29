@@ -1,5 +1,6 @@
 package models
 
+import java.util.Date
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
 import play.api.libs.json._
@@ -49,13 +50,20 @@ object Log extends MongoDB("logs") {
     find("project" -> project)(max).map(fromMongoDBObject(_)).flatten
   }
 
+  def byProjectFrom(project: String, from: Long, max: Int = 50): List[Log] = {
+    collection.find(
+      MongoDBObject("project" -> project),
+      "time" $gt from
+    ).limit(max).map(fromMongoDBObject(_)).toList.flatten
+  }
+
   def create(log: Log) = save(log.asMongoDBObject)
 
   def fromJsObject(json: JsObject) = fromJson[Log](json)(LogFormat)
 
   def fromMongoDBObject(log: MongoDBObject): Option[Log] = {
     for {
-      _id        <- log.getAs[ObjectId]("_id")
+      _id       <- log.getAs[ObjectId]("_id")
       project   <- log.getAs[String]("project")
       logger    <- log.getAs[String]("logger")
       className <- log.getAs[String]("className")

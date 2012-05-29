@@ -22,9 +22,6 @@
             padding-bottom: 5px;
             a {
                 color: @blueEmacs;
-                &:hover {
-                    text-decoration: underline;
-                }
             }
         }
     }
@@ -91,7 +88,10 @@
 
         &.past {
             .more-feeds {
-                .top-feeds
+                display: none;
+                .top-feeds;
+                .counter {
+                }
             }
         }
 

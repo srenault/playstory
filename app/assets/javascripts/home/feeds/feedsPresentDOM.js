@@ -15,14 +15,16 @@
          };
 
          //DOM elements
-         var elts = {
-             $feeds: $('.feeds.present')
-         };
+         var elts = new (function() {
+             this.$feeds = $('.feeds.present');
+             this.$waitingFeeds = this.$feeds.find('.waiting-feeds');
+         })();
 
          var template = _.template($("#feed_tmpl").html());
 
          //Actions
          this.fifo = Action(function(fifo, next) {
+             elts.$waitingFeeds.hide();
              elts.$feeds.find('ul').prepend(template({
                  feed: fifo.newFeed
              }));

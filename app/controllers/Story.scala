@@ -29,7 +29,7 @@ object Story extends Controller with Secured with Pulling {
   def home = Authenticated { implicit request =>
     Logger.info("[Story] Welcome : " + request.user)
 
-    val lastLogs = JsArray(
+    val last = JsArray(
       Log.all(10).map { log =>
         JsObject(Seq(
           "log" -> toJson(log),
@@ -38,7 +38,7 @@ object Story extends Controller with Secured with Pulling {
       }
     )
 
-    Ok(views.html.home.home(lastLogs))
+    Ok(views.html.home.home(last))
   }
 
   def view(project: String) = Authenticated { implicit request =>
@@ -54,7 +54,8 @@ object Story extends Controller with Secured with Pulling {
         implicit val LogComet = Comet.CometMessage[Log] { log =>
           JsObject(Seq(
             "log" -> toJson(log),
-            "project" -> toJson(Project.byName(log.project))
+            "project" -> toJson(Project.byName(log.project)),
+            "src" -> JsString(request.uri)
           )).toString
         }
         playPulling(chunks).getOrElse(BadRequest)
@@ -62,9 +63,9 @@ object Story extends Controller with Secured with Pulling {
     }
   }
 
-  def last(project: String) = Action { implicit request =>
+  def last(project: String, from: Long) = Action { implicit request =>
     Logger.info("[Story] Getting history of : " + project)
-    val logs = Log.byProject(project)
+    val logs = Log.byProjectFrom(project, from)
     Ok(toJson(logs))
   }
 

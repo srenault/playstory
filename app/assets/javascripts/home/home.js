@@ -8,8 +8,11 @@ $(document).ready(function() {
 
         PlayStory.Home = new (function(lastFeeds) {
             this.Tabs = new PlayStory.Init.Home.Tabs.TabsView();
-            this.FeedsPast = new PlayStory.Init.Home.Feeds.FeedsPastView(this.Tabs);
             this.FeedsPresent = new PlayStory.Init.Home.Feeds.FeedsPresentView(this.Tabs);
+            this.FeedsPast = new PlayStory.Init.Home.Feeds.FeedsPastView(
+                this.FeedsPresent.server,
+                this.Tabs
+            );
         })();
 
     })(window.PlayStory);

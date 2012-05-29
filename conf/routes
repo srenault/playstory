@@ -10,9 +10,9 @@ GET     /signin/callback                 controllers.Application.signinCallback(
 GET     /signout                         controllers.Application.signout()
 
 GET     /story/home                      controllers.Story.home()
-GET     /story/:project                  controllers.Story.view(project)
-GET     /story/:project/listen           controllers.Story.listen(project)
-GET     /story/:project/last             controllers.Story.last(project)
+GET     /story/:project                  controllers.Story.view(project: String)
+GET     /story/:project/listen           controllers.Story.listen(project: String)
+GET     /story/:project/last/:from       controllers.Story.last(project: String, from: Long)
 POST    /story/eval                      controllers.Story.eval()
 
 GET     /story/share/google/signin      controllers.Google.signIn()

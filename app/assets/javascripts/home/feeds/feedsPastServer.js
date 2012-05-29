@@ -4,8 +4,10 @@
 
 (function(Feeds) {
 
-    Feeds.FeedsPastServer = function() {
+    Feeds.FeedsPastServer = function(model) {
         console.log("[FeedsPast.Server] Init feeds server");
+        var that = this;
+        this.model = model;
 
         var subscriptions = [],
             sources = [];
@@ -58,11 +60,11 @@
         };
 
         //Actions
-        this.fetchNewFeeds = Http.GET('/story/onconnect/news');
-
-        this.closeNewFeedsStream = Action(function(evt, next) {
-            next(_closeStream('onReceiveNewFeed'));
-        });
+        this.fetchNewFeeds = new (function() {
+            var lastFeed = _.head(that.model.collection());
+            var lastUpdate = lastFeed ? lastFeed.time.getTime() : new Date().getTime();
+            return Http.GET('/story/onconnect/last/' + lastUpdate);
+        })();
     };
 
 })(window.PlayStory.Init.Home.Feeds);

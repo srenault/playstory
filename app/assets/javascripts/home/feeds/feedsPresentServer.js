@@ -10,13 +10,13 @@
         var subscriptions = [],
             sources = [];
 
-        var _subscribe = function(eventName, callback) {
-            subscriptions[eventName] = subscriptions[eventName] || [];
-            subscriptions[eventName].push(callback);
+        var _subscribe = function(uri, callback) {
+            subscriptions[uri] = subscriptions[uri] || [];
+            subscriptions[uri].push(callback);
         };
 
         var _streamFeeds = function(feed) {
-            var subscribers = subscriptions['onReceiveFeed'] || [];
+            var subscribers = subscriptions[feed.src] || [];
             subscribers.forEach(function(s) {
                 s(feed);
             });
@@ -33,10 +33,12 @@
             return false;
         };
 
-        //Event Source or Comet
+        //Pulling with Event Source or Comet
         this.fromPulling = function(feed) {
-            if(EventSource) feed = feed.data;
-            _streamFeeds(JSON.parse(feed));
+            if(EventSource) {
+                feed = JSON.parse(feed.data);
+            }
+            _streamFeeds(feed);
         };
 
         //Events
@@ -44,15 +46,12 @@
 
         this.onReceiveFeed = function(next) {
             console.log("[FeedsPresent.Server] Subscribe to feeds");
-            var source = new EventSource('/story/onconnect/listen');
+            var uri = '/story/onconnect/listen';
+            var source = new EventSource(uri);
             source.onmessage = refFromPulling;
-            sources['onReceiveFeed'] = source;
-            _subscribe('onReceiveFeed', next);
+            sources[uri] = source;
+            _subscribe(uri, next);
         };
-
-        this.closeFeedsStream = Action(function(evt, next) {
-            next(_closeStream('onReceiveFeed'));
-        });
     };
 
 })(window.PlayStory.Init.Home.Feeds);
