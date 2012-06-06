@@ -34,17 +34,11 @@ object User extends MongoDB("users") {
     } yield(User(lastname, firstname, email, language))
   }
 
-  def byEmail(email: String): Option[User] = {
-    findOne("email" -> email).flatMap { u =>
-      User.fromMongoDBObject(u)
-    }
-  }
+  def byEmail(email: String): Option[User] =
+    findOne("email" -> email).flatMap(User.fromMongoDBObject(_))
 
-  def authenticate(pseudo: String, password: String): Option[User] = {
-    findOne("pseudo" -> pseudo, "password" -> password).flatMap { u =>
-      User.fromMongoDBObject(u)
-    }
-  }
+  def authenticate(pseudo: String, password: String): Option[User] =
+    findOne("pseudo" -> pseudo, "password" -> password).flatMap(User.fromMongoDBObject(_))
 
   def create(user: User) = save(user.asMongoDBObject)
 }

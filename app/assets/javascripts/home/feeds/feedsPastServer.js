@@ -34,7 +34,7 @@
         var _closeStream = function(wishedSource) {
             for(sourceName in sources) {
                 if(sourceName == wishedSource) {
-                    var source = sources[sourceName];
+                    var source = sources[wishedSource];
                     source.close();
                     return true;
                 }
@@ -60,11 +60,22 @@
         };
 
         //Actions
-        this.fetchNewFeeds = new (function() {
-            var lastFeed = _.head(that.model.collection());
-            var lastUpdate = lastFeed ? lastFeed.time.getTime() : new Date().getTime();
-            return Http.GET('/story/onconnect/last/' + lastUpdate);
-        })();
+        this.saveNewComment = Action(function(evt, next) {
+            console.log("[FeedsPast.Server] Saving a new comment");
+            next(evt);
+        });
+
+        this.saveNewComment = Action(function(evt, next) {
+           //Http.POST('/story/onconnect/4fc5ba8c1a880b75286e6e93', { message: "Hy dude"});
+           $.ajax({
+               url: '/story/onconnect/4fc5ba8c1a880b75286e6e93',
+               type: 'POST',
+               data: JSON.stringify({ message: "hey dude!"}),
+               dataType: 'json',
+               contentType: 'application/json',
+               success: next
+           });
+        });
     };
 
 })(window.PlayStory.Init.Home.Feeds);

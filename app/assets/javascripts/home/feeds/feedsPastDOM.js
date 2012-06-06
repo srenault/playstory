@@ -14,21 +14,38 @@
              this.$counter = this.$moreFeeds.find('.counter');
          })();
 
-         var template = _.template($("#feed_tmpl").html());
+         var feedTmpl = _.template($("#feed_tmpl").html());
+         var commentTmpl = _.template($("#comment_tmpl").html());
 
          //Events
          this.onMoreFeedsClick = function(next) {
              elts.$moreFeeds.click(next);
          };
 
+         this.onNewCommentClick = function(next) {
+             elts.$feeds.on('click', 'a.comment', next);
+         };
+
+         this.onSubmitCommentClick = function(next) {
+             elts.$feeds.on('click', '.comments button.save', next);
+         };
+
          //Actions
-         this.showError = Action(function(evt, next) {
+         this.popupError = Action(function(evt, next) {
              alert('Error');
              next(evt);
          });
 
+         this.displayNewComment = Action(function(evt, next) {
+             var $feed = $(evt.currentTarget).closest('.log')
+                                             .find('.comments');
+             $feed.append(commentTmpl({}));
+             $feed.show();
+             next(evt);
+         });
+
          this.fifo = Action(function(fifo, next) {
-             elts.$feeds.find('ul').prepend(template({
+             elts.$feeds.find('ul').prepend(feedTmpl({
                  feed: fifo.newFeed
              }));
 

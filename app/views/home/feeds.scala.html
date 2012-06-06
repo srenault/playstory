@@ -1,7 +1,7 @@
 @()
 
 <script id="feed_tmpl" type="text/html">
-  <li class="feed">
+  <li id="<%= feed.id %>" class="feed">
     <div class="avatar">
       <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="play story"/>
     </div>
@@ -15,12 +15,6 @@
         <span class="message"><%= feed.message %></span>
       </div>
       <div class="comments">
-        <div class="comment">
-          <div class="avatar">
-            <img src="/assets/images/commons/avatar.png" width="30px" height="30px" alt="play story"/>
-          </div>
-          <textarea placeholder="Write a comment..."></textarea>
-        </div>
       </div>
       <div class="footer">
         <a class="comment" href="#">Comment</a> |

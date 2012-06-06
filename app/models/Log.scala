@@ -12,15 +12,19 @@ case class Log(
   project: String,
   logger: String,
   className: String,
-  date: String,
+  date: Long,
   file: String,
   location: String,
-  line: String,
+  line: Long,
   message: String,
   method: String,
   level: String,
   thread: String
 ) {
+
+  def comments: List[Comment] = Log.comments(_id)
+
+  def addComment(comment: Comment) = Log.addComment(_id, comment)
 
   def asMongoDBObject: MongoDBObject = {
     val log = MongoDBObject.newBuilder
@@ -43,21 +47,34 @@ case class Log(
 object Log extends MongoDB("logs") {
 
   def all(max: Int = 50): List[Log] = {
-    find()(max).toList.map(fromMongoDBObject(_)).flatten
+    val byLast = MongoDBObject("date" -> -1)
+    collection.find().sort(byLast).limit(max).toList.map(fromMongoDBObject(_)).flatten
   }
 
-  def byProject(project: String, max: Int = 50): List[Log] = {
+  def byId(id: ObjectId): Option[Log] =
+    findOne("_id" -> id).flatMap(Log.fromMongoDBObject(_))
+
+  def byProject(project: String, max: Int = 50): List[Log] =
     find("project" -> project)(max).map(fromMongoDBObject(_)).flatten
-  }
 
   def byProjectFrom(project: String, from: Long, max: Int = 50): List[Log] = {
     collection.find(
-      MongoDBObject("project" -> project),
-      "time" $gt from
+      "date" $gt from, MongoDBObject("project" -> project)
     ).limit(max).map(fromMongoDBObject(_)).toList.flatten
   }
 
   def create(log: Log) = save(log.asMongoDBObject)
+
+  def comments(id: ObjectId): List[Comment] = {
+    collection.findOne(MongoDBObject("_id" -> id), "comments" $slice 1)
+              .flatMap { l =>
+                fromMongoDBObject(l).map(_.comments)
+              }.getOrElse(Nil)
+  }
+
+  def addComment(id: ObjectId, comment: Comment) = {
+    collection.update(MongoDBObject("_id" -> id), $push("comments" -> comment.asMongoDBObject))
+  }
 
   def fromJsObject(json: JsObject) = fromJson[Log](json)(LogFormat)
 
@@ -67,10 +84,10 @@ object Log extends MongoDB("logs") {
       project   <- log.getAs[String]("project")
       logger    <- log.getAs[String]("logger")
       className <- log.getAs[String]("className")
-      date      <- log.getAs[String]("date")
+      date      <- log.getAs[Long]("date")
       file      <- log.getAs[String]("file")
       location  <- log.getAs[String]("location")
-      line      <- log.getAs[String]("line")
+      line      <- log.getAs[Long]("line")
       message   <- log.getAs[String]("message")
       method    <- log.getAs[String]("method")
       level     <- log.getAs[String]("level")
@@ -86,11 +103,11 @@ object Log extends MongoDB("logs") {
       (json \ "_id").asOpt[String].map(new ObjectId(_)).getOrElse(new ObjectId),
       (json \ "project").as[String],
       (json \ "logger").as[String],
-      (json \ "class").asOpt[String].getOrElse(""),
-      (json \ "date").asOpt[String].getOrElse(""),
-      (json \ "file").asOpt[String].getOrElse(""),
-      (json \ "location").asOpt[String].getOrElse(""),
-      (json \ "line").asOpt[String].getOrElse(""),
+      (json \ "class").as[String],
+      (json \ "date").as[String].toLong,
+      (json \ "file").as[String],
+      (json \ "location").as[String],
+      (json \ "line").as[String].toLong,
       (json \ "message").as[String],
       (json \ "method").as[String],
       (json \ "level").as[String],
@@ -102,10 +119,10 @@ object Log extends MongoDB("logs") {
       "project" -> JsString(l.project),
       "logger" -> JsString(l.logger),
       "class" -> JsString(l.className),
-      "date" -> JsNumber(l.date.toLong), //FIXME
+      "date" -> JsNumber(l.date),
       "file" -> JsString(l.file),
       "location" -> JsString(l.location),
-      "line" -> JsString(l.line),
+      "line" -> JsNumber(l.line),
       "message" -> JsString(l.message),
       "method" -> JsString(l.method),
       "level" -> JsString(l.level),

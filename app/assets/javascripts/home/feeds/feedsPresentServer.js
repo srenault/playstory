@@ -25,7 +25,7 @@
         var _closeStream = function(wishedSource) {
             for(sourceName in sources) {
                 if(sourceName == wishedSource) {
-                    var source = sources[sourceName];
+                    var source = sources[wishedSource];
                     source.close();
                     return true;
                 }
@@ -44,13 +44,16 @@
         //Events
         var refFromPulling = this.fromPulling;
 
-        this.onReceiveFeed = function(next) {
-            console.log("[FeedsPresent.Server] Subscribe to feeds");
-            var uri = '/story/onconnect/listen';
-            var source = new EventSource(uri);
-            source.onmessage = refFromPulling;
-            sources[uri] = source;
-            _subscribe(uri, next);
+        this.onReceiveFeed = function(project) {
+            return function(next) {
+                console.log("[FeedsPresent.Server] Subscribe to feeds");
+                var uri = '/story/:project/listen'.replace(':project', project);
+                console.log("[FeedsPresent.Server] Listening " + uri);
+                var source = new EventSource(uri);
+                source.onmessage = refFromPulling;
+                sources[uri] = source;
+                _subscribe(uri, next);
+            };
         };
     };
 

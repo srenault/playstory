@@ -6,11 +6,11 @@
   <div class="inbox">
     <h3>INBOX</h3>
     <ul>
-      <li><a href="#">ALL (1102)</a></li>
-      <li><a href="#">ERROR (0)</a></li>
-      <li><a href="#">WARN (2)</a></li>
-      <li><a href="#">INFO (1000)</a></li>
-      <li><a href="#">FAVOURS (99)</a></li>
+      <li><a href="#past/all">ALL (1102)</a></li>
+      <li><a href="#past/error">ERROR (0)</a></li>
+      <li><a href="#past/warn">WARN (2)</a></li>
+      <li><a href="#past/info">INFO (1000)</a></li>
+      <li><a href="#starred">STARRED (99)</a></li>
     </ul>
   </div>
 </section>
@@ -55,12 +55,15 @@
 }{
 <!-- Home javascript templates -->
 @feeds()
+@comment()
 <!-- Home javascript imports -->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/Router.js")"></script>
 <!-- Tabs -->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsView.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsDOM.js")"></script>
 <!-- Feeds -->
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/inbox/inboxView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/inbox/inboxDOM.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPresentServer.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPastServer.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPresentDOM.js")"></script>

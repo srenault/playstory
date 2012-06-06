@@ -19,8 +19,9 @@ import akka.util.duration._
 import akka.util.Timeout
 
 import com.mongodb.casbah.commons.MongoDBObject
+import com.mongodb.casbah.Imports._
 
-import models.{Log, User, Project}
+import models.{Log, User, Project, Comment}
 import actors.StoryActor
 import actors.StoryActor._
 
@@ -63,6 +64,24 @@ object Story extends Controller with Secured with Pulling {
     }
   }
 
+  val commentForm = Form(
+    mapping(
+      "message" -> nonEmptyText
+    )(Comment.apply)(Comment.unapply)
+  )
+
+  def comment(project: String, id: String) = Authenticated { implicit request =>
+    Logger.info(request.body.asJson.get.toString)
+    Logger.info("[Story] Comment log #%s from project %s".format(id, project))
+    commentForm.bindFromRequest.fold(
+      error => BadRequest("error #1 %s".format(error.errors.toString)),
+      newComment => Log.byId(new ObjectId(id)).map { l =>
+        l.addComment(newComment)
+        Ok("")
+      }.getOrElse(BadRequest("error #2"))
+    )
+  }
+
   def last(project: String, from: Long) = Action { implicit request =>
     Logger.info("[Story] Getting history of : " + project)
     val logs = Log.byProjectFrom(project, from)
@@ -71,7 +90,10 @@ object Story extends Controller with Secured with Pulling {
 
   def eval() = Action { implicit request =>
     request.body.asJson.get match {
-      case log: JsObject => StoryActor.ref ! NewLog(Log.fromJsObject(log)); Ok
+      case log: JsObject => {
+        StoryActor.ref ! NewLog(Log.fromJsObject(log))
+        Ok
+      }
       case log: JsValue => BadRequest("[Story] Not a json object")
       case _ => BadRequest("[Story] Invalid Log format: " + request.body)
     }

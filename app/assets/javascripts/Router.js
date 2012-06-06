@@ -9,7 +9,8 @@ window.PlayStory = {
             Feeds : {
                 FeedsPast: {},
                 FeedsPresent: {}
-            }
+            },
+            Inbox : {}
         },
         Models: {
         }
@@ -20,10 +21,6 @@ window.PlayStory = {
 
      PlayStory.Router = (function() {
          console.log("[PlayStory.Router] Init play story router");
-
-         var currentHash = function() {
-             return window.location.hash.substr(1,window.location.hash.length);
-         };
 
          var onRouteChange = function(next) {
              window.addEventListener('hashchange', next);
@@ -36,12 +33,9 @@ window.PlayStory = {
 
          var routes = [];
 
-         //Init
-         (function() {
-             if(currentHash() == '') {
-                 history.pushState({},"present", "#past");
-             }
-         }());
+         var currentRoute = function() {
+             return window.location.hash.substr(1,window.location.hash.length);
+         };
 
          return {
              put: function(route, newAction) {
@@ -53,8 +47,14 @@ window.PlayStory = {
                  actions.push(newAction);
                  routes[route] = actions;
 
-                 if(currentHash() == route) newAction._do();
-             }
+                 if(currentRoute() == route) newAction._do();
+             },
+
+             go: function(route) {
+                 history.pushState({}, route, "#" + route);
+             },
+
+             currentRoute: currentRoute
          };
      })();
 

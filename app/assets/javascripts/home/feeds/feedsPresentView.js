@@ -26,7 +26,7 @@
        .await(this.dom.hideFeeds)
        .subscribe();
 
-        When(this.server.onReceiveFeed)
+        When(this.server.onReceiveFeed('onconnect'))
        .map(this.model.asFeed)
        .map(this.model.fifo)
        .await(this.dom.fifo)
