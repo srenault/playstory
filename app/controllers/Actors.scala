@@ -24,10 +24,10 @@ class StoryActor extends Actor {
         pushee => self ! Init(project, pushee),
         onComplete = () => self ! Stop(project),
         onError = { case(error, _) =>
-          Logger.error("[Actor] Error during stream log for %s : %s".format(project,error)) 
+          Logger.error("[Actor] Error during stream log for %s : %s".format(project,error))
         }
       )
-      Logger.info("[Actor] New debugging session for " + project)
+      Logger.info("[Actor] New stream for " + project)
       sender ! channel
     }
 
@@ -37,7 +37,7 @@ class StoryActor extends Actor {
     }
 
     case Stop(project: String) => {
-      Logger.info("[Actor] Debugging session has been stopped ...")
+      Logger.info("[Actor] Stream %s has been stopped ...".format(project))
       projects = projects.filter(p => p._1 != project)
     }
 

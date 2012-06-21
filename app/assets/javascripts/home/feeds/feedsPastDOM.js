@@ -9,8 +9,9 @@
 
          //DOM elements
          var elts = new (function() {
-             this.$feeds = $('.feeds.past');
-             this.$moreFeeds = this.$feeds.find('.more-feeds');
+             this.$feedsContainer = $('.feeds.past');
+             this.$feedsList = $('.feeds.past ul');
+             this.$moreFeeds = this.$feedsContainer.find('.more-feeds');
              this.$counter = this.$moreFeeds.find('.counter');
          })();
 
@@ -23,16 +24,16 @@
          };
 
          this.onNewCommentClick = function(next) {
-             elts.$feeds.on('click', 'a.comment', next);
+             elts.$feedsContainer.on('click', 'a.comment', next);
          };
 
          this.onSubmitCommentClick = function(next) {
-             elts.$feeds.on('click', '.comments button.save', next);
+             elts.$feedsContainer.on('click', '.comments button.save', next);
          };
 
          //Actions
-         this.popupError = Action(function(evt, next) {
-             alert('Error');
+         this.clearFeeds = Action(function(evt, next) {
+             elts.$feedsList.empty();
              next(evt);
          });
 
@@ -45,12 +46,12 @@
          });
 
          this.fifo = Action(function(fifo, next) {
-             elts.$feeds.find('ul').prepend(feedTmpl({
+             elts.$feedsList.prepend(feedTmpl({
                  feed: fifo.newFeed
              }));
 
              if(fifo.isFull) {
-                 elts.$feeds.find('ul li:last').remove();
+                 elts.$feedsList.find('li:last').remove();
              }
              next(fifo);
          });
@@ -63,17 +64,21 @@
          });
 
          this.viewFeeds = Action(function(evt, next) {
-             elts.$feeds.show();
+             elts.$feedsContainer.show();
              next(evt);
          });
 
          this.hideFeeds = Action(function(evt, next) {
-             elts.$feeds.hide();
+             elts.$feedsContainer.hide();
              next(evt);
          });
 
-         this.addNewFeeds = Action(function(evt, next) {
-             console.log("sfsdf");
+         this.addFeeds = Action(function(feeds, next) {
+             feeds.forEach(function(feed) {
+                 elts.$feedsList.prepend(feedTmpl({
+                     feed: feed
+                 }));
+             });
          });
      };
 

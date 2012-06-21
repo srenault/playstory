@@ -20,7 +20,7 @@
         var _streamFeeds = function(feed) {
             var subscribers = subscriptions['onReceiveFeed'] || [];
             subscribers.forEach(function(s) {
-                s(feed);
+                s(JSON.parse(feed));
             });
         };
 
@@ -43,9 +43,10 @@
         };
 
         this.fromTemplate = function(feed) {
-            _streamFeeds(feed);
+            _streamFeeds(JSON.stringify(feed));
         };
 
+        //Events
         this.onReceiveFeed = function(next) {
             console.log("[FeedsPast.Server] Subscribe to feeds");
             _subscribe('onReceiveFeed', next);
@@ -60,13 +61,30 @@
         };
 
         //Actions
+        this.fetchNewFeeds = Action(function(evt, next) {
+            console.log("[FeedsPast.Server] Fetching news feeds");
+            next(evt);
+        });
+
+        this.fetchFeeds = Action(function(project, next) {
+           $.ajax({
+               url: '/story/:project/last'.replace(':project', project[0]),
+               dataType: 'json',
+               success: function(feeds) {
+                   feeds.forEach(function(feed) {
+                       _streamFeeds(feed);
+                       next(project);
+                   });
+               }
+           });
+        });
+
         this.saveNewComment = Action(function(evt, next) {
             console.log("[FeedsPast.Server] Saving a new comment");
             next(evt);
         });
 
         this.saveNewComment = Action(function(evt, next) {
-           //Http.POST('/story/onconnect/4fc5ba8c1a880b75286e6e93', { message: "Hy dude"});
            $.ajax({
                url: '/story/onconnect/4fc5ba8c1a880b75286e6e93',
                type: 'POST',

@@ -7,12 +7,21 @@
     Feeds.FeedsPresentServer = function() {
         console.log("[FeedsPresent.Server] Init feeds server");
 
-        var subscriptions = [],
-            sources = [];
+        var self = this,
+            subscriptions = [],
+            sources = [],
+            refFromPulling = this.fromPulling;
 
         var _subscribe = function(uri, callback) {
             subscriptions[uri] = subscriptions[uri] || [];
             subscriptions[uri].push(callback);
+        };
+
+        var _alreadyConnected = function(uri) {
+            for(var subscription in subscriptions) {
+                if(subscription === uri) return true;
+            }
+            return false;
         };
 
         var _streamFeeds = function(feed) {
@@ -33,28 +42,37 @@
             return false;
         };
 
-        //Pulling with Event Source or Comet
+        var _buildURI = function(project) {
+            return '/story/:project/listen'.replace(':project', project);
+        };
+
+        /*
+         * Receiving feeds Event Source or Comet.
+         */
         this.fromPulling = function(feed) {
-            if(EventSource) {
-                feed = JSON.parse(feed.data);
-            }
+            if(EventSource) feed = JSON.parse(feed.data);
             _streamFeeds(feed);
         };
 
         //Events
-        var refFromPulling = this.fromPulling;
-
         this.onReceiveFeed = function(project) {
             return function(next) {
-                console.log("[FeedsPresent.Server] Subscribe to feeds");
-                var uri = '/story/:project/listen'.replace(':project', project);
+                _subscribe(_buildURI(project), next);
+            };
+        };
+
+        //Actions
+        this.bindToStream = Action(function(project, next) {
+            var uri = _buildURI(project[0]);
+            if(project.length > 0 && !_alreadyConnected(uri)) {
                 console.log("[FeedsPresent.Server] Listening " + uri);
                 var source = new EventSource(uri);
                 source.onmessage = refFromPulling;
                 sources[uri] = source;
-                _subscribe(uri, next);
-            };
-        };
+                _subscribe(uri, self.onReceiveFeed);
+            }
+            next(project);
+         });
     };
 
 })(window.PlayStory.Init.Home.Feeds);

@@ -5,7 +5,7 @@ import PlayProject._
 object ApplicationBuild extends Build {
 
   val appName         = "playstory"
-  val appVersion      = "1.0"
+  val appVersion      = "1.0-SNAPSHOT"
 
   val appDependencies = Seq(
     "org.scalaz" %% "scalaz-core" % "6.0.4",

@@ -22,38 +22,65 @@ window.PlayStory = {
      PlayStory.Router = (function() {
          console.log("[PlayStory.Router] Init play story router");
 
+         //Events
          var onRouteChange = function(next) {
              window.addEventListener('hashchange', next);
          };
 
+         //Interactions
          var router = When(onRouteChange)
          .map(function(evt) {
             return evt.newURL.split('#')[1];
          });
 
-         var routes = [];
-
+         //Utils
          var currentRoute = function() {
              return window.location.hash.substr(1,window.location.hash.length);
          };
 
+         var BackboneRegex = (function() {
+             var namedParam    = /:\w+/g,
+                 splatParam    = /\*\w+/g,
+                 escapeRegExp  = /[-[\]{}()+?.,\\^$|#\s]/g;
+
+             return {
+                 routeToRegExp: function(route) {
+                     route = route.replace(escapeRegExp, '\\$&')
+                                  .replace(namedParam, '([^\/]+)')
+                                  .replace(splatParam, '(.*?)');
+
+                     return new RegExp('^' + route + '$');
+                 },
+
+                 extractParams: function(routeRegex) {
+                     return routeRegex.exec(currentRoute()).slice(1);
+                 }
+             };
+         })();
+
+         //Actions
+         var extractParams = function(routeRegex) {
+             return Action(function(route, next) {
+                 var params= BackboneRegex.extractParams(routeRegex);
+                 next(params);
+             });
+         };
+
          return {
-             put: function(route, newAction) {
-                 var r = Match.value(route, newAction);
+             when: function(route, newAction) {
+                 var routeRegex = BackboneRegex.routeToRegExp(route);
+                 var r = Match.regex(routeRegex, extractParams(routeRegex).then(newAction));
                  router.match(r).subscribe();
 
-                 var actions = routes[route];
-                 actions = actions || [];
-                 actions.push(newAction);
-                 routes[route] = actions;
-
-                 if(currentRoute() == route) newAction._do();
+                 if(routeRegex.test(currentRoute())) {
+                     var params = BackboneRegex.extractParams(routeRegex);
+                     newAction._do(params);
+                 }
              },
 
              go: function(route) {
                  history.pushState({}, route, "#" + route);
              },
-
              currentRoute: currentRoute
          };
      })();

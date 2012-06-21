@@ -12,8 +12,8 @@
         this.dom = new Tabs.TabsDOM();
 
         //Routes
-        Router.put('past', this.dom.turnOnPastTab);
-        Router.put('present', this.dom.turnOnPresentTab);
+        Router.when('past', this.dom.turnOnPastTab);
+        Router.when('present', this.dom.turnOnPresentTab);
     };
 
 })(window.PlayStory.Init.Home.Tabs, window.PlayStory.Router);

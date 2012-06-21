@@ -13,9 +13,21 @@
         this.server = new Feeds.FeedsPresentServer();
         this.model = new Models.FeedsModel();
 
+        var listen = Action(function(project, next) {
+            if(project) {
+                When(self.server.onReceiveFeed(project))
+                    .map(self.model.asFeed)
+                    .map(self.model.fifo)
+                    .await(self.dom.fifo)
+                    .subscribe();
+            }
+            next(project);
+         });
+
         //Routes
-        Router.put('present', this.dom.viewFeeds);
-        Router.put('past', this.dom.hideFeeds);
+        Router.when('present', this.dom.viewFeeds);
+        Router.when('past', this.dom.hideFeeds);
+        Router.when('past/:project', this.server.bindToStream.then(listen));
 
         //Interactions
         When(Tabs.dom.onPresentTabClick)
@@ -24,12 +36,6 @@
 
         When(Tabs.dom.onPastTabClick)
        .await(this.dom.hideFeeds)
-       .subscribe();
-
-        When(this.server.onReceiveFeed('onconnect'))
-       .map(this.model.asFeed)
-       .map(this.model.fifo)
-       .await(this.dom.fifo)
        .subscribe();
     };
 

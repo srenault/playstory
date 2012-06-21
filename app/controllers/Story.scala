@@ -29,7 +29,6 @@ object Story extends Controller with Secured with Pulling {
 
   def home = Authenticated { implicit request =>
     Logger.info("[Story] Welcome : " + request.user)
-
     val last = JsArray(
       Log.all(10).map { log =>
         JsObject(Seq(
@@ -38,7 +37,6 @@ object Story extends Controller with Secured with Pulling {
         ))
       }
     )
-
     Ok(views.html.home.home(last))
   }
 
@@ -47,18 +45,20 @@ object Story extends Controller with Secured with Pulling {
     Ok
   }
 
+  private def toCompleteLog(log: Log)(implicit request: RequestHeader) = {
+    JsObject(Seq(
+      "log" -> toJson(log),
+      "project" -> toJson(Project.byName(log.project)),
+      "src" -> JsString(request.uri)
+    )).toString
+  }
+
   def listen(project: String) = Authenticated { implicit request =>
     Logger.info("[Story] Waitings logs...")
     AsyncResult {
       implicit val timeout = Timeout(5 second)
       (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
-        implicit val LogComet = Comet.CometMessage[Log] { log =>
-          JsObject(Seq(
-            "log" -> toJson(log),
-            "project" -> toJson(Project.byName(log.project)),
-            "src" -> JsString(request.uri)
-          )).toString
-        }
+        implicit val LogComet = Comet.CometMessage[Log](log => toCompleteLog(log))
         playPulling(chunks).getOrElse(BadRequest)
       }
     }
@@ -71,7 +71,6 @@ object Story extends Controller with Secured with Pulling {
   )
 
   def comment(project: String, id: String) = Authenticated { implicit request =>
-    Logger.info(request.body.asJson.get.toString)
     Logger.info("[Story] Comment log #%s from project %s".format(id, project))
     commentForm.bindFromRequest.fold(
       error => BadRequest("error #1 %s".format(error.errors.toString)),
@@ -82,9 +81,15 @@ object Story extends Controller with Secured with Pulling {
     )
   }
 
-  def last(project: String, from: Long) = Action { implicit request =>
-    Logger.info("[Story] Getting history of : " + project)
-    val logs = Log.byProjectFrom(project, from)
+  def lastFrom(project: String, from: Long) = Action { implicit request =>
+    Logger.info("[Story] Getting history of %s from %".format(project, from))
+    val logs = Log.byProjectFrom(project, from).map(toCompleteLog(_))
+    Ok(toJson(logs))
+  }
+
+  def last(project: String) = Action { implicit request =>
+    Logger.info("[Story] Getting history of %s".format(project))
+    val logs = Log.byProject(project).map(toCompleteLog(_))
     Ok(toJson(logs))
   }
 

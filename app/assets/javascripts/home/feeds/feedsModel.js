@@ -12,13 +12,6 @@
             return collection;
         };
 
-        this.asFeeds = function(data) {
-            console.log(data);
-            return data.map(function(feed) {
-                return self.asFeed(feed);
-            });
-        },
-
         this.asFeed = function(data) {
             var feed = {
                 id: data.log._id,
@@ -29,6 +22,12 @@
                 message: data.log.message
             };
             return feed;
+        };
+
+        this.asFeeds = function(data) {
+            data.map(function(feed) {
+                return self.asFeed(feed);
+            });
         };
 
         this.fifo = function(feed) {
@@ -52,5 +51,11 @@
             });
             return (foundFeed.length == 1) ? foundFeed[0] : null;
         };
+
+        //Action
+         this.reset = Action(function(evt, next) {
+             collection = [];
+             next(evt);
+         });
     };
 })(window.PlayStory.Init.Models);
