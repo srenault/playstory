@@ -27,7 +27,8 @@
         //Routes
         Router.when('present', this.dom.viewFeeds);
         Router.when('past', this.dom.hideFeeds);
-        Router.when('past/:project', this.server.bindToStream.then(listen));
+        Router.when('past/:project', this.server.closeCurrentStream.then(
+                                     this.server.bindToStream.then(listen)));
 
         //Interactions
         When(Tabs.dom.onPresentTabClick)

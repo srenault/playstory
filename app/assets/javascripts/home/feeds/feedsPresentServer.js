@@ -9,7 +9,8 @@
 
         var self = this,
             subscriptions = [],
-            sources = [];
+            sources = [],
+            currentSource = null;
 
         var _subscribe = function(uri, callback) {
             subscriptions[uri] = subscriptions[uri] || [];
@@ -32,8 +33,10 @@
         };
 
         var _closeStream = function(wishedSource) {
+            console.log('[FeedsPresent.Server] Closing ' + wishedSource); 
             for(sourceName in sources) {
                 if(sourceName == wishedSource) {
+                    console.log('die!!!!');
                     var source = sources[wishedSource];
                     source.close();
                     return true;
@@ -72,10 +75,16 @@
                 var source = new EventSource(uri);
                 source.onmessage = _streamFeeds;
                 sources[uri] = source;
+                currentSource = uri;
                 _subscribe(uri, self.onReceiveFeed);
             }
             next(project);
-         });
+        });
+
+        this.closeCurrentStream = Action(function(evt, next) {
+            _closeStream(currentSource);
+            next(evt);
+        });
     };
 
 })(window.PlayStory.Init.Home.Feeds);

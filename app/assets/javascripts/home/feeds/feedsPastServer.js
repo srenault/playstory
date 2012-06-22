@@ -43,6 +43,7 @@
         };
 
         //Actions
+
         /**
          * Fetch logs by making a classic GET request.
          */
