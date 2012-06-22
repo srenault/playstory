@@ -6,15 +6,23 @@
 
     Feeds.FeedsPastServer = function(model) {
         console.log("[FeedsPast.Server] Init feeds server");
-        var that = this;
+
         this.model = model;
 
         var subscriptions = [],
-            sources = [];
+            sources = [],
+            self = this;
 
         var _subscribe = function(eventName, callback) {
             subscriptions[eventName] = subscriptions[eventName] || [];
             subscriptions[eventName].push(callback);
+        };
+
+        var _alreadyConnected = function(uri) {
+            for(var subscription in subscriptions) {
+                if(subscription === uri) return true;
+            }
+            return false;
         };
 
         var _streamFeeds = function(feed) {
@@ -22,24 +30,6 @@
             subscribers.forEach(function(s) {
                 s(JSON.parse(feed));
             });
-        };
-
-        var _streamNewFeeds = function(feed) {
-            var subscribers = subscriptions['onReceiveNewFeed'] || [];
-            subscribers.forEach(function(s) {
-                s(JSON.parse(feed.data));
-            });
-        };
-
-        var _closeStream = function(wishedSource) {
-            for(sourceName in sources) {
-                if(sourceName == wishedSource) {
-                    var source = sources[wishedSource];
-                    source.close();
-                    return true;
-                }
-            }
-            return false;
         };
 
         this.fromTemplate = function(feed) {
@@ -52,20 +42,10 @@
             _subscribe('onReceiveFeed', next);
         };
 
-        this.onReceiveNewFeed = function(next) {
-            console.log("[FeedsPast.Server] Subscribe to new feeds");
-            var source = new EventSource('/story/onconnect/new');
-            source.onmessage = _streamNewFeeds;
-            sources['onReceiveNewFeed'] = source;
-            _subscribe('onReceiveNewFeed', next);
-        };
-
         //Actions
-        this.fetchNewFeeds = Action(function(evt, next) {
-            console.log("[FeedsPast.Server] Fetching news feeds");
-            next(evt);
-        });
-
+        /**
+         * Fetch logs by making a classic GET request.
+         */
         this.fetchFeeds = Action(function(project, next) {
            $.ajax({
                url: '/story/:project/last'.replace(':project', project[0]),
@@ -79,11 +59,17 @@
            });
         });
 
-        this.saveNewComment = Action(function(evt, next) {
-            console.log("[FeedsPast.Server] Saving a new comment");
+        /**
+         * Fetch last logs from specified time.
+         */
+        this.fetchNewFeeds = Action(function(evt, next) {
+            console.log("[FeedsPast.Server] Fetching news feeds");
             next(evt);
         });
 
+        /**
+         * Comment one log.
+         */
         this.saveNewComment = Action(function(evt, next) {
            $.ajax({
                url: '/story/onconnect/4fc5ba8c1a880b75286e6e93',

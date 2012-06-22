@@ -9,8 +9,7 @@
 
         var self = this,
             subscriptions = [],
-            sources = [],
-            refFromPulling = this.fromPulling;
+            sources = [];
 
         var _subscribe = function(uri, callback) {
             subscriptions[uri] = subscriptions[uri] || [];
@@ -25,6 +24,7 @@
         };
 
         var _streamFeeds = function(feed) {
+            if(EventSource) feed = JSON.parse(feed.data);
             var subscribers = subscriptions[feed.src] || [];
             subscribers.forEach(function(s) {
                 s(feed);
@@ -50,7 +50,7 @@
          * Receiving feeds Event Source or Comet.
          */
         this.fromPulling = function(feed) {
-            if(EventSource) feed = JSON.parse(feed.data);
+            console.log(feed);
             _streamFeeds(feed);
         };
 
@@ -62,12 +62,15 @@
         };
 
         //Actions
+        /**
+         * Pull new logs.
+         */
         this.bindToStream = Action(function(project, next) {
             var uri = _buildURI(project[0]);
             if(project.length > 0 && !_alreadyConnected(uri)) {
                 console.log("[FeedsPresent.Server] Listening " + uri);
                 var source = new EventSource(uri);
-                source.onmessage = refFromPulling;
+                source.onmessage = _streamFeeds;
                 sources[uri] = source;
                 _subscribe(uri, self.onReceiveFeed);
             }
