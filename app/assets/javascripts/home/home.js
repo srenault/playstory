@@ -14,9 +14,7 @@ $(document).ready(function() {
 
             with(PlayStory.Init.Home) {
                 this.Tabs = new Tabs.TabsView();
-                this.FeedsPresent = new Feeds.FeedsPresentView(this.Tabs);
-                this.FeedsPast = new Feeds.FeedsPastView(
-                    this.FeedsPresent.server,
+                this.FeedsView = new Feeds.FeedsView(
                     this.Tabs
                 );
                 this.Inbox = new Inbox.InboxView();

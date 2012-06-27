@@ -29,15 +29,7 @@ object Story extends Controller with Secured with Pulling {
 
   def home = Authenticated { implicit request =>
     Logger.info("[Story] Welcome : " + request.user)
-    val last = JsArray(
-      Log.all(10).map { log =>
-        JsObject(Seq(
-          "log" -> toJson(log),
-          "project" -> toJson(Project.byName(log.project))
-        ))
-      }
-    )
-    Ok(views.html.home.home(last))
+    Ok(views.html.home.index())
   }
 
   def view(project: String) = Authenticated { implicit request =>

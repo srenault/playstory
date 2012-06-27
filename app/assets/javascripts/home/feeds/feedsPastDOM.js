@@ -46,6 +46,7 @@
          });
 
          this.fifo = Action(function(fifo, next) {
+             console.log("fifo");
              elts.$feedsList.prepend(feedTmpl({
                  feed: fifo.newFeed
              }));

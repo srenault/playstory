@@ -30,7 +30,7 @@
              }));
 
              if(fifo.isFull) {
-                 elts.$feeds.find('ul li:last').remove();
+                 //elts.$feeds.find('ul li:last').remove();
              }
              next(fifo);
          });

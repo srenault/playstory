@@ -66,23 +66,51 @@ window.PlayStory = {
              });
          };
 
-         return {
-             when: function(route, newAction) {
-                 var routeRegex = BackboneRegex.routeToRegExp(route);
-                 var r = Match.regex(routeRegex, extractParams(routeRegex).then(newAction));
-                 router.match(r).subscribe();
+         var subscribe = function(route, actions) {
+             var routeRegex = BackboneRegex.routeToRegExp(route);
 
-                 if(routeRegex.test(currentRoute())) {
-                     var params = BackboneRegex.extractParams(routeRegex);
-                     newAction._do(params);
-                 }
-             },
+             actions.unshift(extractParams(routeRegex));
+             var composedActions = actions.reduce(function(prevAction, currentAction) {
+                 return prevAction.then(currentAction);
+             });
 
-             go: function(route) {
-                 history.pushState({}, route, "#" + route);
-             },
-             currentRoute: currentRoute
+             var r = Match.regex(routeRegex, extractParams(routeRegex).then(composedActions));
+             router.match(r).subscribe();
+
+             if(routeRegex.test(currentRoute())) {
+                 var params = BackboneRegex.extractParams(routeRegex);
+                 composedActions._do(params);
+             }
          };
+
+         return new (function() {
+
+             var that = this,
+                 route = "";
+
+             this.when = function(specifiedRoute, action) {
+                 route = specifiedRoute;
+                 if(action) {
+                     subscribe(specifiedRoute, [action]);
+                     return null;
+                 } else {
+                     return that;
+                 }
+             };
+
+             this.go = function(route) {
+                 history.pushState({}, route, "#" + route);
+             };
+
+             this.chain = function() {
+                 var actions = [];
+                 for(var index = 0; index<arguments.length; index++) {
+                     actions.push(arguments[index]);
+                 }
+                 subscribe(route, actions);
+                 route = route;
+             };
+         })();
      })();
 
  })(window.PlayStory || {});
