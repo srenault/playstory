@@ -110,6 +110,8 @@ window.PlayStory = {
                  subscribe(route, actions);
                  route = route;
              };
+
+             this.currentRoute = currentRoute;
          })();
      })();
 

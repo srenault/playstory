@@ -15,8 +15,9 @@
              this.$counter = this.$moreFeeds.find('.counter');
          })();
 
-         var feedTmpl = _.template($("#feed_tmpl").html());
-         var commentTmpl = _.template($("#comment_tmpl").html());
+         var feedTmpl = _.template($("#feed_tmpl").html()),
+             newCommentTmpl = _.template($("#new_comment_tmpl").html()),
+             commentTmpl = _.template($("#comment_tmpl").html());
 
          //Events
          this.onMoreFeedsClick = function(next) {
@@ -31,6 +32,21 @@
              elts.$feedsContainer.on('click', '.comments button.save', next);
          };
 
+         this.newComment = function(evt) {
+             var $submitComment = $(evt.currentTarget),
+                 $currentFeed = $submitComment.closest('li'),
+                 project = $currentFeed[0].dataset.project,
+                 msg = $submitComment.parent('.comment')
+                                        .find('textarea')
+                                        .val();
+
+             return {
+                 id: $currentFeed.attr('id'),
+                 msg: msg,
+                 project: project
+             };
+         };
+
          //Actions
          this.clearFeeds = Action(function(evt, next) {
              elts.$feedsList.empty();
@@ -40,13 +56,12 @@
          this.displayNewComment = Action(function(evt, next) {
              var $feed = $(evt.currentTarget).closest('.log')
                                              .find('.comments');
-             $feed.append(commentTmpl({}));
+             $feed.append(newCommentTmpl({}));
              $feed.show();
              next(evt);
          });
 
          this.fifo = Action(function(fifo, next) {
-             console.log("fifo");
              elts.$feedsList.prepend(feedTmpl({
                  feed: fifo.newFeed
              }));

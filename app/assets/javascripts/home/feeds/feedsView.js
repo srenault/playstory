@@ -56,6 +56,7 @@
         .subscribe();
 
         When(this.pastDOM.onSubmitCommentClick)
+        .map(this.pastDOM.newComment)
         .await(this.server.saveNewComment)
         .subscribe();
 

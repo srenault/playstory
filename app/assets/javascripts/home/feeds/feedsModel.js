@@ -13,9 +13,11 @@
         };
 
         this.asFeed = function(data) {
+            console.log(data);
             var feed = {
                 id: data.log._id,
-                project: data.project.realName,
+                realName: data.project.realName,
+                project: data.project.name,
                 avatar: data.project.avatar,
                 time: new Date(data.log.date),
                 level: data.log.method,

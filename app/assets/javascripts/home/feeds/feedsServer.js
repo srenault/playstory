@@ -138,16 +138,18 @@
         /**
          * Comment one log.
          */
-        this.saveNewComment = Action(function(evt, next) {
+        this.saveNewComment = Action(function(comment, next) {
             console.log("[FeedsPast.Server] Save new comment");
             $.ajax({
-                url: '/story/onconnect/log/4fc5ba8c1a880b75286e6e93',
+                url: '/story/:project/log/:id'.replace(':id', comment.id)
+                                              .replace(':project', comment.project),
                 type: 'POST',
-                data: JSON.stringify({ message: "hey dude!"}),
+                data: JSON.stringify({ message: comment.msg}),
                 dataType: 'json',
                 contentType: 'application/json',
                 success: next
             });
+            next(comment);
         });
     };
 
