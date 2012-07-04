@@ -1,5 +1,8 @@
 @(user: models.User)
 
+@import play.api.libs.json._
+@import play.api.libs.json.Json._
+
 @main("Play Story > Home", user) {
 
 <section class="column-left">
@@ -72,11 +75,9 @@
 
 <!-- Init Home page -->
 <script type="text/javascript">
-/** $(document).ready(function() {
-    var lastFeeds = Html(lastFeeds.toString);
-    lastFeeds.forEach(function(feed) {
-        PlayStory.Home.FeedsPast.pastServer.fromTemplate(feed);
-    });
-}); */
+$(document).ready(function() {
+    var user = @Html(toJson(user).toString);
+    PlayStory.Home.FeedsView.server.fromTemplate('user', user);
+});
 </script>
 }

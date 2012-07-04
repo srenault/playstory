@@ -51,6 +51,10 @@
         );
 
         //Interactions
+        When(this.server.onReceiveFromTmpl)
+        .await(this.model.keepRef)
+        .subscribe();
+
         When(this.pastDOM.onNewCommentClick)
         .await(this.pastDOM.displayNewComment)
         .subscribe();

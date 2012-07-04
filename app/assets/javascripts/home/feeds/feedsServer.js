@@ -63,8 +63,13 @@
             _streamFeeds(JSON.parse(feed.data));
         };
 
-        this.fromTemplate = function(feed) {
-            _streamFeeds(feed);
+        this.fromTemplate = function(name, feed) {
+            var wrappedFeed = {
+                src : 'template',
+                data : feed,
+                name: name
+            };
+            _streamFeeds(wrappedFeed);
         };
 
         this.onReceiveChunk = function(params) {
@@ -73,6 +78,11 @@
             return function(next) {
                 _subscribe(uri, next);
             };
+        };
+
+        this.onReceiveFromTmpl = function(next) {
+            console.log("[Feeds.Server] Subscribe to template");
+            _subscribe('template', next);
         };
 
         this.onSuccessFetch = function(params) {
@@ -140,11 +150,13 @@
          */
         this.saveNewComment = Action(function(comment, next) {
             console.log("[FeedsPast.Server] Save new comment");
+            var authorId = self.model.models('user').id;
+
             $.ajax({
                 url: '/story/:project/log/:id'.replace(':id', comment.id)
                                               .replace(':project', comment.project),
                 type: 'POST',
-                data: JSON.stringify({ author: '4fc5b6921a888a24c6484b06', message: comment.msg}),
+                data: JSON.stringify({ author: authorId, message: comment.msg}),
                 dataType: 'json',
                 contentType: 'application/json',
                 success: next

@@ -33,7 +33,7 @@ object Comment {
 
     def writes(comment: Comment) = JsObject(Seq(
       "id" -> JsString(comment._id.toString),
-      "author" -> JsString(comment.author.toString),
+      "author" -> User.byId(comment.author).map(toJson(_)).getOrElse(JsNull),
       "message" -> JsString(comment.message)
     ))
   }

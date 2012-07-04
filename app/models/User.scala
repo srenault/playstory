@@ -4,6 +4,8 @@ import scalaz.OptionW
 import scalaz.Scalaz._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
+import play.api.libs.json._
+import play.api.libs.json.Json._
 import play.api.mvc.{ Request, AnyContent }
 import play.Logger
 import db.MongoDB
@@ -58,6 +60,9 @@ object User extends MongoDB("users") {
     }
   }
 
+  def byId(id: ObjectId): Option[User] =
+    findOne("_id" -> id).flatMap(User.fromMongoDBObject(_))
+
   def byEmail(email: String): Option[User] =
     findOne("email" -> email).flatMap(User.fromMongoDBObject(_))
 
@@ -68,5 +73,25 @@ object User extends MongoDB("users") {
 
   def follow(id: ObjectId, project: Project) = {
     collection.update(MongoDBObject("_id" -> id), $push("projects" -> project.asMongoDBObject))
+  }
+
+  implicit object UserFormat extends Format[User] {
+    def reads(json: JsValue) = User(
+      (json \ "id").asOpt[String].map(id => new ObjectId(id)).getOrElse(new ObjectId),
+      (json \ "lastname").as[String],
+      (json \ "firstname").as[String],
+      (json \ "email").as[String],
+      (json \ "language").as[String],
+      (json \ "projects").as[Seq[Project]]
+    )
+
+    def writes(user: User) = JsObject(Seq(
+      "id" -> JsString(user._id.toString),
+      "lastname" -> JsString(user.lastname),
+      "firstname" -> JsString(user.firstname),
+      "email" -> JsString(user.email),
+      "language" -> JsString(user.language),
+      "projects" -> toJson(user.projects)
+    ))
   }
 }
