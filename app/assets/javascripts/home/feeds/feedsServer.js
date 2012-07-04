@@ -144,7 +144,7 @@
                 url: '/story/:project/log/:id'.replace(':id', comment.id)
                                               .replace(':project', comment.project),
                 type: 'POST',
-                data: JSON.stringify({ message: comment.msg}),
+                data: JSON.stringify({ author: '4fc5b6921a888a24c6484b06', message: comment.msg}),
                 dataType: 'json',
                 contentType: 'application/json',
                 success: next

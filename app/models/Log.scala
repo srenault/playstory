@@ -5,6 +5,7 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
 import play.api.libs.json._
 import play.api.libs.json.Json._
+import play.Logger
 import db.MongoDB
 
 case class Log(
@@ -19,10 +20,9 @@ case class Log(
   message: String,
   method: String,
   level: String,
-  thread: String
+  thread: String,
+  comments: Seq[Comment]
 ) {
-
-  def comments: List[Comment] = Log.comments(_id)
 
   def addComment(comment: Comment) = Log.addComment(_id, comment)
 
@@ -40,22 +40,25 @@ case class Log(
     log += "method" -> method
     log += "level" -> level
     log += "thread" -> thread
+    log += "comments" -> comments
     log.result
   }
 }
 
 object Log extends MongoDB("logs") {
 
+  private val byBegin = MongoDBObject("date" -> 1)
+
   def all(max: Int = 50): List[Log] = {
-    val byLast = MongoDBObject("date" -> -1)
-    collection.find().sort(byLast).limit(max).toList.map(fromMongoDBObject(_)).flatten
+    find(max, byBegin).toList.map(fromMongoDBObject(_)).flatten
   }
 
   def byId(id: ObjectId): Option[Log] =
     findOne("_id" -> id).flatMap(Log.fromMongoDBObject(_))
 
-  def byProject(project: String, max: Int = 50): List[Log] =
-    find("project" -> project)(max).map(fromMongoDBObject(_)).flatten
+  def byProject(project: String, max: Int = 50): List[Log] = {
+    find(max, byBegin, "project" -> project).map(fromMongoDBObject(_)).flatten
+  }
 
   def byProjectFrom(project: String, from: Long, max: Int = 50): List[Log] = {
     collection.find(
@@ -65,14 +68,8 @@ object Log extends MongoDB("logs") {
 
   def create(log: Log) = save(log.asMongoDBObject)
 
-  def comments(id: ObjectId): List[Comment] = {
-    collection.findOne(MongoDBObject("_id" -> id), "comments" $slice 1)
-              .flatMap { l =>
-                fromMongoDBObject(l).map(_.comments)
-              }.getOrElse(Nil)
-  }
-
   def addComment(id: ObjectId, comment: Comment) = {
+    Logger.debug("[Log] Adding log for %s".format(id))
     collection.update(MongoDBObject("_id" -> id), $push("comments" -> comment.asMongoDBObject))
   }
 
@@ -93,7 +90,23 @@ object Log extends MongoDB("logs") {
       level     <- log.getAs[String]("level")
       thread    <- log.getAs[String]("thread")
     } yield {
-      Log(_id, project, logger, className, date, file, location, line, message, method, level, thread)
+      val comments: BasicDBList = log.getAs[BasicDBList]("comments").getOrElse(new BasicDBList())
+      Log(_id,
+          project,
+          logger,
+          className,
+          date,
+          file,
+          location,
+          line,
+          message,
+          method,
+          level,
+          thread,
+          comments.toList.map {
+            case c: DBObject => Comment.fromMongoDBObject(c)
+          }.flatten
+      )
     }
   }
 
@@ -111,7 +124,8 @@ object Log extends MongoDB("logs") {
       (json \ "message").as[String],
       (json \ "method").as[String],
       (json \ "level").as[String],
-      (json \ "thread").as[String]
+      (json \ "thread").as[String],
+      (json \ "comments").asOpt[Seq[Comment]].getOrElse(Nil)
     )
 
     def writes(l: Log): JsValue = JsObject(Seq(
@@ -126,7 +140,8 @@ object Log extends MongoDB("logs") {
       "message" -> JsString(l.message),
       "method" -> JsString(l.method),
       "level" -> JsString(l.level),
-      "thread" -> JsString(l.thread)
+      "thread" -> JsString(l.thread),
+      "comments" -> toJson(l.comments)
     ))
   }
 }

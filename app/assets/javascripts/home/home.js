@@ -6,6 +6,9 @@ $(document).ready(function() {
     (function(PlayStory) {
         console.log("[Home] Init Home page");
 
+        PlayStory.Data = {
+        },
+
         PlayStory.Home = new (function() {
             var router = PlayStory.Router;
             if(router.currentRoute() == '') {

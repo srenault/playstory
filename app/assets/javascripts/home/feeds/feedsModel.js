@@ -13,7 +13,6 @@
         };
 
         this.asFeed = function(data) {
-            console.log(data);
             var feed = {
                 id: data.log._id,
                 realName: data.project.realName,
@@ -21,7 +20,8 @@
                 avatar: data.project.avatar,
                 time: new Date(data.log.date),
                 level: data.log.method,
-                message: data.log.message
+                message: data.log.message,
+                comments: data.log.comments
             };
             return feed;
         };

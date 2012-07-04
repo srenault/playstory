@@ -29,7 +29,10 @@ object Story extends Controller with Secured with Pulling {
 
   def home = Authenticated { implicit request =>
     Logger.info("[Story] Welcome : " + request.user)
-    Ok(views.html.home.index())
+    Project.byName("onconnect").foreach { project =>
+      request.user.follow(project)
+    }
+    Ok(views.html.home.index(request.user))
   }
 
   def view(project: String) = Authenticated { implicit request =>
@@ -58,30 +61,42 @@ object Story extends Controller with Secured with Pulling {
 
   val commentForm = Form(
     mapping(
+      "author"  -> nonEmptyText,
       "message" -> nonEmptyText
-    )(Comment.apply)(Comment.unapply)
+    )((author, message) => Comment(new ObjectId(author), message))
+     ((comment: Comment) => Some((comment.author.toString, comment.message)))
   )
 
   def comment(project: String, id: String) = Authenticated { implicit request =>
     Logger.info("[Story] Comment log #%s from project %s".format(id, project))
     commentForm.bindFromRequest.fold(
-      error => BadRequest("error #1 %s".format(error.errors.toString)),
+      error => BadRequest,
       newComment => Log.byId(new ObjectId(id)).map { l =>
         l.addComment(newComment)
-        Ok("")
-      }.getOrElse(BadRequest("error #2"))
+        Ok
+      }.getOrElse(BadRequest)
     )
   }
 
   def lastFrom(project: String, from: Long) = Action { implicit request =>
     Logger.info("[Story] Getting history of %s from %".format(project, from))
-    val logs = Log.byProjectFrom(project, from).map(toCompleteLog(_))
+
+    val logs = project match {
+      case Project.ALL => Log.all().map(toCompleteLog(_))
+      case _ => Log.byProjectFrom(project, from).map(toCompleteLog(_))
+    }
+
     Ok(toJson(logs))
   }
 
   def last(project: String) = Action { implicit request =>
     Logger.info("[Story] Getting history of %s".format(project))
-    val logs = Log.byProject(project).map(toCompleteLog(_))
+
+    val logs = project match {
+      case Project.ALL => Log.all().map(toCompleteLog(_))
+      case _ => Log.byProject(project).map(toCompleteLog(_))
+    }
+
     Ok(toJson(logs))
   }
 

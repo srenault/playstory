@@ -16,8 +16,7 @@
          })();
 
          var feedTmpl = _.template($("#feed_tmpl").html()),
-             newCommentTmpl = _.template($("#new_comment_tmpl").html()),
-             commentTmpl = _.template($("#comment_tmpl").html());
+             newCommentTmpl = _.template($("#new_comment_tmpl").html());
 
          //Events
          this.onMoreFeedsClick = function(next) {

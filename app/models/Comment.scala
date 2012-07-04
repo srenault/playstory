@@ -6,10 +6,12 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import db.MongoDB
 
-case class Comment(message: String) {
+case class Comment(_id: ObjectId, author: ObjectId, message: String) {
 
   def asMongoDBObject: MongoDBObject = {
     val comment = MongoDBObject.newBuilder
+    comment += "_id" -> _id
+    comment += "author" -> author
     comment += "message" -> message
     comment.result
   }
@@ -17,14 +19,32 @@ case class Comment(message: String) {
 
 object Comment {
 
+  def apply(author: ObjectId, message: String): Comment = {
+    Comment(new ObjectId, author, message)
+  }
+
   implicit object MessageFormat extends Format[Comment] {
 
     def reads(json: JsValue) = Comment(
+      (json \ "id").asOpt[String].map(id => new ObjectId(id)).getOrElse(new ObjectId),
+      new ObjectId((json \ "author").as[String]),
       (json \ "message").as[String]
     )
 
     def writes(comment: Comment) = JsObject(Seq(
+      "id" -> JsString(comment._id.toString),
+      "author" -> JsString(comment.author.toString),
       "message" -> JsString(comment.message)
     ))
+  }
+
+  def fromMongoDBObject(comment: MongoDBObject): Option[Comment] = {
+    for {
+      _id   <- comment.getAs[ObjectId]("_id")
+      author   <- comment.getAs[ObjectId]("author")
+      message  <- comment.getAs[String]("message")
+    } yield {
+      Comment(_id, author, message)
+    }
   }
 }

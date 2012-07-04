@@ -23,6 +23,8 @@ case class Project(name: String, realName: String, avatar: Option[String] = None
 object Project extends MongoDB("projects") {
   import play.api.libs.json.Generic._
 
+  val ALL = "all"
+
   def createIfNot(project: Project) = {
     findOne("name" -> project.name).ifNone(save(project.asMongoDBObject))
   }
@@ -32,8 +34,7 @@ object Project extends MongoDB("projects") {
   }
 
   def all(max: Int = 50): List[Project] = {
-    Logger.debug(">>>>>>>>>>>>")
-    val projects = find()(max).map(fromMongoDBObject(_))
+    val projects = find(max).map(fromMongoDBObject(_))
     Logger.debug(projects.toString)
     projects.flatten
   }

@@ -18,6 +18,25 @@ class StoryActor extends Actor {
 
   private var projects: Map[String,Channel[Log]] = Map.empty
 
+  private def pushToChannel(projectName: String, log: Log) = {
+
+    projects.find(stream => stream._1 == Project.ALL).foreach {
+      case (Project.ALL, channel) => {
+        channel.push(log)
+        Log.create(log)
+      }
+    }
+
+    projects.find(stream => stream._1 == log.project).fold ({
+      case (projectName, channel) => {
+        channel.push(log)
+        Log.create(log)
+      }
+    },
+      Logger.warn("[Actor] Project doesn't exist")
+    )
+  }
+
   def receive = {
     case Listen(project: String) => {
       lazy val channel: Enumerator[Log] = Concurrent.unicast(
@@ -43,14 +62,7 @@ class StoryActor extends Actor {
 
     case NewLog(log: Log) => {
       Project.createIfNot(Project(log.project, log.project))
-      projects.find(stream => stream._1 == log.project).fold ({
-        case (projectName, channel) => {
-          channel.push(log)
-          Log.create(log)
-        }
-      },
-        Logger.warn("[Actor] Project doesn't exist")
-      )
+      pushToChannel(log.project, log)
     }
   }
 }

@@ -1,6 +1,6 @@
-@()
+@(user: models.User)
 
-@main("Play Story > Home") {
+@main("Play Story > Home", user) {
 
 <section class="column-left">
   <div class="inbox">
@@ -41,10 +41,9 @@
       <li><a href="#">DISCOVER</a></li>
       <li><hr/></li>
       <li><a href="#past/all">ALL</a></li>
-      <li><a href="#past/onconnect">GEONAUTE</a></li>
-      <li><a href="#past/scanup">SCAN'UP</a></li>
-      <li><a href="#past/idoo">IDOO</a></li>
-      <li><a href="#past/sematic">SEMATIC</a></li>
+      @user.projects.map { project =>
+      <li><a href="#past/@project.name">@project.realName</a></li>
+      }
     </ul>
   </div>
 </section>

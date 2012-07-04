@@ -14,8 +14,16 @@
         <span class="level"><%= feed.level %></span>
         <span class="message"><%= feed.message %></span>
       </div>
-      <div class="comments">
-      </div>
+      <ul class="comments">
+        <% feed.comments.forEach(function(comment) { %>
+        <li class="comment">
+          <div class="avatar">
+            <img src="/assets/images/commons/avatar.png" width="30px" height="30px" alt="play story"/>
+          </div>
+          <p><%= comment.message %></p>
+        </li>
+        <% }); %>
+      </ul>
       <div class="footer">
         <a class="comment" href="#">Comment</a> |
         <a class="share" href="#">Share</a> |
