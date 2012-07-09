@@ -36,9 +36,9 @@
              var $submitComment = $(evt.currentTarget),
                  $currentFeed = $submitComment.closest('li.feed'),
                  project = $currentFeed[0].dataset.project,
-                 msg = $submitComment.parent('.comment')
-                                        .find('textarea')
-                                        .val();
+                 msg = $submitComment.closest('.comment')
+                                     .find('textarea')
+                                     .val();
 
              return {
                  $feed: $currentFeed,
@@ -75,7 +75,14 @@
 
          this.fifo = Action(function(fifo, next) {
              elts.$feedsList.prepend(feedTmpl({
-                 feed: fifo.newFeed
+                 feed: fifo.newFeed,
+                 commentView: function(comment) {
+                     console.log(comment);
+                     return commentTmpl({
+                         author: comment.author,
+                         message: comment.message
+                     });
+                 }
              }));
 
              if(fifo.isFull) {
@@ -104,7 +111,13 @@
          this.addFeeds = Action(function(feeds, next) {
              feeds.forEach(function(feed) {
                  elts.$feedsList.prepend(feedTmpl({
-                     feed: feed
+                     feed: feed,
+                     commentView: function(comment) {
+                         return commentTmpl({
+                             author: model.models('user'),
+                             message: comment.message
+                         });
+                     }
                  }));
              });
          });

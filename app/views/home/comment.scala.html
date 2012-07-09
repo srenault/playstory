@@ -3,20 +3,30 @@
 <script id="new_comment_tmpl" type="text/html">
   <li class="new comment">
     <div class="avatar">
-      <img src="<%= author.avatar %>" width="30px" height="30px" alt="play story"/>
+      <img src="<%= author.avatar %>" width="40px" height="40px" alt="play story"/>
     </div>
-    <p class="author"><%= author.firstname %> <%= author.lastname %></p>
-    <textarea placeholder="Write a comment..."></textarea>
-    <button class="save">Comment</button>
+    <div class="body">
+      <div class="header">
+        <a href="#" class="author"><%= author.firstname %> <%= author.lastname %></a>
+      </div>
+      <div class="message">
+        <textarea placeholder="Write a comment..."></textarea>
+        <button class="save">Comment</button>
+      </div>
+    </div>
   </li>
 </script>
 
 <script id="comment_tmpl" type="text/html">
   <li class="comment">
     <div class="avatar">
-      <img src="<%= author.avatar %>" width="30px" height="30px" alt="play story"/>
+      <img src="<%= author.avatar %>" width="40px" height="40px" alt="play story"/>
     </div>
-    <p class="author"><%= author.firstname %> <%= author.lastname %></p>
-    <p class="message"><%= message %></p>
+    <div class="body">
+      <div class="header">
+        <a href="#" class="author"><%= author.firstname %> <%= author.lastname %></a>
+      </div>
+      <div class="message"><%= message %></div>
+    </div>
   </li>
 </script>

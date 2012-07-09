@@ -11,9 +11,17 @@
         //Init
         this.dom = new Tabs.TabsDOM();
 
+        Router.when('past/:project', this.dom.turnOnPastTab);
+        Router.when('present/:project', this.dom.turnOnPresentTab);
+
         //Routes
-        Router.when('past', this.dom.turnOnPastTab);
-        Router.when('present', this.dom.turnOnPresentTab);
+        When(this.dom.onPastTabClick)
+        .await(this.dom.turnOnPastTab)
+        .subscribe();
+
+        When(this.dom.onPresentTabClick)
+        .await(this.dom.turnOnPresentTab)
+        .subscribe();
     };
 
 })(window.PlayStory.Init.Home.Tabs, window.PlayStory.Router);

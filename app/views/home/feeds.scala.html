@@ -16,13 +16,7 @@
       </div>
       <ul class="comments">
         <% feed.comments.forEach(function(comment) { %>
-        <li class="comment">
-          <div class="avatar">
-            <img src="<%= comment.author.avatar %>" width="30px" height="30px" />
-          </div>
-          <p class="author"><%= comment.author.firstname %> <%= comment.author.lastname %></p>
-          <p><%= comment.message %></p>
-        </li>
+           <%= commentView(comment) %>
         <% }); %>
       </ul>
       <div class="footer">

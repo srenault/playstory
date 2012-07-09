@@ -1,5 +1,7 @@
 @import "../variables.less";
 
+
+
 .box {
     border: 1px dotted @redPlay;
     background: url('/assets/images/commons/stripes.png');
@@ -54,6 +56,7 @@
             padding-top: 5px;
             padding-bottom: 5px;
             float: left;
+            cursor: pointer;
 
             &:first-child {
                 border-bottom-left-radius: 3px;
@@ -108,7 +111,7 @@
             background: white;
             padding: 15px;
             border-radius: 2px;
-            box-shadow: 4px 4px 5px #888;
+            box-shadow: 0px 4px 5px #888;
             overflow: hidden;
             -webkit-transition: opacity 2s ease 1s;
 
@@ -124,11 +127,7 @@
                 float: left;
                 width: 600px;
 
-                .message {
-                    color: #353635;
-                }
-
-                .header {
+                >.header {
                     overflow: hidden;
                     border-bottom: 1px solid @greyLightIPlay;
                     padding-bottom: 2px;
@@ -154,8 +153,45 @@
                     }
                 }
 
+                .comments {
+                    .comment {
+                        margin-top: 10px;
+                        overflow: hidden;
+                        background: #EDEFFA;
+
+                        > div.body {
+                            float: left;
+                            padding-left: 6px;
+                            width: 90%;
+
+                            .header {
+                                border-bottom: 1px solid white;
+                                padding: 2px;
+                                font-size: 0.9em;
+
+                                a {
+                                    color: @blackPlay;
+                                    font-weight: bold;
+                                }
+                            }
+
+                            .message {
+                                font-size: 0.9em;
+                                padding: 4px;
+
+                                textarea {
+                                    height: 45px;
+                                    width: 50%;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 .footer {
                     margin-top: 12px;
+                    border-top: 1px solid @greyLightIPlay;
+                    padding-top: 4px;
 
                     a {
                         color: @blueEmacs;

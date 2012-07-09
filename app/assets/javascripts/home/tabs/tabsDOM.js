@@ -32,6 +32,15 @@
              elts.$pastTab.removeClass('on');
              next(evt);
          });
+
+         this.refreshNavigation = Action(function(params, next) {
+             var pastURL = '#past/:project'.replace(':project', params[0]);
+             elts.$pastTab.find('a').attr('href', pastURL);
+
+             var presentURL = '#present/:project'.replace(':project', params[0]);
+             elts.$presentTab.find('a').attr('href', presentURL);
+             next(params);
+         });
      };
 
  })(window.PlayStory.Init.Home.Tabs);

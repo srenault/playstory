@@ -26,6 +26,8 @@ case class Log(
 
   def addComment(comment: Comment) = Log.addComment(_id, comment)
 
+  def countByLevel(): List[(String, Double)] = Log.countByLevel(project)
+
   def asMongoDBObject: MongoDBObject = {
     val log = MongoDBObject.newBuilder
     log += "_id" -> _id
@@ -64,6 +66,46 @@ object Log extends MongoDB("logs") {
     collection.find(
       "date" $gt from, MongoDBObject("project" -> project)
     ).limit(max).map(fromMongoDBObject(_)).toList.flatten
+  }
+
+  def countByLevel(project: String): List[(String, Double)] = {
+
+    val mapFunction = """
+    function() {
+        emit(this.level, { count: 1 });
+    }
+    """
+
+    val reduceFunction = """
+    function(key, values) {
+        var result = { count:  0 };
+        values.forEach(function(value) {
+            result.count += value.count;
+        });
+        return result;
+     }
+     """
+
+    val byProject = Some(MongoDBObject("project" -> project))
+
+    val results = collection.mapReduce(
+      mapFunction,
+      reduceFunction,
+      MapReduceInlineOutput,
+      byProject
+    ).cursor.toList
+
+    println(results.size)
+
+    results.flatMap { result =>
+      for {
+        level <- result.getAs[String]("_id")
+        value <- result.getAs[DBObject]("value")
+        count <- value.getAs[Double]("count")
+      } yield {
+        (level, count)
+      }
+    }
   }
 
   def create(log: Log) = save(log.asMongoDBObject)
@@ -110,8 +152,8 @@ object Log extends MongoDB("logs") {
     }
   }
 
-  import play.api.libs.json.Generic._
   implicit object LogFormat extends Format[Log] {
+
     def reads(json: JsValue): Log = Log(
       (json \ "_id").asOpt[String].map(new ObjectId(_)).getOrElse(new ObjectId),
       (json \ "project").as[String],

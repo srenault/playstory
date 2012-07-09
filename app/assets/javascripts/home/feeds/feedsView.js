@@ -34,20 +34,21 @@
          });
 
         //Routes
-        Router.when('past', this.pastDOM.viewFeeds);
         Router.when('past/:project').chain(
             this.model.reset,
             listenFetch,
             this.model.reset,
-            this.server.fetchFeeds
+            this.server.fetchFeeds,
+            this.pastDOM.viewFeeds
         );
 
-        Router.when('present', this.pastDOM.hideFeeds);
         Router.when('past/:project').chain(
             this.model.reset,
             listenChunks,
             this.server.closeCurrentStream,
-            this.server.bindToStream
+            this.server.bindToStream,
+            this.pastDOM.hideFeeds,
+            tabs.dom.refreshNavigation
         );
 
         //Interactions

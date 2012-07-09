@@ -12,7 +12,7 @@ trait Secured {
     requestHeader => if(PlayStoryConfig.isOffline) Some("anonymous") else requestHeader.session.get("user"),
     requestHeader => askSignIn)(email => Action { request =>
       if(!PlayStoryConfig.isOffline) {
-        Logger.warn("You aren't in an offline mode !")
+        Logger.info("You aren't in an offline mode.")
         User.byEmail(email).map { u =>
           securedAction(AuthenticatedRequest(u, request))
         }.getOrElse(askSignIn)
