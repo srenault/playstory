@@ -21,12 +21,20 @@ case class Project(name: String, realName: String, avatar: Option[String] = None
 }
 
 object Project extends MongoDB("projects") {
-  import play.api.libs.json.Generic._
 
   val ALL = "all"
 
+  def assignAvatar(project: Project): Project = {
+    project.name match {
+      case "onconnect" => project.copy(avatar = Some("/assets/images/avatars/onconnect.png"))
+      case _ => project.copy(avatar = Some("/assets/images/avatars/scanup.png"))
+    }
+  }
+
   def createIfNot(project: Project) = {
-    findOne("name" -> project.name).ifNone(save(project.asMongoDBObject))
+    findOne("name" -> project.name).ifNone {
+      save(assignAvatar(project).asMongoDBObject)
+    }
   }
 
   def byName(name: String): Option[Project] = {

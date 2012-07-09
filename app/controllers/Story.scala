@@ -32,6 +32,9 @@ object Story extends Controller with Secured with Pulling {
     Project.byName("onconnect").foreach { project =>
       request.user.follow(project)
     }
+    Project.byName("scanup").foreach { project =>
+      request.user.follow(project)
+    }
     Ok(views.html.home.index(request.user))
   }
 

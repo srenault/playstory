@@ -4,7 +4,7 @@
 
 (function(Feeds) {
 
-     Feeds.FeedsPastDOM = function() {
+     Feeds.FeedsPastDOM = function(model) {
          console.log("[FeedsPast.DOM] Init feeds past DOM");
 
          //DOM elements
@@ -16,7 +16,8 @@
          })();
 
          var feedTmpl = _.template($("#feed_tmpl").html()),
-             newCommentTmpl = _.template($("#new_comment_tmpl").html());
+             newCommentTmpl = _.template($("#new_comment_tmpl").html()),
+             commentTmpl = _.template($("#comment_tmpl").html());
 
          //Events
          this.onMoreFeedsClick = function(next) {
@@ -28,18 +29,19 @@
          };
 
          this.onSubmitCommentClick = function(next) {
-             elts.$feedsContainer.on('click', '.comments button.save', next);
+             elts.$feedsContainer.on('click', '.comments .new.comment button.save', next);
          };
 
          this.newComment = function(evt) {
              var $submitComment = $(evt.currentTarget),
-                 $currentFeed = $submitComment.closest('li'),
+                 $currentFeed = $submitComment.closest('li.feed'),
                  project = $currentFeed[0].dataset.project,
                  msg = $submitComment.parent('.comment')
                                         .find('textarea')
                                         .val();
 
              return {
+                 $feed: $currentFeed,
                  id: $currentFeed.attr('id'),
                  msg: msg,
                  project: project
@@ -55,9 +57,20 @@
          this.displayNewComment = Action(function(evt, next) {
              var $feed = $(evt.currentTarget).closest('.log')
                                              .find('.comments');
-             $feed.append(newCommentTmpl({}));
-             $feed.show();
+             $feed.append(newCommentTmpl({
+                 author: model.models('user')
+             }));
              next(evt);
+         });
+
+         this.displayComment = Action(function(comment, next) {
+             comment.$feed.find('.new.comment').remove();
+             console.log(model.models('user'));
+             comment.$feed.find('.comments').append(commentTmpl({
+                 author: model.models('user'),
+                 message: comment.msg
+             }));
+             next(comment);
          });
 
          this.fifo = Action(function(fifo, next) {

@@ -10,7 +10,7 @@
 
         //Init
         this.model      =  new Models.FeedsModel();
-        this.pastDOM    =  new Feeds.FeedsPastDOM();
+        this.pastDOM    =  new Feeds.FeedsPastDOM(this.model);
         this.presentDOM =  new Feeds.FeedsPresentDOM();
         this.server     =  new Feeds.FeedsServer(this.model);
 
@@ -61,7 +61,7 @@
 
         When(this.pastDOM.onSubmitCommentClick)
         .map(this.pastDOM.newComment)
-        .await(this.server.saveNewComment)
+        .await(this.server.saveNewComment.then(this.pastDOM.displayComment))
         .subscribe();
 
         When(tabs.dom.onPastTabClick)

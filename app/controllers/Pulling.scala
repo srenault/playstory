@@ -13,13 +13,13 @@ import models.{Project, Log}
 trait Pulling {
   self: Controller =>
 
-  protected def playPulling(chunks: Enumerator[Log])(implicit request: Request[AnyContent], cometMessage: Comet.CometMessage[Log]) = {
+  protected def playPulling(chunks: Enumerator[Log])(implicit request: AuthenticatedRequest, cometMessage: Comet.CometMessage[Log]) = {
     val comet = Comet(callback = "window.parent.PlayStory.Home.FeedsPresent.server.fromPulling")
-    val check = Enumeratee.filter[Log](l => Project.byName(l.project).isDefined)
+    val filterByUser = Enumeratee.filter[Log](l => request.user.isFollowProject(l.project))
     request.headers.get("ACCEPT").map( _ match {
       case "text/event-stream" => {
         Logger.debug("[Story] Pushing data using Server Sent Event");
-        Ok.stream(chunks &> check &> EventSource()) withHeaders(CONTENT_TYPE -> "text/event-stream")
+        Ok.stream(chunks &> filterByUser &> EventSource()) withHeaders(CONTENT_TYPE -> "text/event-stream")
       }
       case _ => {
         Logger.debug("[Story] Pushing data using Commet");

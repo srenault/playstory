@@ -41,7 +41,7 @@ object Application extends Controller with GoogleOpenID {
           email     <- userInfo.attributes.get("email")
           language  <- userInfo.attributes.get("language")
         } yield {
-          User.create(User(lastname, firstname, email, language))
+          User.createIfNot(User(lastname, firstname, email, language))
           Logger.info("[OpenID] Authentication successful")
           Redirect(routes.Story.home).withSession("user" -> email)
         }) getOrElse {

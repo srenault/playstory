@@ -1,11 +1,22 @@
 @()
 
 <script id="new_comment_tmpl" type="text/html">
-  <div class="comment">
+  <li class="new comment">
     <div class="avatar">
-      <img src="/assets/images/commons/avatar.png" width="30px" height="30px" alt="play story"/>
+      <img src="<%= author.avatar %>" width="30px" height="30px" alt="play story"/>
     </div>
+    <p class="author"><%= author.firstname %> <%= author.lastname %></p>
     <textarea placeholder="Write a comment..."></textarea>
     <button class="save">Comment</button>
-  </div>
+  </li>
+</script>
+
+<script id="comment_tmpl" type="text/html">
+  <li class="comment">
+    <div class="avatar">
+      <img src="<%= author.avatar %>" width="30px" height="30px" alt="play story"/>
+    </div>
+    <p class="author"><%= author.firstname %> <%= author.lastname %></p>
+    <p class="message"><%= message %></p>
+  </li>
 </script>

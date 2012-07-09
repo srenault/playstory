@@ -3,7 +3,7 @@
 <script id="feed_tmpl" type="text/html">
   <li id="<%= feed.id %>" data-project="<%= feed.project %>" class="feed <%= feed.level %>">
     <div class="avatar">
-      <img src="/assets/images/commons/avatar.png" width="50px" height="50px" alt="<%= feed.realName %>"/>
+      <img src="<%= feed.avatar %>" width="50px" height="50px" alt="<%= feed.realName %>"/>
     </div>
     <div class="log">
       <div class="header">
@@ -18,8 +18,9 @@
         <% feed.comments.forEach(function(comment) { %>
         <li class="comment">
           <div class="avatar">
-            <img src="/assets/images/commons/avatar.png" width="30px" height="30px" />
+            <img src="<%= comment.author.avatar %>" width="30px" height="30px" />
           </div>
+          <p class="author"><%= comment.author.firstname %> <%= comment.author.lastname %></p>
           <p><%= comment.message %></p>
         </li>
         <% }); %>
