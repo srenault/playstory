@@ -17,7 +17,7 @@ window.PlayStory = {
     }
 };
 
-(function(PlayStory) {
+(function(PlayStory, RouterUtils) {
 
      PlayStory.Router = (function() {
          console.log("[PlayStory.Router] Init play story router");
@@ -38,53 +38,32 @@ window.PlayStory = {
              return window.location.hash.substr(1,window.location.hash.length);
          };
 
-         var BackboneRegex = (function() {
-             var namedParam    = /:\w+/g,
-                 splatParam    = /\*\w+/g,
-                 escapeRegExp  = /[-[\]{}()+?.,\\^$|#\s]/g;
-
-             return {
-                 routeToRegExp: function(route) {
-                     route = route.replace(escapeRegExp, '\\$&')
-                                  .replace(namedParam, '([^\/]+)')
-                                  .replace(splatParam, '(.*?)');
-
-                     return new RegExp('^' + route + '$');
-                 },
-
-                 extractParams: function(routeRegex) {
-                     return routeRegex.exec(currentRoute()).slice(1);
-                 }
-             };
-         })();
-
          //Actions
-         var extractParams = function(routeRegex) {
+         var matchParams = function(routeRegex) {
              return Action(function(route, next) {
-                 var params= BackboneRegex.extractParams(routeRegex);
+                 var params= RouterUtils.matchParams(currentRoute(), routeRegex);
                  next(params);
              });
          };
 
          var subscribe = function(route, actions) {
-             var routeRegex = BackboneRegex.routeToRegExp(route);
+             var routeAsRegex = RouterUtils.routeAsRegex(route);
 
-             actions.unshift(extractParams(routeRegex));
+             actions.unshift(matchParams(routeAsRegex));
              var composedActions = actions.reduce(function(prevAction, currentAction) {
                  return prevAction.then(currentAction);
              });
 
-             var r = Match.regex(routeRegex, extractParams(routeRegex).then(composedActions));
+             var r = Match.regex(routeAsRegex, matchParams(routeAsRegex).then(composedActions));
              router.match(r).subscribe();
 
-             if(routeRegex.test(currentRoute())) {
-                 var params = BackboneRegex.extractParams(routeRegex);
+             if(routeAsRegex.test(currentRoute())) {
+                 var params = RouterUtils.matchParams(currentRoute(), routeAsRegex);
                  composedActions._do(params);
              }
          };
 
          return new (function() {
-
              var that = this,
                  route = "";
 
@@ -115,4 +94,4 @@ window.PlayStory = {
          })();
      })();
 
- })(window.PlayStory || {});
+ })(window.PlayStory || {}, window.RouterUtils || {});
