@@ -29,12 +29,14 @@ object Story extends Controller with Secured with Pulling {
 
   def home = Authenticated { implicit request =>
     Logger.info("[Story] Welcome : " + request.user)
+
     Project.byName("onconnect").foreach { project =>
       request.user.follow(project)
     }
     Project.byName("scanup").foreach { project =>
       request.user.follow(project)
     }
+
     Ok(views.html.home.index(request.user))
   }
 
@@ -43,23 +45,30 @@ object Story extends Controller with Secured with Pulling {
     Ok
   }
 
-  private def toCompleteLog(log: Log)(implicit request: RequestHeader) = {
-    JsObject(Seq(
-      "log" -> toJson(log),
-      "project" -> toJson(Project.byName(log.project)),
-      "src" -> JsString(request.uri)
-    )).toString
-  }
-
   def listen(project: String) = Authenticated { implicit request =>
     Logger.info("[Story] Waitings logs...")
     AsyncResult {
       implicit val timeout = Timeout(5 second)
       (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
-        implicit val LogComet = Comet.CometMessage[Log](log => toCompleteLog(log))
+        implicit val LogComet = Comet.CometMessage[Log](log => wrappedLog(log))
         playPulling(chunks).getOrElse(BadRequest)
       }
     }
+  }
+
+  def inbox(project: String) = Authenticated { implicit request =>
+    Logger.info("[Story] Getting inbox data...")
+
+    val countersOpt = Project.byName(project).map { _ =>
+      project match {
+        case Project.ALL => Log.countByLevel()
+        case _ => Log.countByLevel(project)
+      }
+    }
+
+    countersOpt.map { counters =>
+      Ok(wrappedInbox(counters))
+    }.getOrElse(BadRequest)
   }
 
   val commentForm = Form(
@@ -85,8 +94,8 @@ object Story extends Controller with Secured with Pulling {
     Logger.info("[Story] Getting history of %s from %".format(project, from))
 
     val logs = project match {
-      case Project.ALL => Log.all().map(toCompleteLog(_))
-      case _ => Log.byProjectFrom(project, from).map(toCompleteLog(_))
+      case Project.ALL => Log.all().map(wrappedLog(_))
+      case _ => Log.byProjectFrom(project, from).map(wrappedLog(_))
     }
 
     Ok(toJson(logs))
@@ -96,8 +105,8 @@ object Story extends Controller with Secured with Pulling {
     Logger.info("[Story] Getting history of %s".format(project))
 
     val logs = project match {
-      case Project.ALL => Log.all().map(toCompleteLog(_))
-      case _ => Log.byProject(project).map(toCompleteLog(_))
+      case Project.ALL => Log.all().map(wrappedLog(_))
+      case _ => Log.byProject(project).map(wrappedLog(_))
     }
 
     Ok(toJson(logs))
@@ -112,5 +121,23 @@ object Story extends Controller with Secured with Pulling {
       case log: JsValue => BadRequest("[Story] Not a json object")
       case _ => BadRequest("[Story] Invalid Log format: " + request.body)
     }
+  }
+
+  private def wrappedLog(log: Log)(implicit request: RequestHeader) = {
+    JsObject(Seq(
+      "log" -> toJson(log),
+      "project" -> toJson(Project.byName(log.project)),
+      "src" -> JsString(request.uri)
+    )).toString
+  }
+
+  private def wrappedInbox(counters: List[(String, Double)])(implicit request: RequestHeader) = {
+    JsArray(
+      counters.map { counter =>
+        JsObject(Seq(
+          "counter" -> Log.LogFormat.counterByLevelJSON(counter),
+          "src" -> JsString(request.uri)
+        ))
+    }).toString
   }
 }

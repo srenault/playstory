@@ -77,7 +77,6 @@
              elts.$feedsList.prepend(feedTmpl({
                  feed: fifo.newFeed,
                  commentView: function(comment) {
-                     console.log(comment);
                      return commentTmpl({
                          author: comment.author,
                          message: comment.message

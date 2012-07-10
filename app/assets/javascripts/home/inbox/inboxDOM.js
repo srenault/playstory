@@ -17,8 +17,14 @@
              console.log("Select all feed");
          };
 
-         this.updateAllCounter = Action(function(evt, next) {
-             console.log("update all counter");
+         this.initCounters = Action(function(data, next) {
+             elts.$inbox.find('li.' + data.counter.level + ' a span')
+             .text('('+ data.counter.count + ')');
+         });
+
+         this.updateCounters = Action(function(counters, next) {
+             console.log(">>>>>>> inbox");
+             console.log(counters);
          });
      };
 

@@ -1,13 +1,13 @@
 @()
 
 <script id="feed_tmpl" type="text/html">
-  <li id="<%= feed.id %>" data-project="<%= feed.project %>" class="feed <%= feed.level %>">
+  <li id="<%= feed.id %>" data-project="<%= feed.project.name %>" class="feed <%= feed.level %>">
     <div class="avatar">
       <img src="<%= feed.avatar %>" width="50px" height="50px" alt="<%= feed.realName %>"/>
     </div>
     <div class="log">
       <div class="header">
-        <a class="project" href="#past/<%=feed.project%>"><%= feed.realName %></a>
+        <a class="project" href="#past/<%= feed.project.name %>"><%= feed.realName %></a>
         <span class="time"><%=feed.time %></span>
       </div>
       <div class="content">

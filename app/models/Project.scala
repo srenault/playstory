@@ -58,15 +58,6 @@ object Project extends MongoDB("projects") {
 
   implicit object ProjectFormat extends Format[Project] {
 
-    private def countByLevelJSON(project: String): JsValue = JsArray(
-      Log.countByLevel(project).map {
-        case (project, count) => JsObject(Seq(
-          "project" -> JsString(project),
-          "count" -> JsNumber(count)
-        ))
-      }
-    )
-
     def reads(json: JsValue): Project = Project(
       (json \ "name").as[String],
       (json \ "realName").as[String],
@@ -76,8 +67,7 @@ object Project extends MongoDB("projects") {
     def writes(p: Project): JsValue = JsObject(Seq(
       "name" -> JsString(p.name),
       "realName" -> JsString(p.realName),
-      "avatar" -> p.avatar.map(JsString(_)).getOrElse(JsNull),
-      "countByLevel" -> countByLevelJSON(p.name)
+      "avatar" -> p.avatar.map(JsString(_)).getOrElse(JsNull)
     ))
   }
 }

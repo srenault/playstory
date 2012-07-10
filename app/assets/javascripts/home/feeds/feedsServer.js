@@ -55,8 +55,12 @@
             return '/story/:project/listen'.replace(':project', project);
         };
 
-       var _buildFetchURI = function(project) {
+       var _buildLastLogsURI = function(project) {
             return '/story/:project/last'.replace(':project', project);
+        };
+
+       var _buildInboxURI = function(project) {
+            return '/story/:project/inbox'.replace(':project', project);
         };
 
         this.fromPulling = function(feed) {
@@ -85,11 +89,19 @@
             _subscribe('template', next);
         };
 
-        this.onSuccessFetch = function(params) {
-            var uri = _buildFetchURI(params);
-            console.log("[Feeds.Server] Subscribe to " + uri);
+        this.onSuccessLastLogs = function(params) {
+            var uri = _buildLastLogsURI(params);
+            console.log("[Feeds.Server] Subscribe to last Feeds: " + uri);
             return function(next) {
-                _subscribe(_buildFetchURI(params), next);
+                _subscribe(uri, next);
+            };
+        };
+
+        this.onSuccessInbox = function(params) {
+            var uri = _buildInboxURI(params);
+            console.log("[Feeds.Server] Subscribe to Inbox: " + uri);
+            return function(next) {
+                _subscribe(uri, next);
             };
         };
 
@@ -120,7 +132,7 @@
         });
 
         /**
-         * Fetch logs by making a classic GET request.
+         * Fetch last logs.
          */
         this.fetchFeeds = Action(function(params, next) {
             var uri = '/story/:project/last'.replace(':project', params[0]);
@@ -131,6 +143,24 @@
                 success: function(feeds) {
                     feeds.forEach(function(feed) {
                         _streamFeeds(JSON.parse(feed));
+                    });
+                    next(params);
+                }
+            });
+        });
+
+        /**
+         * Fetch inbox counters.
+         */
+        this.fetchInbox = Action(function(params, next) {
+            var uri = '/story/:project/inbox'.replace(':project', params[0]);
+            console.log("[Feeds.server] Fetching inbox counters " + uri);
+            $.ajax({
+                url: uri,
+                dataType: 'json',
+                success: function(counters) {
+                    counters.forEach(function(counter) {
+                        _streamFeeds(counter);
                     });
                     next(params);
                 }

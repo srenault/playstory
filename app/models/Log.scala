@@ -68,7 +68,7 @@ object Log extends MongoDB("logs") {
     ).limit(max).map(fromMongoDBObject(_)).toList.flatten
   }
 
-  def countByLevel(project: String): List[(String, Double)] = {
+  def countByLevel(projects: String*): List[(String, Double)] = {
 
     val mapFunction = """
     function() {
@@ -86,16 +86,17 @@ object Log extends MongoDB("logs") {
      }
      """
 
-    val byProject = Some(MongoDBObject("project" -> project))
+    val byProjects = projects.size match {
+      case size: Int if size > 0 => Some("project" $in projects.toArray)
+      case _ => None
+    }
 
     val results = collection.mapReduce(
       mapFunction,
       reduceFunction,
       MapReduceInlineOutput,
-      byProject
+      byProjects
     ).cursor.toList
-
-    println(results.size)
 
     results.flatMap { result =>
       for {
@@ -153,6 +154,15 @@ object Log extends MongoDB("logs") {
   }
 
   implicit object LogFormat extends Format[Log] {
+
+    def counterByLevelJSON(counterByLevel: (String, Double)): JsValue = {
+      counterByLevel match {
+        case (project, count) => JsObject(Seq(
+          "level" -> JsString(project),
+          "count" -> JsNumber(count)
+        ))
+      }
+    }
 
     def reads(json: JsValue): Log = Log(
       (json \ "_id").asOpt[String].map(new ObjectId(_)).getOrElse(new ObjectId),

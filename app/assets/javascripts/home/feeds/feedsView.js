@@ -4,7 +4,7 @@
 
 (function(Feeds, Router, Models) {
 
-    Feeds.FeedsView = function(tabs) {
+    Feeds.FeedsView = function(tabs, inbox) {
         console.log("[Feeds.View] Init feeds past view");
         var self = this;
 
@@ -19,13 +19,16 @@
             When(self.server.onReceiveChunk(params))
                 .map(self.model.asFeed)
                 .map(self.model.fifo)
-                .await(self.pastDOM.fifo.then(self.pastDOM.updateCounter))
+                .await(
+                    self.pastDOM.fifo.then(
+                    self.pastDOM.updateCounter.and(inbox.dom.updateCounters))
+                )
                 .subscribe();
             next(params);
          });
 
-        var listenFetch = Action(function(params, next) {
-            When(self.server.onSuccessFetch(params))
+        var listenLastLogs = Action(function(params, next) {
+            When(self.server.onSuccessLastLogs(params))
                 .map(self.model.asFeed)
                 .map(self.model.fifo)
                 .await(self.pastDOM.fifo)
@@ -33,15 +36,30 @@
             next(params);
          });
 
+        var listenInbox = Action(function(params, next) {
+            When(self.server.onSuccessInbox(params))
+                .await(inbox.dom.initCounters)
+                .subscribe();
+            next(params);
+         });
+
         //Routes
+        //Fetch last logs
         Router.when('past/:project').chain(
             this.model.reset,
-            listenFetch,
+            listenLastLogs,
             this.model.reset,
             this.server.fetchFeeds,
             this.pastDOM.viewFeeds
         );
 
+        //Fetch inbox counters
+        Router.when('past/:project').chain(
+            listenInbox,
+            this.server.fetchInbox
+        );
+
+        //Stream new logs
         Router.when('past/:project').chain(
             this.model.reset,
             listenChunks,

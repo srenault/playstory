@@ -21,7 +21,9 @@
             var feed = {
                 id: data.log._id,
                 realName: data.project.realName,
-                project: data.project.name,
+                project: {
+                    name: data.project.name
+                },
                 avatar: data.project.avatar,
                 time: new Date(data.log.date),
                 level: data.log.method,
