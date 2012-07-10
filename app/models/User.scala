@@ -17,18 +17,27 @@ case class User(
   email: String,
   language: String,
   avatar: Option[String],
-  projects: Seq[Project]
+  projectNames: Seq[String],
+  starredLogs: Seq[ObjectId]
 ) {
 
   def fullName = firstname + " " + lastname
 
+  def projects: Seq[Project] = projectNames.flatMap { projectName =>
+    Project.byName(projectName)
+  }
+
   def follow(project: Project) = {
-    projects.find(pj => pj.name == project.name)
-            .ifNone(User.follow(_id, project))
+    projectNames.find(pj => pj == project.name)
+            .ifNone(User.follow(_id, project.name))
+  }
+
+  def starLog(logID: ObjectId) {
+    User.starLog(_id, logID)
   }
 
   def isFollowProject(project: String): Boolean =
-    projects.find(_.name == project).isDefined
+    projectNames.find(_ == project).isDefined
 
   def asMongoDBObject: MongoDBObject = {
     val user = MongoDBObject.newBuilder
@@ -38,15 +47,22 @@ case class User(
     user += "email" -> email
     user += "language" -> language
     user += "avatar" -> avatar
-    user += "projects" -> projects
+    user += "projects" -> projectNames
+    user += "starred" -> starredLogs
     user.result
   }
 }
 
 object User extends MongoDB("users") {
 
-  def apply(lastname: String, firstname: String, email: String, language: String, avatar: Option[String] = None, projects: Seq[Project] = Nil): User = {
-    User(new ObjectId, lastname, firstname, email, language, avatar, projects)
+  def apply(lastname: String,
+            firstname: String,
+            email: String,
+            language: String,
+            avatar: Option[String] = None,
+            projects: Seq[String] = Nil,
+            starredLogs: Seq[ObjectId] = Nil): User = {
+    User(new ObjectId, lastname, firstname, email, language, avatar, projects, starredLogs)
   }
 
   def assignAvatar(user: User): User = {
@@ -72,8 +88,12 @@ object User extends MongoDB("users") {
   def createIfNot(user: User) =
     byEmail(user.email).ifNone(save(assignAvatar(user).asMongoDBObject))
 
-  def follow(id: ObjectId, project: Project) = {
-    collection.update(MongoDBObject("_id" -> id), $push("projects" -> project.asMongoDBObject))
+  def follow(id: ObjectId, project: String) = {
+    collection.update(MongoDBObject("_id" -> id), $push("projects" -> project))
+  }
+
+  def starLog(id: ObjectId, logID: ObjectId) {
+    collection.update(MongoDBObject("_id" -> id), $push("starred" -> logID))
   }
 
   def fromMongoDBObject(user: MongoDBObject): Option[User] = {
@@ -85,11 +105,13 @@ object User extends MongoDB("users") {
       language  <- user.getAs[String]("language")
     } yield {
       val avatar = user.getAs[String]("avatar")
-      val projects = user.getAs[BasicDBList]("projects")
-                         .getOrElse(new BasicDBList()).flatMap {
-         case p: DBObject => Project.fromMongoDBObject(p)
+      val projects = user.as[BasicDBList]("projects").toList.map {
+        case project: String => project
       }
-      User(_id, lastname, firstname, email, language, avatar, projects)
+      val starredLogs = user.as[BasicDBList]("starred").toList.map {
+        case logID: ObjectId => logID
+      }
+      User(_id, lastname, firstname, email, language, avatar, projects, starredLogs)
     }
   }
 
@@ -101,7 +123,8 @@ object User extends MongoDB("users") {
       (json \ "email").as[String],
       (json \ "language").as[String],
       (json \ "avatar").asOpt[String],
-      (json \ "projects").as[Seq[Project]]
+      (json \ "projects").as[Seq[String]],
+      (json \ "starred").as[Seq[String]].map(new ObjectId(_))
     )
 
     def writes(user: User) = JsObject(Seq(
@@ -111,7 +134,8 @@ object User extends MongoDB("users") {
       "email" -> JsString(user.email),
       "language" -> JsString(user.language),
       "avatar" -> toJson(user.avatar),
-      "projects" -> toJson(user.projects)
+      "projects" -> toJson(user.projectNames),
+      "starred" -> toJson(user.starredLogs.map(l => JsString(l.toString)))
     ))
   }
 }

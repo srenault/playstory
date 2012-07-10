@@ -36,6 +36,15 @@
             next(params);
          });
 
+        var listenLogsByLevel = Action(function(params, next) {
+            When(self.server.onSuccessLogsByLevel(params))
+                .map(self.model.asFeed)
+                .map(self.model.fifo)
+                .await(self.pastDOM.fifo)
+                .subscribe();
+            next(params);
+         });
+
         var listenInbox = Action(function(params, next) {
             When(self.server.onSuccessInbox(params))
                 .await(inbox.dom.initCounters)
@@ -43,7 +52,6 @@
             next(params);
          });
 
-        //Routes
         //Fetch last logs
         Router.when('past/:project').chain(
             this.model.reset,
@@ -66,7 +74,16 @@
             this.server.closeCurrentStream,
             this.server.bindToStream,
             this.pastDOM.hideFeeds,
-            tabs.dom.refreshNavigation
+            tabs.dom.refreshNavigation,
+            inbox.dom.refreshNavigation
+        );
+
+        Router.when('past/:project/level/:level').chain(
+            this.model.reset,
+            this.pastDOM.clearFeeds,
+            listenLogsByLevel,
+            this.server.fetchFeedsByLevel,
+            this.pastDOM.viewFeeds
         );
 
         //Interactions

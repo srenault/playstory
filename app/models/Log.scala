@@ -62,6 +62,10 @@ object Log extends MongoDB("logs") {
     find(max, byBegin, "project" -> project).map(fromMongoDBObject(_)).flatten
   }
 
+  def byLevel(project: String, level: String, max: Int = 50): List[Log] = {
+    find(max, byBegin, "level" -> level).map(fromMongoDBObject(_)).flatten
+  }
+
   def byProjectFrom(project: String, from: Long, max: Int = 50): List[Log] = {
     collection.find(
       "date" $gt from, MongoDBObject("project" -> project)
@@ -69,7 +73,6 @@ object Log extends MongoDB("logs") {
   }
 
   def countByLevel(projects: String*): List[(String, Double)] = {
-
     val mapFunction = """
     function() {
         emit(this.level, { count: 1 });

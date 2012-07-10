@@ -21,7 +21,10 @@ import akka.util.Timeout
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.casbah.Imports._
 
-import models.{Log, User, Project, Comment}
+import scalaz.OptionW
+import scalaz.Scalaz._
+
+import models.{ Log, User, Project, Comment }
 import actors.StoryActor
 import actors.StoryActor._
 
@@ -88,6 +91,19 @@ object Story extends Controller with Secured with Pulling {
         Ok
       }.getOrElse(BadRequest)
     )
+  }
+
+  def starLog(project: String, logID: String) = Authenticated { implicit request =>
+    Log.byId(new ObjectId(logID)).map { log =>
+      request.user.starLog(log._id)
+      Ok
+    }.getOrElse(BadRequest)
+  }
+
+  def byLevel(project: String, level: String) = Action { implicit request =>
+    Logger.info("[Story] Getting logs by level for %s".format(project))
+    val logs = Log.byLevel(project, level).map(wrappedLog(_))
+    Ok(toJson(logs))
   }
 
   def lastFrom(project: String, from: Long) = Action { implicit request =>

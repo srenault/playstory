@@ -59,6 +59,11 @@
             return '/story/:project/last'.replace(':project', project);
         };
 
+       var _buildLogsByLevelURI = function(project, level) {
+            return '/story/:project/level/:level'.replace(':project', project)
+                                                 .replace(':level', level);
+        };
+
        var _buildInboxURI = function(project) {
             return '/story/:project/inbox'.replace(':project', project);
         };
@@ -92,6 +97,14 @@
         this.onSuccessLastLogs = function(params) {
             var uri = _buildLastLogsURI(params);
             console.log("[Feeds.Server] Subscribe to last Feeds: " + uri);
+            return function(next) {
+                _subscribe(uri, next);
+            };
+        };
+
+        this.onSuccessLogsByLevel = function(params) {
+            var uri = _buildLogsByLevelURI(params[0], params[1]);
+            console.log("[Feeds.Server] Subscribe to Feeds by level: " + uri);
             return function(next) {
                 _subscribe(uri, next);
             };
@@ -137,6 +150,26 @@
         this.fetchFeeds = Action(function(params, next) {
             var uri = '/story/:project/last'.replace(':project', params[0]);
             console.log("[Feeds.server] Fetching feeds " + uri);
+            $.ajax({
+                url: uri,
+                dataType: 'json',
+                success: function(feeds) {
+                    feeds.forEach(function(feed) {
+                        _streamFeeds(JSON.parse(feed));
+                    });
+                    next(params);
+                }
+            });
+        });
+
+        /**
+         * Fetch logs by level.
+         */
+        this.fetchFeedsByLevel = Action(function(params, next) {
+            var uri = '/story/:project/level/:level'.replace(':project', params[0])
+                                                    .replace(':level', params[1]);
+
+            console.log("[Feeds.server] Fetching feeds by levels " + uri);
             $.ajax({
                 url: uri,
                 dataType: 'json',

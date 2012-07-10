@@ -10,6 +10,7 @@
          //DOM elements
          var elts = new (function() {
              this.$inbox = $('.inbox');
+             this.$levels = this.$inbox.find('ul li');
          })();
 
          //Events
@@ -23,8 +24,20 @@
          });
 
          this.updateCounters = Action(function(counters, next) {
-             console.log(">>>>>>> inbox");
              console.log(counters);
+         });
+
+         this.refreshNavigation = Action(function(params, next) {
+             elts.$levels.each(function(index, level) {
+                 var $level = $(level),
+                     levelStr = $level.attr('class');
+
+                 if(levelStr) {
+                     var uri = ('#past/:project/level/' + levelStr).replace(':project', params[0]);
+                     $level.find('a').attr('href', uri);
+                 }
+             });
+             next(params);
          });
      };
 
