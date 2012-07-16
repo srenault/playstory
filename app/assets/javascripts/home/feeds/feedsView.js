@@ -14,83 +14,77 @@
         this.presentDOM =  new Feeds.FeedsPresentDOM();
         this.server     =  new Feeds.FeedsServer(this.model);
 
-        //Actions
-        var listenChunks = Action(function(params, next) {
-            When(self.server.onReceiveChunk(params))
-                .map(self.model.asFeed)
-                .map(self.model.fifo)
-                .await(
-                    self.pastDOM.fifo.then(
-                    self.pastDOM.updateCounter.and(inbox.dom.updateCounters))
-                )
-                .subscribe();
-            next(params);
-         });
+        /**
+         * Init data from template
+         */
+        this.server.onReceive('/template')
+        .await(this.model.keepRef)
+        .subscribe();
 
-        var listenLastLogs = Action(function(params, next) {
-            When(self.server.onSuccessLastLogs(params))
-                .map(self.model.asFeed)
-                .map(self.model.fifo)
-                .await(self.pastDOM.fifo)
-                .subscribe();
-            next(params);
-         });
-
-        var listenLogsByLevel = Action(function(params, next) {
-            When(self.server.onSuccessLogsByLevel(params))
-                .map(self.model.asFeed)
-                .map(self.model.fifo)
-                .await(self.pastDOM.fifo)
-                .subscribe();
-            next(params);
-         });
-
-        var listenInbox = Action(function(params, next) {
-            When(self.server.onSuccessInbox(params))
-                .await(inbox.dom.initCounters)
-                .subscribe();
-            next(params);
-         });
-
-        //Fetch last logs
+        /**
+         * Stream new feeds
+         */
         Router.when('past/:project').chain(
             this.model.reset,
-            listenLastLogs,
-            this.model.reset,
-            this.server.fetchFeeds,
-            this.pastDOM.viewFeeds
-        );
-
-        //Fetch inbox counters
-        Router.when('past/:project').chain(
-            listenInbox,
-            this.server.fetchInbox
-        );
-
-        //Stream new logs
-        Router.when('past/:project').chain(
-            this.model.reset,
-            listenChunks,
+            this.pastDOM.clearFeeds,
             this.server.closeCurrentStream,
-            this.server.bindToStream,
+            this.server.stream('/story/:project/listen', function(uriPattern, params) {
+                return uriPattern.replace(':project', params[0]);
+            }),
             this.pastDOM.hideFeeds,
             tabs.dom.refreshNavigation,
             inbox.dom.refreshNavigation
         );
 
-        Router.when('past/:project/level/:level').chain(
-            this.model.reset,
-            this.pastDOM.clearFeeds,
-            listenLogsByLevel,
-            this.server.fetchFeedsByLevel,
-            this.pastDOM.viewFeeds
+        this.server.onReceive('/story/:project/listen')
+                   .map(this.model.asFeed)
+                   .map(this.model.fifo)
+                   .await(
+                       this.pastDOM.fifo.then(
+                       this.pastDOM.updateCounter.and(inbox.dom.updateCounters))
+                   ).subscribe();
+
+        /**
+         * Fetch last feeds
+         */
+        Router.when('past/:project').chain(
+            this.server.fetch('/story/:project/last', function(uriPatten, params) {
+                return uriPatten.replace(':project', params[0]);
+            }).then(
+                this.pastDOM.viewFeeds
+            )
         );
 
-        //Interactions
-        When(this.server.onReceiveFromTmpl)
-        .await(this.model.keepRef)
-        .subscribe();
+        this.server.onReceive('/story/:project/last')
+                   .map(self.model.asFeed)
+                   .map(self.model.fifo)
+                   .await(self.pastDOM.fifo)
+                   .subscribe();
 
+        /**
+         * Fetch logs by level
+         */
+         Router.when('past/:project/level/:level').chain(
+            this.model.reset,
+            this.pastDOM.clearFeeds,
+            this.server.fetch('/story/:project/level/:level', function(uriPattern, params) {
+                return uriPattern.replace(':project', params[0])
+                                 .replace(':level', params[1]);
+            }).then(
+                this.pastDOM.viewFeeds
+            )
+         );
+
+        this.server.onReceive('/story/:project/level/:level')
+                   .map(self.model.asFeed)
+                   .map(self.model.fifo)
+                   .await(self.pastDOM.fifo)
+                   .subscribe();
+
+
+        /**
+         * Comments
+         */
         When(this.pastDOM.onNewCommentClick)
         .await(this.pastDOM.displayNewComment)
         .subscribe();
@@ -100,20 +94,16 @@
         .await(this.server.saveNewComment.then(this.pastDOM.displayComment))
         .subscribe();
 
+
+        /**
+         * Tabs
+         */
         When(tabs.dom.onPastTabClick)
        .await(this.presentDOM.hideFeeds.and(this.pastDOM.viewFeeds))
        .subscribe();
 
         When(tabs.dom.onPresentTabClick)
        .await(this.pastDOM.hideFeeds.and(this.presentDOM.viewFeeds))
-       .subscribe();
-
-        When(this.pastDOM.onMoreFeedsClick)
-       .await(this.server.fetchNewFeeds)
-       .match(
-           Http.m.OK(this.pastDOM.addNewFeeds)
-                 .dft(this.pastDOM.showError)
-        )
        .subscribe();
     };
 

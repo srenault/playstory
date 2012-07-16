@@ -39,9 +39,9 @@ window.PlayStory = {
          };
 
          //Actions
-         var matchParams = function(routeRegex) {
+         var matchParams = function(routeAsRegex) {
              return Action(function(route, next) {
-                 var params= RouterUtils.matchParams(currentRoute(), routeRegex);
+                 var params= RouterUtils.matchParams(currentRoute(), routeAsRegex);
                  next(params);
              });
          };
