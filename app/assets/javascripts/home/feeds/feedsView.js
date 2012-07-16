@@ -28,13 +28,10 @@
             this.model.reset,
             this.pastDOM.clearFeeds,
             this.server.closeCurrentStream,
-            this.server.stream('/story/:project/listen', function(uriPattern, params) {
-                return uriPattern.replace(':project', params[0]);
-            }),
-            this.pastDOM.hideFeeds,
+            this.server.streamFeeds,
             tabs.dom.refreshNavigation,
             inbox.dom.refreshNavigation
-        );
+        ).and(this.server.fetchInbox);
 
         this.server.onReceive('/story/:project/listen')
                    .map(this.model.asFeed)
@@ -42,6 +39,11 @@
                    .await(
                        this.pastDOM.fifo.then(
                        this.pastDOM.updateCounter.and(inbox.dom.updateCounters))
+                   ).subscribe();
+
+        this.server.onReceive('/story/:project/inbox')
+                   .await(
+                       inbox.dom.initCounters
                    ).subscribe();
 
         /**
@@ -67,20 +69,16 @@
          Router.when('past/:project/level/:level').chain(
             this.model.reset,
             this.pastDOM.clearFeeds,
-            this.server.fetch('/story/:project/level/:level', function(uriPattern, params) {
-                return uriPattern.replace(':project', params[0])
-                                 .replace(':level', params[1]);
-            }).then(
+             this.server.fetchFeedsByLevel.then(
                 this.pastDOM.viewFeeds
-            )
-         );
+             )
+         ).and(this.server.fetchInbox);
 
         this.server.onReceive('/story/:project/level/:level')
                    .map(self.model.asFeed)
                    .map(self.model.fifo)
                    .await(self.pastDOM.fifo)
                    .subscribe();
-
 
         /**
          * Comments

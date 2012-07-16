@@ -94,6 +94,10 @@
             });
         };
 
+        this.streamFeeds = this.stream('/story/:project/listen', function(uriPattern, params) {
+            return uriPattern.replace(':project', params[0]);
+        }),
+
         this.fetch = function(uriPatten, buildURI) {
             return Action(function(params, next) {
                 var uri = buildURI(uriPatten, params);
@@ -102,7 +106,7 @@
                     dataType: 'json',
                     success: function(feeds) {
                         feeds.forEach(function(feed) {
-                            _streamChunks(JSON.parse(feed));
+                            _streamChunks(feed);
                         });
                         next(params);
                     },
@@ -112,6 +116,15 @@
                 });
             });
         };
+
+        this.fetchInbox = this.fetch('/story/:project/inbox', function(uriPattern, params) {
+            return uriPattern.replace(':project', params[0]);
+        });
+
+        this.fetchFeedsByLevel = this.fetch('/story/:project/level/:level', function(uriPattern, params) {
+            return uriPattern.replace(':project', params[0])
+                             .replace(':level', params[1]);
+        });
 
         this.closeCurrentStream = Action(function(params, next) {
             _closeStream(currentSource);

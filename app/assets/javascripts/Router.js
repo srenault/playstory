@@ -65,7 +65,7 @@ window.PlayStory = {
 
          return new (function() {
              var that = this,
-                 route = "";
+                 route = null;
 
              this.when = function(specifiedRoute, action) {
                  route = specifiedRoute;
@@ -88,6 +88,19 @@ window.PlayStory = {
                  }
                  subscribe(route, actions);
                  route = route;
+
+                 return {
+                     and: function() {
+                         var mergedActions = [];
+                         for(var index = 0; index<arguments.length; index++) {
+                             mergedActions.push(arguments[index]);
+                         }
+                         console.log("here -->");
+                         console.log(mergedActions);
+                         subscribe(route, mergedActions);
+                         return this;
+                     }
+                 };
              };
 
              this.currentRoute = currentRoute;

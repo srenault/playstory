@@ -53,7 +53,7 @@ object Story extends Controller with Secured with Pulling {
     AsyncResult {
       implicit val timeout = Timeout(5 second)
       (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
-        implicit val LogComet = Comet.CometMessage[Log](log => wrappedLog(log))
+        implicit val LogComet = Comet.CometMessage[Log](log => wrappedLog(log).toString)
         playPulling(chunks).getOrElse(BadRequest)
       }
     }
@@ -144,7 +144,7 @@ object Story extends Controller with Secured with Pulling {
       "log" -> toJson(log),
       "project" -> toJson(Project.byName(log.project)),
       "src" -> JsString(request.uri)
-    )).toString
+    ))
   }
 
   private def wrappedInbox(counters: List[(String, Double)])(implicit request: RequestHeader) = {
@@ -154,6 +154,6 @@ object Story extends Controller with Secured with Pulling {
           "counter" -> Log.LogFormat.counterByLevelJSON(counter),
           "src" -> JsString(request.uri)
         ))
-    }).toString
+    })
   }
 }
