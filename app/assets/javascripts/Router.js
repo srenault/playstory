@@ -95,8 +95,6 @@ window.PlayStory = {
                          for(var index = 0; index<arguments.length; index++) {
                              mergedActions.push(arguments[index]);
                          }
-                         console.log("here -->");
-                         console.log(mergedActions);
                          subscribe(route, mergedActions);
                          return this;
                      }

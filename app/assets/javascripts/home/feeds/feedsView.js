@@ -27,24 +27,26 @@
         Router.when('past/:project').chain(
             this.model.reset,
             this.pastDOM.clearFeeds,
-            this.server.closeCurrentStream,
+            this.server.closeStream('/story/:project/listen'),
             this.server.streamFeeds,
             tabs.dom.refreshNavigation,
             inbox.dom.refreshNavigation
         ).and(this.server.fetchInbox);
 
         this.server.onReceive('/story/:project/listen')
-                   .map(this.model.asFeed)
-                   .map(this.model.fifo)
-                   .await(
-                       this.pastDOM.fifo.then(
-                       this.pastDOM.updateCounter.and(inbox.dom.updateCounters))
-                   ).subscribe();
+            .map(this.model.asFeed)
+            .map(this.model.fifo)
+            .await(
+                this.pastDOM.fifo.then(
+                    this.pastDOM.updateCounter.and(
+                    inbox.dom.updateCounters)
+                )
+            ).subscribe();
 
         this.server.onReceive('/story/:project/inbox')
-                   .await(
-                       inbox.dom.initCounters
-                   ).subscribe();
+            .await(
+                inbox.dom.initCounters
+            ).subscribe();
 
         /**
          * Fetch last feeds
@@ -58,10 +60,10 @@
         );
 
         this.server.onReceive('/story/:project/last')
-                   .map(self.model.asFeed)
-                   .map(self.model.fifo)
-                   .await(self.pastDOM.fifo)
-                   .subscribe();
+            .map(self.model.asFeed)
+            .map(self.model.fifo)
+            .await(self.pastDOM.fifo)
+            .subscribe();
 
         /**
          * Fetch logs by level
@@ -75,10 +77,10 @@
          ).and(this.server.fetchInbox);
 
         this.server.onReceive('/story/:project/level/:level')
-                   .map(self.model.asFeed)
-                   .map(self.model.fifo)
-                   .await(self.pastDOM.fifo)
-                   .subscribe();
+            .map(self.model.asFeed)
+            .map(self.model.fifo)
+            .await(self.pastDOM.fifo)
+            .subscribe();
 
         /**
          * Comments

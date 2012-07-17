@@ -24,7 +24,7 @@
          });
 
          this.updateCounters = Action(function(counters, next) {
-             console.log(counters);
+             //console.log(counters);
          });
 
          this.refreshNavigation = Action(function(params, next) {

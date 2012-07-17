@@ -11,8 +11,7 @@
 
         var self = this,
             subscriptions = [],
-            sources = [],
-            currentSource = null;
+            sources = [];
 
         var _subscribe = function(uri, callback) {
             subscriptions[uri] = subscriptions[uri] || [];
@@ -30,6 +29,7 @@
             var subscribers = [];
             for(var uri in subscriptions) {
                 if(RouterUtils.routeAsRegex(uri).test(feed.src)) {
+                    console.log("here !");
                     subscribers = subscriptions[uri];
                     break;
                 }
@@ -40,14 +40,15 @@
             });
         };
 
-        var _closeStream = function(wishedSource) {
-            if(wishedSource) {
-                console.log('[Feeds.Server] Closing ' + wishedSource);
-                for(sourceName in sources) {
-                    if(sourceName == wishedSource) {
-                        var source = sources[wishedSource];
-                        subscriptions[wishedSource] = null;
-                        subscriptions.filter(function(src) {
+        var _closeStream = function(uri) {
+            if(uri) {
+                console.log('[Feeds.Server] Closing ' + uri);
+                for(var sourceName in sources) {
+                    if(RouterUtils.routeAsRegex(uri).test(sourceName)) {
+                        console.log('[Feeds.Server] Close ' + sourceName);
+                        var source = sources[sourceName];
+                        subscriptions[uri] = null;
+                        subscriptions = subscriptions.filter(function(src) {
                             return src != null;
                         });
                         source.close();
@@ -88,7 +89,6 @@
                         _streamChunks(JSON.parse(chunk.data));
                     };
                     sources[uri] = source;
-                    currentSource = uri;
                 }
                 next(params);
             });
@@ -126,11 +126,12 @@
                              .replace(':level', params[1]);
         });
 
-        this.closeCurrentStream = Action(function(params, next) {
-            _closeStream(currentSource);
-            currentSource = null;
-            next(params);
-        });
+        this.closeStream = function(uri) {
+            return Action(function(params, next) {
+                _closeStream(uri);
+                next(params);
+            });
+        };
 
         /**
          * Comment one log.

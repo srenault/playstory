@@ -60,7 +60,7 @@ object Story extends Controller with Secured with Pulling {
   }
 
   def inbox(project: String) = Authenticated { implicit request =>
-    Logger.info("[Story] Getting inbox data...")
+    Logger.info("[Story] Getting inbox data of %s...".format(project))
 
     val countersOpt = Project.byName(project).map { _ =>
       project match {
