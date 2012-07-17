@@ -29,7 +29,6 @@
             var subscribers = [];
             for(var uri in subscriptions) {
                 if(RouterUtils.routeAsRegex(uri).test(feed.src)) {
-                    console.log("here !");
                     subscribers = subscriptions[uri];
                     break;
                 }
@@ -124,6 +123,10 @@
         this.fetchFeedsByLevel = this.fetch('/story/:project/level/:level', function(uriPattern, params) {
             return uriPattern.replace(':project', params[0])
                              .replace(':level', params[1]);
+        });
+
+        this.fetchLastFeeds = this.fetch('/story/:project/last', function(uriPatten, params) {
+            return uriPatten.replace(':project', params[0]);
         });
 
         this.closeStream = function(uri) {

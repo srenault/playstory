@@ -33,12 +33,6 @@
             return feed;
         };
 
-        this.asFeeds = function(data) {
-            data.map(function(feed) {
-                return self.asFeed(feed);
-            });
-        };
-
         this.fifo = function(feed) {
             var isFull = false;
             collection.unshift(feed);

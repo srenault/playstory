@@ -35,7 +35,7 @@
 
         this.server.onReceive('/story/:project/listen')
             .map(this.model.asFeed)
-            .map(this.model.fifo)
+            .map(this.model.fifo) //filter ?
             .await(
                 this.pastDOM.fifo.then(
                     this.pastDOM.updateCounter.and(
@@ -52,9 +52,7 @@
          * Fetch last feeds
          */
         Router.when('past/:project').chain(
-            this.server.fetch('/story/:project/last', function(uriPatten, params) {
-                return uriPatten.replace(':project', params[0]);
-            }).then(
+            this.fetchLastFeeds.then(
                 this.pastDOM.viewFeeds
             )
         );
