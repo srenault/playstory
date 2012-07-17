@@ -152,9 +152,10 @@
                 data: JSON.stringify({ author: authorId, message: comment.msg}),
                 dataType: 'json',
                 contentType: 'application/json',
-                success: next
+                success: function() {
+                    next(comment);
+                }
             });
-            next(comment);
         });
     };
 })(window.PlayStory.Init.Home.Feeds);

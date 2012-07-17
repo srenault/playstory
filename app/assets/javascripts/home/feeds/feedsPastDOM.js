@@ -56,7 +56,7 @@
 
          this.displayNewComment = Action(function(evt, next) {
              var $feed = $(evt.currentTarget).closest('.log')
-                                             .find('.comments');
+                     .find('.comments');
              $feed.append(newCommentTmpl({
                  author: bucket.models('user').get()
              }));
@@ -65,7 +65,6 @@
 
          this.displayComment = Action(function(comment, next) {
              comment.$feed.find('.new.comment').remove();
-             console.log(bucket.models('user').get());
              comment.$feed.find('.comments').append(commentTmpl({
                  author: bucket.models('user').get(),
                  message: comment.msg
@@ -103,7 +102,7 @@
              next(evt);
          });
 
-         this.hideFeeds = Action(function(evt, next) {
+         this.hideFeedsPannel = Action(function(evt, next) {
              elts.$feedsContainer.hide();
              next(evt);
          });

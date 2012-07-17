@@ -39,24 +39,8 @@ class StoryActor extends Actor {
 
     case IsAlive() => projects.foreach {
         case (project, channels) => {
-          import com.mongodb.casbah.Imports._
-          val emptyLog = Log(new ObjectId,
-                             "onconnect",
-                             "logger",
-                             "className",
-                             0,
-                             "file",
-                             "location",
-                             0,
-                             "message",
-                             "method",
-                             "level",
-                             "thread",
-                             Nil)
-
           channels.foreach(channel => {
-            println("pushing for " + project)
-            channel.push(emptyLog)
+            channel.push(Input.Empty)
           })
         }
     }

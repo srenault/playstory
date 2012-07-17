@@ -15,16 +15,10 @@
         this.presentDOM =  new Feeds.FeedsPresentDOM();
         this.server     =  new Feeds.FeedsServer(bucket);
 
-        /**
-         * Init data from template
-         */
-        this.server.onReceiveFromTemplate('user')
+         this.server.onReceiveFromTemplate('user')
             .await(bucket.models('user').putAsAction)
             .subscribe();
 
-        /**
-         * Stream new feeds
-         */
         Router.when('past/:project').chain(
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
@@ -41,29 +35,26 @@
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(
-                   this.pastDOM.displayNewFeed(limit).then(
+                   this.presentDOM.displayNewFeed(limit).then(
                        this.pastDOM.updateCounter
                        .and(inbox.dom.updateCounters)
                    )
                )
-            ).subscribe();
+        ).subscribe();
 
         this.server.onReceive('/story/:project/inbox')
             .await(
                 inbox.dom.initCounters
-            ).subscribe();
+        ).subscribe();
 
         this.server.onReceive('/story/:project/last')
             .map(self.model.asFeed)
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(this.pastDOM.displayNewFeed(limit))
-            ).subscribe();
+        ).subscribe();
 
-        /**
-         * Fetch logs by level
-         */
-         Router.when('past/:project/level/:level').chain(
+        Router.when('past/:project/level/:level').chain(
              bucket.collections('feeds').resetAsAction,
              this.pastDOM.clearFeeds,
              this.server.fetchFeedsByLevel,
@@ -75,11 +66,8 @@
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(self.pastDOM.displayNewFeed(limit))
-            ).subscribe();
+        ).subscribe();
 
-        /**
-         * Comments
-         */
         When(this.pastDOM.onNewCommentClick)
         .await(this.pastDOM.displayNewComment)
         .subscribe();
@@ -89,15 +77,12 @@
         .await(this.server.saveNewComment.then(this.pastDOM.displayComment))
         .subscribe();
 
-        /**
-         * Tabs
-         */
         When(tabs.dom.onPastTabClick)
-       .await(this.presentDOM.hideFeeds.and(this.pastDOM.displayFeeds))
+       .await(this.presentDOM.hideFeedsPannel.and(this.pastDOM.displayFeedsPannel))
        .subscribe();
 
         When(tabs.dom.onPresentTabClick)
-       .await(this.pastDOM.hideFeeds.and(this.presentDOM.displayFeeds))
+       .await(this.pastDOM.hideFeedsPannel.and(this.presentDOM.displayFeedsPannel))
        .subscribe();
     };
 

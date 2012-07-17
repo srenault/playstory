@@ -16,19 +16,39 @@
 
          //DOM elements
          var elts = new (function() {
-             this.$feeds = $('.feeds.present');
-             this.$waitingFeeds = this.$feeds.find('.waiting-feeds');
+             this.$feedsContainer = $('.feeds.present');
+             this.$waitingFeeds = this.$feedsContainer.find('.waiting-feeds');
+             this.$feedsList = $('.feeds.present ul');
          })();
 
-         var template = _.template($("#feed_tmpl").html());
+         var feedTmpl = _.template($("#feed_tmpl").html()),
+             commentTmpl = _.template($("#comment_tmpl").html());
 
-         this.viewFeeds = Action(function(evt, next) {
-             elts.$feeds.show();
+         this.displayNewFeed = function(limit) {
+             return Action(function(feed, next) {
+                 elts.$feedsList.prepend(feedTmpl({
+                     feed: feed,
+                     commentView: function(comment) {
+                         return commentTmpl({
+                             author: comment.author,
+                             message: comment.message
+                         });
+                     }
+                 }));
+
+                 var currentFeedsSize = elts.$feedsList.find('li').length;
+                 if(currentFeedsSize > limit) elts.$feedsList.find('li:last').remove();
+                 next(feed);
+             });
+         };
+
+         this.displayFeedsPannel = Action(function(evt, next) {
+             elts.$feedsContainer.show();
              next(evt);
          });
 
-         this.hideFeeds = Action(function(evt, next) {
-             elts.$feeds.hide();
+         this.hideFeedsPannel = Action(function(evt, next) {
+             elts.$feedsContainer.hide();
              next(evt);
          });
      };
