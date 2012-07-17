@@ -29,7 +29,7 @@
             var subscribers = [];
             for(var uri in subscriptions) {
                 if(RouterUtils.routeAsRegex(uri).test(feed.src)) {
-                    subscribers = subscriptions[uri];
+                    subscribers = subscriptions[uri] || [];
                     break;
                 }
             }
@@ -41,17 +41,12 @@
 
         var _closeStream = function(uri) {
             if(uri) {
-                console.log('[Feeds.Server] Closing ' + uri);
                 for(var sourceName in sources) {
                     if(RouterUtils.routeAsRegex(uri).test(sourceName)) {
-                        console.log('[Feeds.Server] Close ' + sourceName);
+                        console.log('[Feeds.Server] Close ' + sourceName + ' -> ' + uri);
                         var source = sources[sourceName];
                         subscriptions[uri] = null;
-                        subscriptions = subscriptions.filter(function(src) {
-                            return src != null;
-                        });
                         source.close();
-                        return true;
                     }
                 }
             }
@@ -76,6 +71,16 @@
             return When(function(next) {
                 _subscribe(uri, next);
             });
+        };
+
+        this.onReceiveFromTemplate = function(modelName) {
+            return this.onReceive('/template')
+                .filter(function(model) {
+                    return model.name == modelName;
+                })
+                .map(function(model) {
+                    return model.data;
+                });
         };
 
         this.stream = function(uriPattern, buildURI) {
@@ -136,12 +141,9 @@
             });
         };
 
-        /**
-         * Comment one log.
-         */
         this.saveNewComment = Action(function(comment, next) {
             console.log("[FeedsPast.Server] Save new comment");
-            var authorId = self.bucket.models('user').id;
+            var authorId = self.bucket.models('user').get().id;
 
             $.ajax({
                 url: '/story/:project/log/:id'.replace(':id', comment.id)

@@ -11,11 +11,16 @@
 
         this.collections = function(name) {
 
+            var collection = function() {
+                _collections[name] = _collections[name] || [];
+                return _collections[name];
+            };
+
             return new (function() {
                 var self = this;
 
                 this.get = function() {
-                    return _collections[name];
+                    return collection();
                 };
 
                 this.set = function(collection) {
@@ -23,8 +28,15 @@
                 };
 
                 this.put = function(model) {
-                    _collections[name] = _collections[name] || [];
-                    _collections[name].push(model);
+                    collection().push(model);
+                };
+
+                this.reset = function() {
+                    if(name) {
+                        _collections[name] = [];
+                    } else {
+                        _collections = [];
+                    }
                 };
 
                 this.destroy = function() {
@@ -39,7 +51,7 @@
                 };
 
                 this.putAsAction = Action(function(model, next) {
-                    self.put(model);
+                    self.put(next);
                     next(model);
                 });
 
@@ -49,14 +61,39 @@
                 });
 
                 this.resetAsAction = Action(function(any, next) {
-                    _collections = [];
+                    self.reset();
                     next(any);
                 });
 
-                this.asFifo = Action(function(any, next) {
-                    next(any);
-                });
+                this.asFifo = function(limit) {
+                    return Action(function(model, next) {
+                        if(collection().unshift(model) > limit) {
+                            collection().pop();
+                        }
+                        next(model);
+                    });
+                };
             })();
+        };
+
+        this.models = function(name) {
+
+            return new (function() {
+                var self = this;
+
+                this.put = function(model) {
+                    _models[name] = model;
+                };
+
+                this.get = function() {
+                    return _models[name];
+                };
+
+                this.putAsAction = Action(function(model, next) {
+                    self.put(model);
+                    next(model);
+                });
+            });
         };
     };
 })(window.PlayStory.Init.Home);

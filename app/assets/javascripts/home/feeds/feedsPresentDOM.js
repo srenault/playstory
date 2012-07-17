@@ -22,19 +22,6 @@
 
          var template = _.template($("#feed_tmpl").html());
 
-         //Actions
-         this.fifo = Action(function(fifo, next) {
-             elts.$waitingFeeds.hide();
-             elts.$feeds.find('ul').prepend(template({
-                 feed: fifo.newFeed
-             }));
-
-             if(fifo.isFull) {
-                 //elts.$feeds.find('ul li:last').remove();
-             }
-             next(fifo);
-         });
-
          this.viewFeeds = Action(function(evt, next) {
              elts.$feeds.show();
              next(evt);

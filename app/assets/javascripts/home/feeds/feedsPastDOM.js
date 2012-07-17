@@ -4,7 +4,7 @@
 
 (function(Feeds) {
 
-     Feeds.FeedsPastDOM = function(model) {
+     Feeds.FeedsPastDOM = function(bucket) {
          console.log("[FeedsPast.DOM] Init feeds past DOM");
 
          //DOM elements
@@ -58,36 +58,19 @@
              var $feed = $(evt.currentTarget).closest('.log')
                                              .find('.comments');
              $feed.append(newCommentTmpl({
-                 author: model.models('user')
+                 author: bucket.models('user').get()
              }));
              next(evt);
          });
 
          this.displayComment = Action(function(comment, next) {
              comment.$feed.find('.new.comment').remove();
-             console.log(model.models('user'));
+             console.log(bucket.models('user').get());
              comment.$feed.find('.comments').append(commentTmpl({
-                 author: model.models('user'),
+                 author: bucket.models('user').get(),
                  message: comment.msg
              }));
              next(comment);
-         });
-
-         this.fifo = Action(function(fifo, next) {
-             elts.$feedsList.prepend(feedTmpl({
-                 feed: fifo.newFeed,
-                 commentView: function(comment) {
-                     return commentTmpl({
-                         author: comment.author,
-                         message: comment.message
-                     });
-                 }
-             }));
-
-             if(fifo.isFull) {
-                 elts.$feedsList.find('li:last').remove();
-             }
-             next(fifo);
          });
 
          this.updateCounter = Action(function(evt, next) {
@@ -97,13 +80,25 @@
              elts.$moreFeeds.show();
          });
 
-         this.displayNewFeed = Action(function(evt, next) {
-             console.log("TODO");
-             next(evt);
-         });
+         this.displayNewFeed = function(limit) {
+             return Action(function(feed, next) {
+                 elts.$feedsList.prepend(feedTmpl({
+                     feed: feed,
+                     commentView: function(comment) {
+                         return commentTmpl({
+                             author: comment.author,
+                             message: comment.message
+                         });
+                     }
+                 }));
 
+                 var currentFeedsSize = elts.$feedsList.find('li').length;
+                 if(currentFeedsSize > limit) elts.$feedsList.find('li:last').remove();
+                 next(feed);
+             });
+         };
 
-         this.displayFeeds = Action(function(evt, next) {
+         this.displayFeedsPannel = Action(function(evt, next) {
              elts.$feedsContainer.show();
              next(evt);
          });
@@ -112,20 +107,5 @@
              elts.$feedsContainer.hide();
              next(evt);
          });
-
-         this.addFeeds = Action(function(feeds, next) {
-             feeds.forEach(function(feed) {
-                 elts.$feedsList.prepend(feedTmpl({
-                     feed: feed,
-                     commentView: function(comment) {
-                         return commentTmpl({
-                             author: model.models('user'),
-                             message: comment.message
-                         });
-                     }
-                 }));
-             });
-         });
      };
-
  })(window.PlayStory.Init.Home.Feeds);
