@@ -40,8 +40,6 @@ class StoryActor extends Actor {
     case IsAlive() => projects.foreach {
         case (project, channels) => {
           import com.mongodb.casbah.Imports._
-          //println("-> checking %s : %s".format(project, channels.size))
-
           val emptyLog = Log(new ObjectId,
                              "onconnect",
                              "logger",

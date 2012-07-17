@@ -9,44 +9,54 @@
         var _collections = [],
             _models = [];
 
-        this.collections = (function() {
-            return {
-                get: function(name) {
+        this.collections = function(name) {
+
+            return new (function() {
+                var self = this;
+
+                this.get = function() {
                     return _collections[name];
-                },
-                set: function(name, collection) {
+                };
+
+                this.set = function(collection) {
                     _collections[name] = collection;
-                },
-                remove: function(name) {
+                };
+
+                this.put = function(model) {
+                    _collections[name] = _collections[name] || [];
+                    _collections[name].push(model);
+                };
+
+                this.destroy = function() {
                     _collections[name] = null;
                     _collections = _collections.filter(function(collection) {
                         return collection != null;
                     });
-                },
-                view: function() {
-                    return _collections;
-                }
-            };
-        })();
+                };
 
-        this.models = (function(name) {
-            return {
-                get: function(name) {
-                    return _models[name];
-                },
-                set: function(name, model) {
-                    _models[name] = model;
-                },
-                remove: function(name) {
-                    _models[name] = null;
-                    _models = _models.filter(function(model) {
-                        return model != null;
-                    });
-                },
-                view: function() {
-                    return _models;
-                }
-            };
-        })();
+                this.view = function() {
+                    return _collections;
+                };
+
+                this.putAsAction = Action(function(model, next) {
+                    self.put(model);
+                    next(model);
+                });
+
+                this.destroyAsAction = Action(function(any, next) {
+                    this.destroy(name);
+                    next(any);
+                });
+
+                this.resetAsAction = Action(function(any, next) {
+                    _collections = [];
+                    next(any);
+                });
+
+                this.asFifo = Action(function(any, next) {
+                    next(any);
+                });
+            })();
+        };
     };
-})();
+})(window.PlayStory.Init.Home);

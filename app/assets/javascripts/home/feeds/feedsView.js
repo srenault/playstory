@@ -4,7 +4,7 @@
 
 (function(Feeds, Router, Models) {
 
-    Feeds.FeedsView = function(tabs, inbox) {
+    Feeds.FeedsView = function(tabs, inbox, bucket) {
         console.log("[Feeds.View] Init feeds past view");
         var self = this;
 
@@ -18,26 +18,25 @@
          * Init data from template
          */
         this.server.onReceive('/template')
-        .await(this.model.keepRef)
+        .await(bucket.collections('feeds').putAsAction)
         .subscribe();
 
         /**
          * Stream new feeds
          */
         Router.when('past/:project').chain(
-            this.model.reset,
+            bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
-            this.server.closeStream('/story/:project/listen'),
-            this.server.streamFeeds,
+            this.server.closeStream('/story/:project/listen').then(this.server.streamFeeds),
             tabs.dom.refreshNavigation,
             inbox.dom.refreshNavigation
         ).and(this.server.fetchInbox);
 
         this.server.onReceive('/story/:project/listen')
             .map(this.model.asFeed)
-            .map(this.model.fifo) //filter ?
+            .map(bucket.collections('feeds').asFifo)
             .await(
-                this.pastDOM.fifo.then(
+                this.pastDOM.displayNewFeed.then(
                     this.pastDOM.updateCounter.and(
                     inbox.dom.updateCounters)
                 )
@@ -52,15 +51,15 @@
          * Fetch last feeds
          */
         Router.when('past/:project').chain(
-            this.fetchLastFeeds.then(
-                this.pastDOM.viewFeeds
+            this.server.fetchLastFeeds.then(
+                this.pastDOM.displayFeeds
             )
         );
 
         this.server.onReceive('/story/:project/last')
             .map(self.model.asFeed)
-            .map(self.model.fifo)
-            .await(self.pastDOM.fifo)
+            .map(bucket.collections('feeds').asFifo)
+            .await(self.pastDOM.displayNewFeed)
             .subscribe();
 
         /**
@@ -70,7 +69,7 @@
             this.model.reset,
             this.pastDOM.clearFeeds,
              this.server.fetchFeedsByLevel.then(
-                this.pastDOM.viewFeeds
+                this.pastDOM.displayFeeds
              )
          ).and(this.server.fetchInbox);
 
@@ -97,11 +96,11 @@
          * Tabs
          */
         When(tabs.dom.onPastTabClick)
-       .await(this.presentDOM.hideFeeds.and(this.pastDOM.viewFeeds))
+       .await(this.presentDOM.hideFeeds.and(this.pastDOM.displayFeeds))
        .subscribe();
 
         When(tabs.dom.onPresentTabClick)
-       .await(this.pastDOM.hideFeeds.and(this.presentDOM.viewFeeds))
+       .await(this.pastDOM.hideFeeds.and(this.presentDOM.displayFeeds))
        .subscribe();
     };
 

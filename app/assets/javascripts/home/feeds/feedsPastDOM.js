@@ -97,7 +97,13 @@
              elts.$moreFeeds.show();
          });
 
-         this.viewFeeds = Action(function(evt, next) {
+         this.displayNewFeed = Action(function(evt, next) {
+             console.log("TODO");
+             next(evt);
+         });
+
+
+         this.displayFeeds = Action(function(evt, next) {
              elts.$feedsContainer.show();
              next(evt);
          });
