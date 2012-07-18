@@ -6,11 +6,12 @@ window.PlayStory = {
     Init: {
         Home: {
             Tabs: {},
-            Feeds : {
+            Feeds: {
                 FeedsPast: {},
                 FeedsPresent: {}
             },
-            Inbox : {}
+            Inbox: {},
+            Apps: {}
         },
         Models: {
         }

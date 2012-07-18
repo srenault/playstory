@@ -15,8 +15,9 @@ $(document).ready(function() {
             with(PlayStory.Init.Home) {
                 this.Tabs = new Tabs.TabsView();
                 this.Inbox = new Inbox.InboxView();
+                this.Apps = new Apps.AppsView();
                 this.Bucket = new Bucket();
-                this.FeedsView = new Feeds.FeedsView(this.Tabs, this.Inbox, this.Bucket);
+                this.FeedsView = new Feeds.FeedsView(this.Tabs, this.Inbox, this.Apps, this.Bucket);
             }
         })();
     })(window.PlayStory);

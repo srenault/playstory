@@ -4,7 +4,7 @@
 
 (function(Feeds, Router, Models) {
 
-    Feeds.FeedsView = function(tabs, inbox, bucket) {
+    Feeds.FeedsView = function(tabs, inbox, apps, bucket) {
         console.log("[Feeds.View] Init feeds past view");
         var self = this,
             limit = 10;
@@ -25,10 +25,21 @@
             this.server.closeStream('/story/:project/listen'),
             this.server.streamFeeds,
             tabs.dom.refreshNavigation,
-            inbox.dom.refreshNavigation
+            inbox.dom.refreshNavigation,
+            apps.dom.refreshNavigation('past'),
+            this.presentDOM.hideFeedsPannel,
+            this.pastDOM.displayFeedsPannel
         )
        .and(this.server.fetchLastFeeds)
        .and(this.server.fetchInbox);
+
+        Router.when('present/:project').chain(
+            this.server.closeStream('/story/:project/listen'),
+            this.server.streamFeeds,
+            this.pastDOM.hideFeedsPannel,
+            this.presentDOM.displayFeedsPannel,
+            apps.dom.refreshNavigation('present')
+        );
 
         this.server.onReceive('/story/:project/listen')
             .map(this.model.asFeed)
@@ -43,9 +54,8 @@
         ).subscribe();
 
         this.server.onReceive('/story/:project/inbox')
-            .await(
-                inbox.dom.initCounters
-        ).subscribe();
+            .await(inbox.dom.initCounters)
+            .subscribe();
 
         this.server.onReceive('/story/:project/last')
             .map(self.model.asFeed)
@@ -82,7 +92,7 @@
        .subscribe();
 
         When(tabs.dom.onPresentTabClick)
-       .await(this.pastDOM.hideFeedsPannel.and(this.presentDOM.displayFeedsPannel))
+       .await(this.pastDOM.hideFeedsPannel.then(this.presentDOM.displayFeedsPannel))
        .subscribe();
     };
 
