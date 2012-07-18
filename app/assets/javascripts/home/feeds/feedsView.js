@@ -9,37 +9,15 @@
         var self = this,
             limit = 10;
 
+        var refreshNavigation = tabs.dom.refreshNavigation
+                                .and(inbox.dom.refreshNavigation)
+                                .and(apps.dom.refreshNavigation('past'));
+
         //Init
         this.model      =  new Models.FeedsModel();
         this.pastDOM    =  new Feeds.FeedsPastDOM(bucket);
         this.presentDOM =  new Feeds.FeedsPresentDOM();
         this.server     =  new Feeds.FeedsServer(bucket);
-
-         this.server.onReceiveFromTemplate('user')
-            .await(bucket.models('user').putAsAction)
-            .subscribe();
-
-        Router.when('past/:project').chain(
-            bucket.collections('feeds').resetAsAction,
-            this.pastDOM.clearFeeds,
-            this.server.closeStream('/story/:project/listen'),
-            this.server.streamFeeds,
-            tabs.dom.refreshNavigation,
-            inbox.dom.refreshNavigation,
-            apps.dom.refreshNavigation('past'),
-            this.presentDOM.hideFeedsPannel,
-            this.pastDOM.displayFeedsPannel
-        )
-       .and(this.server.fetchLastFeeds)
-       .and(this.server.fetchInbox);
-
-        Router.when('present/:project').chain(
-            this.server.closeStream('/story/:project/listen'),
-            this.server.streamFeeds,
-            this.pastDOM.hideFeedsPannel,
-            this.presentDOM.displayFeedsPannel,
-            apps.dom.refreshNavigation('present')
-        );
 
         this.server.onReceive('/story/:project/listen')
             .map(this.model.asFeed)
@@ -53,6 +31,10 @@
                )
         ).subscribe();
 
+        this.server.onReceiveFromTemplate('user')
+            .await(bucket.models('user').putAsAction)
+            .subscribe();
+
         this.server.onReceive('/story/:project/inbox')
             .await(inbox.dom.initCounters)
             .subscribe();
@@ -64,13 +46,6 @@
                .and(this.pastDOM.displayNewFeed(limit))
         ).subscribe();
 
-        Router.when('past/:project/level/:level').chain(
-            bucket.collections('feeds').resetAsAction,
-            this.pastDOM.clearFeeds,
-            this.server.fetchFeedsByLevel,
-            this.pastDOM.displayFeedsPannel
-        ).and(this.server.fetchInbox);
-
         this.server.onReceive('/story/:project/level/:level')
             .map(self.model.asFeed)
             .await(
@@ -78,19 +53,49 @@
                .and(self.pastDOM.displayNewFeed(limit))
         ).subscribe();
 
-        Router.when('bookmarks').chain(
-            bucket.collections('feeds').resetAsAction,
-            this.pastDOM.clearFeeds,
-            this.server.fetch('/story/all/bookmarks'),
-            this.pastDOM.displayFeedsPannel
-        );
-
         this.server.onReceive('/story/all/bookmarks')
             .map(self.model.asFeed)
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(self.pastDOM.displayNewFeed(limit))
         ).subscribe();
+
+        Router.when('past/:project').chain(
+            bucket.collections('feeds').resetAsAction,
+            this.pastDOM.clearFeeds,
+            this.server.closeStream('/story/:project/listen'),
+            this.server.streamFeeds,
+            refreshNavigation,
+            this.presentDOM.hideFeedsPannel,
+            this.pastDOM.displayFeedsPannel
+        )
+       .and(this.server.fetchLastFeeds)
+       .and(this.server.fetchInbox);
+
+        Router.when('present/:project').chain(
+            this.server.closeStream('/story/:project/listen'),
+            this.server.streamFeeds,
+            this.pastDOM.hideFeedsPannel,
+            this.presentDOM.displayFeedsPannel,
+            refreshNavigation
+        );
+
+        Router.when('past/:project/level/:level').chain(
+            bucket.collections('feeds').resetAsAction,
+            this.pastDOM.clearFeeds,
+            this.pastDOM.displayFeedsPannel,
+            this.presentDOM.hideFeedsPannel,
+            this.server.fetchFeedsByLevel,
+            refreshNavigation
+        ).and(this.server.fetchInbox);
+
+        Router.when('bookmarks').chain(
+            bucket.collections('feeds').resetAsAction,
+            this.pastDOM.clearFeeds,
+            this.pastDOM.displayFeedsPannel,
+            this.presentDOM.hideFeedsPannel,
+            this.server.fetch('/story/all/bookmarks')
+        );
 
         When(this.pastDOM.onNewCommentClick)
         .await(this.pastDOM.displayNewComment)
