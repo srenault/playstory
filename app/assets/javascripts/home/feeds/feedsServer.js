@@ -141,8 +141,21 @@
             });
         };
 
+        this.bookmark = Action(function(bookmark, next) {
+            var uri = '/story/:project/log/:id/bookmark'.replace(':id', bookmark.feed)
+                                                        .replace(':project', bookmark.project);
+            $.ajax({
+                url: uri,
+                type: 'POST',
+                dataType: 'json',
+                success: function() {
+                    next(bookmark);
+                }
+            });
+        });
+
         this.saveNewComment = Action(function(comment, next) {
-            console.log("[FeedsPast.Server] Save new comment");
+            console.log("[Feeds.Server] Save new comment");
             var authorId = self.bucket.models('user').get().id;
 
             $.ajax({

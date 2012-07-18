@@ -17,6 +17,7 @@ GET     /story/:project/level/:level     controllers.Story.byLevel(project: Stri
 GET     /story/:project/last             controllers.Story.last(project: String)
 GET     /story/:project/last/:from       controllers.Story.lastFrom(project: String, from: Long)
 POST    /story/:project/log/:id          controllers.Story.comment(project: String, id: String)
+POST    /story/:project/log/:id/bookmark controllers.Story.bookmark(project: String, id: String)
 POST    /story/eval                      controllers.Story.eval()
 
 GET     /story/share/google/signin      controllers.Google.signIn()

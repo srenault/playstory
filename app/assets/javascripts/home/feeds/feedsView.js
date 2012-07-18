@@ -82,6 +82,12 @@
         .await(this.pastDOM.displayNewComment)
         .subscribe();
 
+         When(this.pastDOM.onBookmarkClick)
+        .map(this.pastDOM.newBookmark)
+        .await(this.server.bookmark)
+        .subscribe();
+ 
+
         When(this.pastDOM.onSubmitCommentClick)
         .map(this.pastDOM.newComment)
         .await(this.server.saveNewComment.then(this.pastDOM.displayComment))

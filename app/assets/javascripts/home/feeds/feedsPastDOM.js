@@ -32,6 +32,10 @@
              elts.$feedsContainer.on('click', '.comments .new.comment button.save', next);
          };
 
+         this.onBookmarkClick = function(next) {
+             elts.$feedsContainer.on('click', '.footer .bookmark', next);
+         };
+
          this.newComment = function(evt) {
              var $submitComment = $(evt.currentTarget),
                  $currentFeed = $submitComment.closest('li.feed'),
@@ -44,6 +48,19 @@
                  $feed: $currentFeed,
                  id: $currentFeed.attr('id'),
                  msg: msg,
+                 project: project
+             };
+         };
+
+         this.newBookmark = function(evt) {
+             var $bookmark = $(evt.currentTarget),
+                 $currentFeed = $bookmark.closest('li.feed'),
+                 project = $currentFeed[0].dataset.project,
+                 id = $currentFeed.attr('id');
+
+             return {
+                 $feed: $currentFeed,
+                 feed: id,
                  project: project
              };
          };

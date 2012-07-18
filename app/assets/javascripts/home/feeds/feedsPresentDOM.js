@@ -26,6 +26,7 @@
 
          this.displayNewFeed = function(limit) {
              return Action(function(feed, next) {
+                 console.log(feed);
                  elts.$feedsList.prepend(feedTmpl({
                      feed: feed,
                      commentView: function(comment) {

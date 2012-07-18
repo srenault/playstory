@@ -18,7 +18,7 @@ case class User(
   language: String,
   avatar: Option[String],
   projectNames: Seq[String],
-  starredLogs: Seq[ObjectId]
+  bookmarks: Seq[ObjectId]
 ) {
 
   def fullName = firstname + " " + lastname
@@ -32,8 +32,8 @@ case class User(
             .ifNone(User.follow(_id, project.name))
   }
 
-  def starLog(logID: ObjectId) {
-    User.starLog(_id, logID)
+  def bookmark(logID: ObjectId) {
+    User.bookmark(_id, logID)
   }
 
   def isFollowProject(project: String): Boolean =
@@ -48,7 +48,7 @@ case class User(
     user += "language" -> language
     user += "avatar" -> avatar
     user += "projects" -> projectNames
-    user += "starred" -> starredLogs
+    user += "bookmarks" -> bookmarks
     user.result
   }
 }
@@ -61,8 +61,8 @@ object User extends MongoDB("users") {
             language: String,
             avatar: Option[String] = None,
             projects: Seq[String] = Nil,
-            starredLogs: Seq[ObjectId] = Nil): User = {
-    User(new ObjectId, lastname, firstname, email, language, avatar, projects, starredLogs)
+            bookmarks: Seq[ObjectId] = Nil): User = {
+    User(new ObjectId, lastname, firstname, email, language, avatar, projects, bookmarks)
   }
 
   def assignAvatar(user: User): User = {
@@ -92,8 +92,8 @@ object User extends MongoDB("users") {
     collection.update(MongoDBObject("_id" -> id), $push("projects" -> project))
   }
 
-  def starLog(id: ObjectId, logID: ObjectId) {
-    collection.update(MongoDBObject("_id" -> id), $push("starred" -> logID))
+  def bookmark(id: ObjectId, logID: ObjectId) {
+    collection.update(MongoDBObject("_id" -> id), $push("bookmarks" -> logID))
   }
 
   def fromMongoDBObject(user: MongoDBObject): Option[User] = {
@@ -108,10 +108,10 @@ object User extends MongoDB("users") {
       val projects = user.as[BasicDBList]("projects").toList.map {
         case project: String => project
       }
-      val starredLogs = user.as[BasicDBList]("starred").toList.map {
+      val bookmarks = user.as[BasicDBList]("bookmarks").toList.map {
         case logID: ObjectId => logID
       }
-      User(_id, lastname, firstname, email, language, avatar, projects, starredLogs)
+      User(_id, lastname, firstname, email, language, avatar, projects, bookmarks)
     }
   }
 
@@ -124,7 +124,7 @@ object User extends MongoDB("users") {
       (json \ "language").as[String],
       (json \ "avatar").asOpt[String],
       (json \ "projects").as[Seq[String]],
-      (json \ "starred").as[Seq[String]].map(new ObjectId(_))
+      (json \ "bookmarks").as[Seq[String]].map(new ObjectId(_))
     )
 
     def writes(user: User) = JsObject(Seq(
@@ -135,7 +135,7 @@ object User extends MongoDB("users") {
       "language" -> JsString(user.language),
       "avatar" -> toJson(user.avatar),
       "projects" -> toJson(user.projectNames),
-      "starred" -> toJson(user.starredLogs.map(l => JsString(l.toString)))
+      "bookmarks" -> toJson(user.bookmarks.map(l => JsString(l.toString)))
     ))
   }
 }

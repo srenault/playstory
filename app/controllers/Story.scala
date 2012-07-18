@@ -91,9 +91,10 @@ object Story extends Controller with Secured with Pulling {
     )
   }
 
-  def starLog(project: String, logID: String) = Authenticated { implicit request =>
-    Log.byId(new ObjectId(logID)).map { log =>
-      request.user.starLog(log._id)
+  def bookmark(project: String, id: String) = Authenticated { implicit request =>
+   Logger.info("[Story] Bookmark log #%s from project %s".format(id, project))
+    Log.byId(new ObjectId(id)).map { log =>
+      request.user.bookmark(log._id)
       Ok
     }.getOrElse(BadRequest)
   }
@@ -106,7 +107,6 @@ object Story extends Controller with Secured with Pulling {
 
   def lastFrom(project: String, from: Long) = Action { implicit request =>
     Logger.info("[Story] Getting history of %s from %".format(project, from))
-
     val logs = project match {
       case Project.ALL => Log.all().map(wrappedLog(_))
       case _ => Log.byProjectFrom(project, from).map(wrappedLog(_))
