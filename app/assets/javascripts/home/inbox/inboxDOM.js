@@ -10,7 +10,9 @@
          //DOM elements
          var elts = new (function() {
              this.$inbox = $('.inbox');
-             this.$levels = this.$inbox.find('ul li');
+             this.$levels = this.$inbox.find('ul.levels li:not(.all)');
+             this.$all = this.$inbox.find("ul li.all a");
+             this.$starred = this.$inbox.find("ul.mainstream li.starred a");
          })();
 
          //Events
@@ -19,7 +21,7 @@
          };
 
          this.initCounters = Action(function(data, next) {
-             elts.$inbox.find('li.' + data.counter.level + ' a span')
+             elts.$inbox.find('li.' + data.counter.level.toLowerCase() + ' a span')
              .text('('+ data.counter.count + ')');
          });
 
@@ -28,6 +30,8 @@
          });
 
          this.refreshNavigation = Action(function(params, next) {
+             elts.$all.attr('href', '#past/:project'.replace(':project', params[0]));
+
              elts.$levels.each(function(index, level) {
                  var $level = $(level),
                      levelStr = $level.attr('class');

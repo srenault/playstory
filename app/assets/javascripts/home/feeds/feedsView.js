@@ -65,13 +65,27 @@
         ).subscribe();
 
         Router.when('past/:project/level/:level').chain(
-             bucket.collections('feeds').resetAsAction,
-             this.pastDOM.clearFeeds,
-             this.server.fetchFeedsByLevel,
-             this.pastDOM.displayFeedsPannel
-         ).and(this.server.fetchInbox);
+            bucket.collections('feeds').resetAsAction,
+            this.pastDOM.clearFeeds,
+            this.server.fetchFeedsByLevel,
+            this.pastDOM.displayFeedsPannel
+        ).and(this.server.fetchInbox);
 
         this.server.onReceive('/story/:project/level/:level')
+            .map(self.model.asFeed)
+            .await(
+                bucket.collections('feeds').asFifo(limit)
+               .and(self.pastDOM.displayNewFeed(limit))
+        ).subscribe();
+
+        Router.when('bookmarks').chain(
+            bucket.collections('feeds').resetAsAction,
+            this.pastDOM.clearFeeds,
+            this.server.fetch('/story/all/bookmarks'),
+            this.pastDOM.displayFeedsPannel
+        );
+
+        this.server.onReceive('/story/all/bookmarks')
             .map(self.model.asFeed)
             .await(
                 bucket.collections('feeds').asFifo(limit)

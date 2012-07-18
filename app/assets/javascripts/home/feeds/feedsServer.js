@@ -27,16 +27,22 @@
 
         var _streamChunks = function(feed) {
             var subscribers = [];
-            for(var uri in subscriptions) {
-                if(RouterUtils.routeAsRegex(uri).test(feed.src)) {
-                    subscribers = subscriptions[uri] || [];
-                    break;
+            if(feed.src) {
+                for(var uri in subscriptions) {
+                    if(RouterUtils.routeAsRegex(uri).test(feed.src)) {
+                        subscribers = subscriptions[uri] || [];
+                        break;
+                    }
                 }
-            }
 
-            subscribers.forEach(function(s) {
-                s(feed);
-            });
+                if(subscribers.length == 0) {
+                    console.log("[Feed.Server] [!!!!!] No subscribers found for " + feed.src);
+                }
+
+                subscribers.forEach(function(s) {
+                    s(feed);
+                });
+            } else console.log("[Feed.Server] [!!!!!] No source specified");
         };
 
         var _closeStream = function(uri) {
@@ -102,9 +108,10 @@
             return uriPattern.replace(':project', params[0]);
         }),
 
-        this.fetch = function(uriPatten, buildURI) {
+        this.fetch = function(uriPattern, buildURI) {
             return Action(function(params, next) {
-                var uri = buildURI(uriPatten, params);
+                var uri = uriPattern;
+                if(buildURI) uri = buildURI(uriPattern, params);
                 $.ajax({
                     url: uri,
                     dataType: 'json',
