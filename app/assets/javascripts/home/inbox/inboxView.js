@@ -20,8 +20,17 @@
             .await(this.dom.initLevels)
             .subscribe();
 
-        Router.when('past/:project', server.fetchInbox);
-        Router.when('past/:project/level/:level', server.fetchInbox);
+        Router.when('past/:project').chain(
+            this.dom.refreshNavigation,
+            server.fetchInbox
+        );
+
+        Router.when('present/:project', this.dom.refreshNavigation);
+
+        Router.when('past/:project/level/:level').chain(
+            server.fetchInbox,
+            this.dom.refreshNavigation
+        );
 
         When(pastDOM.onBookmarkClick)
         .await(this.dom.updateStarred)

@@ -65,35 +65,24 @@
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
             this.server.closeStream('/story/:project/listen'),
-            this.server.streamFeeds,
-            this.presentDOM.hideFeedsPannel,
-            this.pastDOM.displayFeedsPannel,
-            refreshNavigation
+            this.server.streamFeeds
         )
        .and(this.server.fetchLastFeeds);
 
         Router.when('present/:project').chain(
             this.server.closeStream('/story/:project/listen'),
-            this.server.streamFeeds,
-            this.pastDOM.hideFeedsPannel,
-            this.presentDOM.displayFeedsPannel,
-            refreshNavigation
+            this.server.streamFeeds
         );
 
         Router.when('past/:project/level/:level').chain(
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
-            this.pastDOM.displayFeedsPannel,
-            this.presentDOM.hideFeedsPannel,
-            this.server.fetchFeedsByLevel,
-            refreshNavigation
+            this.server.fetchFeedsByLevel
         );
 
         Router.when('bookmarks').chain(
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
-            this.pastDOM.displayFeedsPannel,
-            this.presentDOM.hideFeedsPannel,
             this.server.fetch('/story/all/bookmarks')
         );
 
@@ -111,14 +100,6 @@
         .map(this.pastDOM.newComment)
         .await(this.server.saveNewComment.then(this.pastDOM.displayComment))
         .subscribe();
-
-        When(this.tabsView.dom.onPastTabClick)
-       .await(this.presentDOM.hideFeedsPannel.and(this.pastDOM.displayFeedsPannel))
-       .subscribe();
-
-        When(this.tabsView.dom.onPresentTabClick)
-       .await(this.pastDOM.hideFeedsPannel.then(this.presentDOM.displayFeedsPannel))
-       .subscribe();
     };
 
 })(window.PlayStory.Init.Home,

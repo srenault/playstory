@@ -60,12 +60,12 @@
              var noFilterURL = '#past/:project'.replace(':project', params[0]);
              elts.$all.attr('href', noFilterURL);
 
-             elts.$levels.each(function(index, level) {
-                 var $level = $(level),
-                     levelStr = $level.attr('class');
+             elts.$levels.each(function(index, l) {
+                 var $level = $(l),
+                     level = $level.attr('class');
 
-                 if(levelStr) {
-                     var uri = ('#past/:project/level/' + levelStr).replace(':project', params[0]);
+                 if(level) {
+                     var uri = ('#past/:project/level/' + level).replace(':project', params[0]);
                      $level.find('a').attr('href', uri);
                  }
              });

@@ -113,15 +113,5 @@
                  next(feed);
              });
          };
-
-         this.displayFeedsPannel = Action(function(evt, next) {
-             elts.$feedsContainer.show();
-             next(evt);
-         });
-
-         this.hideFeedsPannel = Action(function(evt, next) {
-             elts.$feedsContainer.hide();
-             next(evt);
-         });
      };
  })(window.PlayStory.Init.Home.Feeds);

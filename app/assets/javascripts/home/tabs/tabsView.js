@@ -15,6 +15,10 @@
         Router.when('present/:project', this.dom.turnOnPresentTab);
         Router.when('past/:project/level/:level', this.dom.turnOnPastTab);
 
+        Router.when('past/:project', this.dom.refreshNavigation);
+        Router.when('present/:project', this.dom.refreshNavigation);
+        Router.when('past/:project/level/:level', this.dom.refreshNavigation);
+
         //Routes
         When(this.dom.onPastTabClick)
         .await(this.dom.turnOnPastTab)
