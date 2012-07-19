@@ -2,42 +2,43 @@
  * feedsView.js
  */
 
-(function(Feeds, Router, Models) {
+(function(Home, Router, Models) {
 
-    Feeds.FeedsView = function(tabs, inbox, apps, bucket) {
+    Home.Feeds.FeedsView = function(bucket) {
         console.log("[Feeds.View] Init feeds past view");
         var self = this,
             limit = 10;
 
-        var refreshNavigation = tabs.dom.refreshNavigation
-                                .and(inbox.dom.refreshNavigation)
-                                .and(apps.dom.refreshNavigation('past'));
-
         //Init
         this.model      =  new Models.FeedsModel();
-        this.pastDOM    =  new Feeds.FeedsPastDOM(bucket);
-        this.presentDOM =  new Feeds.FeedsPresentDOM();
-        this.server     =  new Feeds.FeedsServer(bucket);
+        this.pastDOM    =  new Home.Feeds.FeedsPastDOM(bucket);
+        this.presentDOM =  new Home.Feeds.FeedsPresentDOM();
+        this.server     =  new Home.Feeds.FeedsServer(bucket);
+
+        //Views
+        this.tabsView = new Home.Tabs.TabsView();
+        this.inboxView = new Home.Inbox.InboxView(this.server, this.model, this.pastDOM);
+        this.appsView = new Home.Apps.AppsView();
+
+
+        var refreshNavigation = this.tabsView.dom.refreshNavigation.and(
+            this.inboxView.dom.refreshNavigation).and(
+                this.appsView.dom.refreshNavigation('past')
+            );
+
+        this.server.onReceiveFromTemplate('user')
+            .await(bucket.models('user').putAsAction)
+            .subscribe();
 
         this.server.onReceive('/story/:project/listen')
             .map(this.model.asFeed)
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(
-                   this.presentDOM.displayNewFeed(limit).then(
-                       this.pastDOM.updateCounter
-                       .and(inbox.dom.updateCounters)
-                   )
+                   this.presentDOM.displayNewFeed(limit)
+                  .then(this.pastDOM.updateCounter)
                )
         ).subscribe();
-
-        this.server.onReceiveFromTemplate('user')
-            .await(bucket.models('user').putAsAction)
-            .subscribe();
-
-        this.server.onReceive('/story/:project/inbox')
-            .await(inbox.dom.initCounters)
-            .subscribe();
 
         this.server.onReceive('/story/:project/last')
             .map(self.model.asFeed)
@@ -65,12 +66,11 @@
             this.pastDOM.clearFeeds,
             this.server.closeStream('/story/:project/listen'),
             this.server.streamFeeds,
-            refreshNavigation,
             this.presentDOM.hideFeedsPannel,
-            this.pastDOM.displayFeedsPannel
+            this.pastDOM.displayFeedsPannel,
+            refreshNavigation
         )
-       .and(this.server.fetchLastFeeds)
-       .and(this.server.fetchInbox);
+       .and(this.server.fetchLastFeeds);
 
         Router.when('present/:project').chain(
             this.server.closeStream('/story/:project/listen'),
@@ -87,7 +87,7 @@
             this.presentDOM.hideFeedsPannel,
             this.server.fetchFeedsByLevel,
             refreshNavigation
-        ).and(this.server.fetchInbox);
+        );
 
         Router.when('bookmarks').chain(
             bucket.collections('feeds').resetAsAction,
@@ -112,15 +112,15 @@
         .await(this.server.saveNewComment.then(this.pastDOM.displayComment))
         .subscribe();
 
-        When(tabs.dom.onPastTabClick)
+        When(this.tabsView.dom.onPastTabClick)
        .await(this.presentDOM.hideFeedsPannel.and(this.pastDOM.displayFeedsPannel))
        .subscribe();
 
-        When(tabs.dom.onPresentTabClick)
+        When(this.tabsView.dom.onPresentTabClick)
        .await(this.pastDOM.hideFeedsPannel.then(this.presentDOM.displayFeedsPannel))
        .subscribe();
     };
 
-})(window.PlayStory.Init.Home.Feeds,
+})(window.PlayStory.Init.Home,
    window.PlayStory.Router,
    window.PlayStory.Init.Models);
