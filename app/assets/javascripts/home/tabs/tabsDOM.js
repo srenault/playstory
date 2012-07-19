@@ -40,7 +40,6 @@
          });
 
          this.refreshNavigation = Action(function(params, next) {
-             console.log(params[0]);
              var pastURL = '#past/:project'.replace(':project', params[0]);
              elts.$pastTab.find('a').attr('href', pastURL);
 

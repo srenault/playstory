@@ -31,10 +31,6 @@
             server.fetchInbox,
             this.dom.refreshNavigation
         );
-
-        When(pastDOM.onBookmarkClick)
-        .await(this.dom.updateStarred)
-        .subscribe();
     };
 
 })(window.PlayStory.Init.Home.Inbox, window.PlayStory.Router);

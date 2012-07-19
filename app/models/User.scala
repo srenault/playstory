@@ -34,6 +34,8 @@ case class User(
                 .ifNone(User.follow(_id, project.name))
   }
 
+  def hasBookmark(logId: ObjectId): Boolean = bookmarkIds.find(_ == logId).isDefined
+
   def bookmark(logId: ObjectId) {
     User.bookmark(_id, logId)
   }

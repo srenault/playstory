@@ -20,12 +20,6 @@
         this.inboxView = new Home.Inbox.InboxView(this.server, this.model, this.pastDOM);
         this.appsView = new Home.Apps.AppsView();
 
-
-        var refreshNavigation = this.tabsView.dom.refreshNavigation.and(
-            this.inboxView.dom.refreshNavigation).and(
-                this.appsView.dom.refreshNavigation('past')
-            );
-
         this.server.onReceiveFromTemplate('user')
             .await(bucket.models('user').putAsAction)
             .subscribe();
@@ -83,7 +77,8 @@
         Router.when('bookmarks').chain(
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
-            this.server.fetch('/story/all/bookmarks')
+            this.server.fetch('/story/all/bookmarks'),
+            this.inboxView.dom.updateStarred
         );
 
         When(this.pastDOM.onNewCommentClick)

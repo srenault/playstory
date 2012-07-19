@@ -68,11 +68,14 @@ object Log extends MongoDB("logs") {
     find(max, byBegin, "project" -> project).map(fromMongoDBObject(_)).flatten
   }
 
-  def byLevel(project: String, level: String, max: Int = 50): List[Log] = {
-    val byProject = ("project" -> project)
+  def byLevel(level: String, projectOpt: Option[String] = None, max: Int = 50): List[Log] = {
     val byLevel = ("level" -> level.toUpperCase)
-    println(level)
-    find(max, byBegin, byProject, byLevel).map(fromMongoDBObject(_)).flatten
+    projectOpt.map { project =>
+      val byProject = ("project" -> project)
+      find(max, byBegin, byProject, byLevel).map(fromMongoDBObject(_)).flatten
+    }.getOrElse {
+      find(max, byBegin, byLevel).map(fromMongoDBObject(_)).flatten
+    }
   }
 
   def byProjectFrom(project: String, from: Long, max: Int = 50): List[Log] = {

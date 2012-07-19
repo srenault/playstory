@@ -93,10 +93,14 @@ object Story extends Controller with Secured with Pulling {
 
   def bookmark(project: String, id: String) = Authenticated { implicit request =>
     Logger.info("[Story] Bookmark log #%s from project %s".format(id, project))
-    Log.byId(new ObjectId(id)).map { log =>
-      request.user.bookmark(log._id)
-      Ok
-    }.getOrElse(BadRequest)
+    val logId = new ObjectId(id)
+    (request.user.hasBookmark(logId), Log.byId(logId)) match {
+      case (false, Some(_)) => {
+        request.user.bookmark(logId)
+        Ok
+      }
+      case _ => BadRequest
+    }
   }
 
   def bookmarks() = Authenticated { implicit request =>
@@ -106,7 +110,10 @@ object Story extends Controller with Secured with Pulling {
 
   def byLevel(project: String, level: String) = Action { implicit request =>
     Logger.info("[Story] Getting logs by level for %s".format(project))
-    val logs = Log.byLevel(project, level).map(wrappedLog(_))
+    val logs = project match {
+      case Project.ALL => Log.byLevel(level).map(wrappedLog(_))
+      case _ => Log.byLevel(level, Some(project)).map(wrappedLog(_))
+    }
     Ok(toJson(logs))
   }
 
