@@ -50,31 +50,32 @@ case class Log(
 object Log extends MongoDB("logs") {
 
   private val byBegin = MongoDBObject("date" -> 1)
+  private val byEnd = MongoDBObject("date" -> -1)
 
   def all(max: Int = 50): List[Log] = {
-    find(max, byBegin).toList.map(fromMongoDBObject(_)).flatten
+    find(max, byEnd).toList.map(fromMongoDBObject(_)).flatten
   }
 
   def byId(id: ObjectId): Option[Log] =
     findOne("_id" -> id).flatMap(Log.fromMongoDBObject(_))
 
   def byIds(ids: Seq[ObjectId], max: Int = 50): List[Log] = {
-    collection.find("_id" $in ids.toArray).limit(max)
+    collection.find("_id" $in ids).limit(max)
               .map(fromMongoDBObject(_))
               .toList.flatten
   }
 
   def byProject(project: String, max: Int = 50): List[Log] = {
-    find(max, byBegin, "project" -> project).map(fromMongoDBObject(_)).flatten
+    find(max, byEnd, "project" -> project).map(fromMongoDBObject(_)).flatten
   }
 
   def byLevel(level: String, projectOpt: Option[String] = None, max: Int = 50): List[Log] = {
     val byLevel = ("level" -> level.toUpperCase)
     projectOpt.map { project =>
       val byProject = ("project" -> project)
-      find(max, byBegin, byProject, byLevel).map(fromMongoDBObject(_)).flatten
+      find(max, byEnd, byProject, byLevel).map(fromMongoDBObject(_)).flatten
     }.getOrElse {
-      find(max, byBegin, byLevel).map(fromMongoDBObject(_)).flatten
+      find(max, byEnd, byLevel).map(fromMongoDBObject(_)).flatten
     }
   }
 

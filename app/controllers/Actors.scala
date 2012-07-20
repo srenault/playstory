@@ -71,8 +71,11 @@ class StoryActor extends Actor {
     findChannels(Project.ALL).foreach { channel =>
       channel.push(log)
     }
-    findChannels(log.project).foreach { channel =>
-      channel.push(log)
+
+    if(project != Project.ALL) {
+      findChannels(log.project).foreach { channel =>
+        channel.push(log)
+      }
     }
   }
 }

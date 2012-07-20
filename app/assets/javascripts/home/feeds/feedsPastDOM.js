@@ -11,8 +11,12 @@
          var elts = new (function() {
              this.$feedsContainer = $('.feeds.past');
              this.$feedsList = $('.feeds.past ul');
+             this.$feeds = function() { return this.$feedsList.find('li'); };
              this.$moreFeeds = this.$feedsContainer.find('.more-feeds');
              this.$counter = this.$moreFeeds.find('.counter');
+             this.findFeed = function(id) {
+                 return this.$feedsList.find('#' + id);
+             };
          })();
 
          var feedTmpl = _.template($("#feed_tmpl").html()),
@@ -36,6 +40,10 @@
              elts.$feedsContainer.on('click', '.footer .bookmark', next);
          };
 
+         this.onFeedClick = function(next) {
+             elts.$feedsList.on('click', 'li.feed', next);
+         };
+
          this.newComment = function(evt) {
              var $submitComment = $(evt.currentTarget),
                  $currentFeed = $submitComment.closest('li.feed'),
@@ -50,6 +58,12 @@
                  msg: msg,
                  project: project
              };
+         };
+
+         this.clickedFeed = function(evt) {
+             var $submitComment = $(evt.currentTarget),
+                 $currentFeed = $submitComment.closest('li.feed');
+             return $currentFeed;
          };
 
          this.newBookmark = function(evt) {
@@ -87,6 +101,13 @@
                  message: comment.msg
              }));
              next(comment);
+         });
+
+         this.highlightFeed = Action(function(feed, next) {
+             var $feed = elts.findFeed(feed.id);
+             elts.$feeds().removeClass('clicked');
+             $feed.addClass('clicked');
+             next(feed);
          });
 
          this.updateCounter = Action(function(evt, next) {

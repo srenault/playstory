@@ -19,8 +19,10 @@
         };
 
         var _alreadyConnected = function(uri) {
-            for(var source in sources) {
-                if(RouterUtils.routeAsRegex(uri).test(source)) return true;
+            for(var sourceName in sources) {
+                if(RouterUtils.routeAsRegex(uri).test(sourceName) && sources[sourceName] != null) {
+                    return true;
+                }
             }
             return false;
         };
@@ -48,10 +50,10 @@
         var _closeStream = function(uri) {
             if(uri) {
                 for(var sourceName in sources) {
-                    if(RouterUtils.routeAsRegex(uri).test(sourceName)) {
+                    if(RouterUtils.routeAsRegex(uri).test(sourceName) && sources[sourceName] != null) {
                         console.log('[Feeds.Server] Close ' + sourceName + ' -> ' + uri);
                         var source = sources[sourceName];
-                        subscriptions[uri] = null;
+                        sources[sourceName] = null;
                         source.close();
                     }
                 }
@@ -141,9 +143,12 @@
             return uriPatten.replace(':project', params[0]);
         });
 
-        this.closeStream = function(uri) {
+        this.closeStream = function(uriPattern) {
             return Action(function(params, next) {
-                _closeStream(uri);
+                var nextURI = uriPattern.replace(':project', params[0]);
+                if(!_alreadyConnected(nextURI)) {
+                    _closeStream(uriPattern);
+                }
                 next(params);
             });
         };

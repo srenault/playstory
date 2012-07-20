@@ -7,7 +7,7 @@
     Home.Feeds.FeedsView = function(bucket) {
         console.log("[Feeds.View] Init feeds past view");
         var self = this,
-            limit = 10;
+            limit = 1000;
 
         //Init
         this.model      =  new Models.FeedsModel();
@@ -64,21 +64,25 @@
        .and(this.server.fetchLastFeeds);
 
         Router.when('present/:project').chain(
-            this.server.closeStream('/story/:project/listen'),
-            this.server.streamFeeds
+            this.presentDOM.clearFeeds,
+            this.server.closeStream('/story/:project/listen').then(
+            this.server.streamFeeds)
         );
 
         Router.when('past/:project/level/:level').chain(
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
+            this.server.closeStream('/story/:project/listen'),
+            this.server.streamFeeds,
             this.server.fetchFeedsByLevel
         );
 
         Router.when('bookmarks').chain(
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
-            this.server.fetch('/story/all/bookmarks'),
-            this.inboxView.dom.updateStarred
+            this.server.closeStream('/story/:project/listen'),
+            this.server.streamFeeds,
+            this.server.fetch('/story/all/bookmarks')
         );
 
         When(this.pastDOM.onNewCommentClick)
@@ -87,14 +91,27 @@
 
          When(this.pastDOM.onBookmarkClick)
         .map(this.pastDOM.newBookmark)
-        .await(this.server.bookmark)
+        .await(this.server.bookmark.then(this.inboxView.dom.updateStarred))
         .subscribe();
  
-
         When(this.pastDOM.onSubmitCommentClick)
         .map(this.pastDOM.newComment)
         .await(this.server.saveNewComment.then(this.pastDOM.displayComment))
         .subscribe();
+
+        var goFeed = Router.goAsAction('past/:project/feed/:id', function(uriPattern, feed) {
+            return uriPattern.replace(':project', feed.project)
+                             .replace(':id', feed.id);
+        });
+
+        When(this.pastDOM.onFeedClick)
+        .map(this.pastDOM.clickedFeed)
+        .map(function($feed) {
+            return {
+                id: $feed.attr('id'),
+                project: $feed.data('project')
+            };
+        }).await(goFeed.and(this.pastDOM.highlightFeed)).subscribe();
     };
 
 })(window.PlayStory.Init.Home,

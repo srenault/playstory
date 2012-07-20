@@ -42,6 +42,11 @@
              });
          };
 
+         this.clearFeeds = Action(function(evt, next) {
+             elts.$feedsList.empty();
+             next(evt);
+         });
+
          this.displayFeedsPannel = Action(function(evt, next) {
              elts.$feedsContainer.show();
              next(evt);

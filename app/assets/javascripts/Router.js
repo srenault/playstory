@@ -65,7 +65,7 @@ window.PlayStory = {
          };
 
          return new (function() {
-             var that = this,
+             var self = this,
                  route = null;
 
              this.when = function(specifiedRoute, action) {
@@ -74,12 +74,20 @@ window.PlayStory = {
                      subscribe(specifiedRoute, [action]);
                      return null;
                  } else {
-                     return that;
+                     return self;
                  }
              };
 
              this.go = function(route) {
                  history.pushState({}, route, "#" + route);
+             };
+
+             this.goAsAction = function(uriPattern, buildURI) {
+                 return Action(function(feed, next) {
+                     var uri = buildURI(uriPattern, feed);
+                     self.go(uri);
+                     next(feed);
+                 });
              };
 
              this.chain = function() {
