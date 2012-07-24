@@ -3,7 +3,7 @@
  */
 
 (function(Feeds) {
-     
+
      Feeds.FeedsPresentDOM = function() {
          console.log("[FeedsPresent.DOM] Init feeds present DOM");
 

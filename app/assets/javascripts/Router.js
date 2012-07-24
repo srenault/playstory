@@ -2,22 +2,6 @@
  * Router.js
  */
 
-window.PlayStory = {
-    Init: {
-        Home: {
-            Tabs: {},
-            Feeds: {
-                FeedsPast: {},
-                FeedsPresent: {}
-            },
-            Inbox: {},
-            Apps: {}
-        },
-        Models: {
-        }
-    }
-};
-
 (function(PlayStory, RouterUtils) {
 
      PlayStory.Router = (function() {

@@ -2,9 +2,9 @@
  * Bucket.js
  */
 
-(function(Home) {
+(function(PlayStory) {
 
-    Home.Bucket  = function() {
+    PlayStory.Bucket  = new (function() {
 
         var _collections = [],
             _models = [];
@@ -95,5 +95,5 @@
                 });
             });
         };
-    };
-})(window.PlayStory.Init.Home);
+    })();
+})(window.PlayStory);

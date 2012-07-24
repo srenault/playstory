@@ -66,20 +66,21 @@
 @comment()
 <!-- Home javascript imports -->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/utils.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/namespace.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/Router.js")"></script>
-<!-- Tabs -->
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/Models.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/Bucket.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/Server.js")"></script>
+
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsDOM.js")"></script>
-<!-- Feeds -->
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/inbox/inboxView.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/inbox/inboxDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/apps/appsView.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/apps/appsDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsServer.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPresentDOM.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPastDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsModel.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/Bucket.js")"></script>
+
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/inbox/inboxView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/apps/appsView.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsView.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/home.js")"></script>
 
@@ -87,7 +88,7 @@
 <script type="text/javascript">
 $(document).ready(function() {
     var user = @Html(toJson(user).toString);
-    PlayStory.Home.FeedsView.server.fromTemplate('user', user);
+    PlayStory.Server.fromTemplate('user', user);
 });
 </script>
 }

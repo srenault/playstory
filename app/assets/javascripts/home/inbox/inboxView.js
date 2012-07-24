@@ -2,17 +2,20 @@
  * inboxView.js
  */
 
-(function(Inbox, Router) {
+(function(PlayStory, Inbox, Router) {
 
-    Inbox.InboxView = function(server, model, pastDOM) {
+    Inbox.InboxView = function(pastDOM) {
         console.log("[Inbox.View] Init Inbox view");
-        var self = this;
+
+        var self = this,
+            modelsDef = PlayStory.ModelsDef,
+            server = PlayStory.Server;
 
         //Init
         this.dom = new Inbox.InboxDOM();
 
         server.onReceive('/story/:project/listen')
-            .map(model.asFeed)
+            .map(modelsDef.asFeed)
             .await(this.dom.updateLevels)
             .subscribe();
 
@@ -33,4 +36,6 @@
         );
     };
 
-})(window.PlayStory.Init.Home.Inbox, window.PlayStory.Router);
+})(window.PlayStory,
+   window.PlayStory.Init.Home.Inbox,
+   window.PlayStory.Router);

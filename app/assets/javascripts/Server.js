@@ -1,15 +1,14 @@
 /**
- * feedsServer.js
+ * Server.js
  */
 
-(function(Feeds) {
+(function(PlayStory, Feeds) {
 
-    Feeds.FeedsServer = function(bucket) {
+    PlayStory.Server = new(function() {
         console.log("[Feeds.Server] Init feeds server");
 
-        this.bucket = bucket;
-
         var self = this,
+            bucket = PlayStory.Bucket,
             subscriptions = [],
             sources = [];
 
@@ -83,12 +82,12 @@
 
         this.onReceiveFromTemplate = function(modelName) {
             return this.onReceive('/template')
-                .filter(function(model) {
-                    return model.name == modelName;
-                })
-                .map(function(model) {
-                    return model.data;
-                });
+                       .filter(function(model) {
+                           return model.name == modelName;
+                       })
+                       .map(function(model) {
+                           return model.data;
+                       });
         };
 
         this.stream = function(uriPattern, buildURI) {
@@ -182,5 +181,6 @@
                 }
             });
         });
-    };
-})(window.PlayStory.Init.Home.Feeds);
+    })();
+})(window.PlayStory,
+   window.PlayStory.Init.Home.Feeds);

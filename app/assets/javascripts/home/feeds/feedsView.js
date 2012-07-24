@@ -2,30 +2,29 @@
  * feedsView.js
  */
 
-(function(Home, Router, Models) {
+(function(PlayStory, Home, Router) {
 
-    Home.Feeds.FeedsView = function(bucket) {
+    Home.Feeds.FeedsView = function() {
         console.log("[Feeds.View] Init feeds past view");
         var self = this,
+            bucket = PlayStory.Bucket,
+            modelsDef = PlayStory.ModelsDef,
+            server = PlayStory.Server,
             limit = 1000;
 
         //Init
-        this.model      =  new Models.FeedsModel();
-        this.pastDOM    =  new Home.Feeds.FeedsPastDOM(bucket);
-        this.presentDOM =  new Home.Feeds.FeedsPresentDOM();
-        this.server     =  new Home.Feeds.FeedsServer(bucket);
-
-        //Views
         this.tabsView = new Home.Tabs.TabsView();
-        this.inboxView = new Home.Inbox.InboxView(this.server, this.model, this.pastDOM);
+        this.inboxView = new Home.Inbox.InboxView(this.pastDOM);
         this.appsView = new Home.Apps.AppsView();
+        this.pastDOM    =  new Home.Feeds.FeedsPastDOM();
+        this.presentDOM =  new Home.Feeds.FeedsPresentDOM();
 
-        this.server.onReceiveFromTemplate('user')
+        server.onReceiveFromTemplate('user')
             .await(bucket.models('user').putAsAction)
             .subscribe();
 
-        this.server.onReceive('/story/:project/listen')
-            .map(this.model.asFeed)
+        server.onReceive('/story/:project/listen')
+            .map(modelsDef.asFeed)
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(
@@ -34,22 +33,22 @@
                )
         ).subscribe();
 
-        this.server.onReceive('/story/:project/last')
-            .map(self.model.asFeed)
+        server.onReceive('/story/:project/last')
+            .map(modelsDef.asFeed)
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(this.pastDOM.displayNewFeed(limit))
         ).subscribe();
 
-        this.server.onReceive('/story/:project/level/:level')
-            .map(self.model.asFeed)
+        server.onReceive('/story/:project/level/:level')
+            .map(modelsDef.asFeed)
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(self.pastDOM.displayNewFeed(limit))
         ).subscribe();
 
-        this.server.onReceive('/story/all/bookmarks')
-            .map(self.model.asFeed)
+        server.onReceive('/story/all/bookmarks')
+            .map(modelsDef.asFeed)
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(self.pastDOM.displayNewFeed(limit))
@@ -58,31 +57,31 @@
         Router.when('past/:project').chain(
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
-            this.server.closeStream('/story/:project/listen'),
-            this.server.streamFeeds
+            server.closeStream('/story/:project/listen'),
+            server.streamFeeds
         )
-       .and(this.server.fetchLastFeeds);
+       .and(server.fetchLastFeeds);
 
         Router.when('present/:project').chain(
             this.presentDOM.clearFeeds,
-            this.server.closeStream('/story/:project/listen').then(
-            this.server.streamFeeds)
+            server.closeStream('/story/:project/listen').then(
+            server.streamFeeds)
         );
 
         Router.when('past/:project/level/:level').chain(
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
-            this.server.closeStream('/story/:project/listen'),
-            this.server.streamFeeds,
-            this.server.fetchFeedsByLevel
+            server.closeStream('/story/:project/listen'),
+            server.streamFeeds,
+            server.fetchFeedsByLevel
         );
 
         Router.when('bookmarks').chain(
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
-            this.server.closeStream('/story/:project/listen'),
-            this.server.streamFeeds,
-            this.server.fetch('/story/all/bookmarks')
+            server.closeStream('/story/:project/listen'),
+            server.streamFeeds,
+            server.fetch('/story/all/bookmarks')
         );
 
         When(this.pastDOM.onNewCommentClick)
@@ -91,12 +90,12 @@
 
          When(this.pastDOM.onBookmarkClick)
         .map(this.pastDOM.newBookmark)
-        .await(this.server.bookmark.then(this.inboxView.dom.updateStarred))
+        .await(server.bookmark.then(this.inboxView.dom.updateStarred))
         .subscribe();
  
         When(this.pastDOM.onSubmitCommentClick)
         .map(this.pastDOM.newComment)
-        .await(this.server.saveNewComment.then(this.pastDOM.displayComment))
+        .await(server.saveNewComment.then(this.pastDOM.displayComment))
         .subscribe();
 
         var goFeed = Router.goAsAction('past/:project/feed/:id', function(uriPattern, feed) {
@@ -114,6 +113,6 @@
         }).await(goFeed.and(this.pastDOM.highlightFeed)).subscribe();
     };
 
-})(window.PlayStory.Init.Home,
-   window.PlayStory.Router,
-   window.PlayStory.Init.Models);
+})(window.PlayStory,
+   window.PlayStory.Init.Home,
+   window.PlayStory.Router);

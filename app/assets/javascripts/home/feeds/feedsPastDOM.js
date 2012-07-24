@@ -2,10 +2,12 @@
  * feedsPastDOM.js
  */
 
-(function(Feeds) {
+(function(PlayStory, Feeds) {
 
-     Feeds.FeedsPastDOM = function(bucket) {
+     Feeds.FeedsPastDOM = function() {
          console.log("[FeedsPast.DOM] Init feeds past DOM");
+
+         var bucket = PlayStory.Bucket;
 
          //DOM elements
          var elts = new (function() {
@@ -135,4 +137,5 @@
              });
          };
      };
- })(window.PlayStory.Init.Home.Feeds);
+ })(window.PlayStory,
+    window.PlayStory.Init.Home.Feeds);

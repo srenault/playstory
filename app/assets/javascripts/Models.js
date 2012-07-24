@@ -1,10 +1,10 @@
 /**
- * feedsModel.js
+ * ModelsDef.js
  */
 
-(function(Models) {
+(function(PlayStory) {
 
-    Models.FeedsModel = function() {
+    PlayStory.ModelsDef = new (function() {
         var self = this;
 
         this.asFeed = function(data) {
@@ -22,5 +22,5 @@
             };
             return feed;
         };
-    };
-})(window.PlayStory.Init.Models);
+    })();
+})(window.PlayStory);

@@ -12,10 +12,7 @@ $(document).ready(function() {
                 router.go('past/all');
             }
 
-            with(PlayStory.Init.Home) {
-                this.Bucket = new Bucket();
-                this.FeedsView = new Feeds.FeedsView(this.Bucket);
-            }
+            this.FeedsView = new PlayStory.Init.Home.Feeds.FeedsView();
         })();
     })(window.PlayStory);
 });
