@@ -40,13 +40,14 @@ class StoryActor extends Actor {
     case IsAlive() => projects.foreach {
         case (project, channels) => {
           channels.foreach(channel => {
+            println("push to " + project)
             channel.push(Input.Empty)
           })
         }
     }
 
     case Stop(project: String) => {
-      Logger.info("[Actor] Stream %s has been closed ...".format(project))
+      Logger.warn("[Actor] Stream %s has been closed ...".format(project))
       projects = projects.filter(p => p._1 != project)
     }
 

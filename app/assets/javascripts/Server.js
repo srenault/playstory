@@ -5,7 +5,7 @@
 (function(PlayStory, Feeds) {
 
     PlayStory.Server = new(function() {
-        console.log("[Feeds.Server] Init feeds server");
+        console.log("[Server] Init Server");
 
         var self = this,
             bucket = PlayStory.Bucket,
@@ -26,31 +26,32 @@
             return false;
         };
 
-        var _streamChunks = function(feed) {
+        var _streamChunks = function(chunk) {
+            console.log(chunk);
             var subscribers = [];
-            if(feed.src) {
+            if(chunk.src) {
                 for(var uri in subscriptions) {
-                    if(RouterUtils.routeAsRegex(uri).test(feed.src)) {
+                    if(RouterUtils.routeAsRegex(uri).test(chunk.src)) {
                         subscribers = subscriptions[uri] || [];
                         break;
                     }
                 }
 
                 if(subscribers.length == 0) {
-                    console.log("[Feed.Server] [!!!!!] No subscribers found for " + feed.src);
+                    console.log("[Server] [!!!!!] No subscribers found for " + chunk.src);
                 }
 
                 subscribers.forEach(function(s) {
-                    s(feed);
+                    s(chunk);
                 });
-            } else console.log("[Feed.Server] [!!!!!] No source specified");
+            } else console.log("[Server] [!!!!!] No source specified");
         };
 
         var _closeStream = function(uri) {
             if(uri) {
                 for(var sourceName in sources) {
                     if(RouterUtils.routeAsRegex(uri).test(sourceName) && sources[sourceName] != null) {
-                        console.log('[Feeds.Server] Close ' + sourceName + ' -> ' + uri);
+                        console.log('[Server] Close ' + sourceName + ' -> ' + uri);
                         var source = sources[sourceName];
                         sources[sourceName] = null;
                         source.close();
@@ -60,21 +61,21 @@
             return false;
         };
 
-        this.fromPulling = function(feed) {
-            _streamChunks(JSON.parse(feed.data));
+        this.fromPulling = function(any) {
+            _streamChunks(JSON.parse(any.data));
         };
 
-        this.fromTemplate = function(name, feed) {
-            var wrappedFeed = {
+        this.fromTemplate = function(name, any) {
+            var wrapped = {
                 src : '/template',
-                data : feed,
+                data : any,
                 name: name
             };
-            _streamChunks(wrappedFeed);
+            _streamChunks(wrapped);
         };
 
         this.onReceive = function(uri) {
-            console.log("[Feeds.Server] Subscribe to " + uri);
+            console.log("[Server] Subscribe to " + uri);
             return When(function(next) {
                 _subscribe(uri, next);
             });
@@ -94,7 +95,7 @@
             return Action(function(params, next) {
                 var uri = buildURI(uriPattern, params);
                 if(!_alreadyConnected(uri)) {
-                    console.log("[Feeds.Server] Bind to stream " + uri);
+                    console.log("[Server] Bind to stream " + uri);
                     var source = new EventSource(uri);
                     source.onmessage = function(chunk) {
                         _streamChunks(JSON.parse(chunk.data));
@@ -166,7 +167,7 @@
         });
 
         this.saveNewComment = Action(function(comment, next) {
-            console.log("[Feeds.Server] Save new comment");
+            console.log("[Server] Save new comment");
             var authorId = self.bucket.models('user').get().id;
 
             $.ajax({
