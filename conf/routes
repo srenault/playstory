@@ -21,9 +21,5 @@ POST    /story/:project/log/:id          controllers.Story.comment(project: Stri
 POST    /story/:project/log/:id/bookmark controllers.Story.bookmark(project: String, id: String)
 POST    /story/eval                      controllers.Story.eval()
 
-GET     /story/share/google/signin      controllers.Google.signIn()
-GET     /story/share/google/callback    controllers.Google.signInCallback(code: Option[String] ?= None, error: Option[String] ?= None)
-GET     /story/share/google/contacts    controllers.Google.contacts()
-
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                    controllers.Assets.at(path="/public", file)

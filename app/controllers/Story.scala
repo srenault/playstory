@@ -13,6 +13,7 @@ import play.api.libs.EventSource
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.templates._
+import play.api.libs.concurrent.execution.defaultContext
 
 import akka.pattern.ask
 import akka.util.duration._
