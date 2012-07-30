@@ -118,6 +118,19 @@ object Story extends Controller with Secured with Pulling {
     Ok(toJson(logs))
   }
 
+  def withContext(project: String, id: String, limit: Int) = Action { implicit request =>
+    Logger.info("[Story] Getting on log %s with its context for project %s.".format(project, id))
+    val limitBefore, limitAfter = Math.round(limit/2)
+    val logsOpt: Option[List[Log]] = Log.byId(new ObjectId(id)).map { log =>
+      val beforeLogs = Log.byProjectBefore(project, log.date, limitBefore)
+      val afterLogs = Log.byProjectAfter(project, log.date, limitAfter)
+      beforeLogs ::: (log :: afterLogs)
+    }
+    logsOpt.map { logs =>
+      Ok(toJson(logs.map(wrappedLog(_))))
+    }.getOrElse(BadRequest)
+  }
+
   def lastFrom(project: String, from: Long) = Action { implicit request =>
     Logger.info("[Story] Getting history of %s from %".format(project, from))
     val logs = project match {

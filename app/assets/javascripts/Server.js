@@ -134,6 +134,12 @@
             return uriPattern.replace(':project', params[0]);
         });
 
+        this.fetchFeedWithContext = this.fetch('/story/:project/log/:id/:limit', function(uriPattern, params) {
+            return uriPattern.replace(':project', params[0])
+                             .replace(':id', params[1])
+                             .replace(':limit', params[2]);
+        });
+
         this.fetchFeedsByLevel = this.fetch('/story/:project/level/:level', function(uriPattern, params) {
             return uriPattern.replace(':project', params[0])
                              .replace(':level', params[1]);

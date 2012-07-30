@@ -95,6 +95,11 @@
              };
 
              this.currentRoute = currentRoute;
+
+             this.currentRouteAsParams = function(uriPattern) {
+                 var routeAsRegex = RouterUtils.routeAsRegex(uriPattern);
+                 return RouterUtils.matchParams(currentRoute(), routeAsRegex);
+             };
          })();
      })();
 

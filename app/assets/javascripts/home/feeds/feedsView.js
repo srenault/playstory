@@ -10,7 +10,7 @@
             bucket = PlayStory.Bucket,
             modelsDef = PlayStory.ModelsDef,
             server = PlayStory.Server,
-            limit = 1000;
+            limit = 11;
 
         //Init
         this.tabsView = new Home.Tabs.TabsView();
@@ -54,6 +54,28 @@
                .and(self.pastDOM.displayNewFeed(limit))
         ).subscribe();
 
+        var isWishedFeed = function(feed) {
+            var params = Router.currentRouteAsParams('past/:project/feed/:id/:limit');
+            return feed.id == params[1];
+        };
+
+        server.onReceive('/story/:project/log/:id/:limit')
+            .map(modelsDef.asFeed)
+            .filter(isWishedFeed)
+            .await(this.pastDOM.displayNewFeed(limit)
+                   .then(this.pastDOM.highlightFeed)
+        ).subscribe();
+
+        server.onReceive('/story/:project/log/:id/:limit')
+            .map(modelsDef.asFeed)
+            .filter(function(feed) {
+                return !isWishedFeed(feed);
+            })
+            .await(
+                bucket.collections('feeds').asFifo(limit)
+               .and(self.pastDOM.displayNewFeed(limit))
+        ).subscribe();
+
         Router.when('past/:project').chain(
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
@@ -63,7 +85,6 @@
        .and(server.fetchLastFeeds);
 
         Router.when('present/:project').chain(
-            this.presentDOM.clearFeeds,
             server.closeStream('/story/:project/listen').then(
             server.streamFeeds)
         );
@@ -84,6 +105,13 @@
             server.fetch('/story/all/bookmarks')
         );
 
+        Router.when('past/:project/feed/:id/:limit').chain(
+            bucket.collections('feeds').resetAsAction,
+            this.pastDOM.clearFeeds,
+            server.closeStream('/story/:project/listen'),
+            server.streamFeeds
+        ).and(server.fetchFeedWithContext);
+
         When(this.pastDOM.onNewCommentClick)
         .await(this.pastDOM.displayNewComment)
         .subscribe();
@@ -98,7 +126,7 @@
         .await(server.saveNewComment.then(this.pastDOM.displayComment))
         .subscribe();
 
-        var goFeed = Router.goAsAction('past/:project/feed/:id', function(uriPattern, feed) {
+        var goFeed = Router.goAsAction('past/:project/feed/:id/' + limit, function(uriPattern, feed) {
             return uriPattern.replace(':project', feed.project)
                              .replace(':id', feed.id);
         });
