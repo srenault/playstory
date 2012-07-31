@@ -18,7 +18,11 @@
             },
 
             matchParams: function(route, routeAsRegex) {
-                return routeAsRegex.exec(route).slice(1);
+                var params = routeAsRegex.exec(route);
+                if(params) {
+                    return params.slice(1);
+                }
+                return null;
             }
         };
     })();

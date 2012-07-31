@@ -23,6 +23,19 @@
                     return collection();
                 };
 
+                this.first = function() {
+                    return this.get()[0];
+                };
+
+                this.last = function() {
+                    var coll = this.get();
+                    return coll[coll.length-1];
+                };
+
+                this.size = function() {
+                    return this.get().length;
+                };
+
                 this.set = function(collection) {
                     _collections[name] = collection;
                 };
@@ -51,7 +64,7 @@
                 };
 
                 this.putAsAction = Action(function(model, next) {
-                    self.put(next);
+                    self.put(model);
                     next(model);
                 });
 

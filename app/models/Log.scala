@@ -85,10 +85,12 @@ object Log extends MongoDB("logs") {
     collection.find(byProject ++ byBefore).limit(max).map(fromMongoDBObject(_)).toList.flatten
   }
 
-  def byProjectAfter(project: String, after: Long, max: Int = 50): List[Log] = {
+  def byProjectAfter(project: String, after: Long, max: Int = 50, level: Option[String] = None): List[Log] = {
     val byProject = MongoDBObject("project" -> project)
     val byAfter = "date" $gt after
-    collection.find(byProject ++ byAfter).limit(max).map(fromMongoDBObject(_)).toList.flatten
+    val byLevel = level.map(lvl => MongoDBObject("level" -> lvl.toUpperCase)).getOrElse(MongoDBObject.empty)
+
+    collection.find(byProject ++ byAfter ++ byLevel).limit(max).map(fromMongoDBObject(_)).toList.flatten
   }
 
   def byProjectFrom(project: String, from: Long, max: Int = 50): List[Log] = {

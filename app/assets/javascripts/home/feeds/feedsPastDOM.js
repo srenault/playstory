@@ -26,6 +26,18 @@
              commentTmpl = _.template($("#comment_tmpl").html());
 
          //Events
+         this.onBottomPageReach = function(next) {
+             window.onscroll = function() {
+                 var pageHeight = document.documentElement.scrollHeight,
+                     clientHeight = document.documentElement.clientHeight,
+                     scrollPos = window.pageYOffset;
+
+                 if(pageHeight - (scrollPos + clientHeight) < 70){
+                     next();
+                 }
+             };
+         };
+
          this.onMoreFeedsClick = function(next) {
              elts.$moreFeeds.click(next);
          };
@@ -82,6 +94,7 @@
          };
 
          //Actions
+
          this.clearFeeds = Action(function(evt, next) {
              elts.$feedsList.empty();
              next(evt);
@@ -131,11 +144,14 @@
                      }
                  }));
 
-                 var currentFeedsSize = elts.$feedsList.find('li').length;
-                 if(currentFeedsSize > limit) elts.$feedsList.find('li:last').remove();
+                 if(limit) {
+                     var currentFeedsSize = elts.$feedsList.find('li').length;
+                     if(currentFeedsSize > limit) elts.$feedsList.find('li:last').remove();
+                 }
                  next(feed);
              });
          };
      };
+
  })(window.PlayStory,
     window.PlayStory.Init.Home.Feeds);

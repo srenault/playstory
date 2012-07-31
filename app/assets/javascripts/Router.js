@@ -44,13 +44,15 @@
 
              if(routeAsRegex.test(currentRoute())) {
                  var params = RouterUtils.matchParams(currentRoute(), routeAsRegex);
-                 composedActions._do(params);
+                 if(params) composedActions._do(params);
              }
          };
 
          return new (function() {
              var self = this,
                  route = null;
+
+             this.currentRoute = currentRoute;
 
              this.when = function(specifiedRoute, action) {
                  route = specifiedRoute;
@@ -90,14 +92,20 @@
                          }
                          subscribe(route, mergedActions);
                          return this;
-                     }
-                 };
+                      }
+                  };
+              };
+
+             this.isMatchCurrentRoute = function() {
+                 for(var index = 0; index<arguments.length; index++) {
+                     var uriPattern = arguments[index];
+                     var routeAsRegex = RouterUtils.routeAsRegex(uriPattern);
+                     return routeAsRegex.test(currentRoute());
+                 }
              };
 
-             this.currentRoute = currentRoute;
-
-             this.currentRouteAsParams = function(uriPattern) {
-                 var routeAsRegex = RouterUtils.routeAsRegex(uriPattern);
+             this.matchCurrentRoute = function(patternURI) {
+                 var routeAsRegex = RouterUtils.routeAsRegex(patternURI);
                  return RouterUtils.matchParams(currentRoute(), routeAsRegex);
              };
          })();

@@ -118,6 +118,14 @@ object Story extends Controller with Secured with Pulling {
     Ok(toJson(logs))
   }
 
+  def more(project: String, id: String, limit: Int, level: Option[String]) = Action { implicit request =>
+    Logger.info("[Story] Getting more logs from project %s and log %s.".format(project, id))
+    Log.byId(new ObjectId(id)).map { log =>
+      val logs = Log.byProjectAfter(project, log.date, limit, level)
+      Ok(toJson(logs.map(wrappedLog(_))))
+    }.getOrElse(BadRequest)
+  }
+
   def withContext(project: String, id: String, limit: Int) = Action { implicit request =>
     Logger.info("[Story] Getting on log %s with its context for project %s.".format(project, id))
     val limitBefore, limitAfter = Math.round(limit/2)

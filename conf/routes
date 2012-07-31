@@ -3,24 +3,25 @@
 # ~~~~
 
 # Home page
-GET     /                                controllers.Application.index()
-GET     /signin                          controllers.Application.signin()
-GET     /signin/callback                 controllers.Application.signinCallback()
+GET     /                                          controllers.Application.index()
+GET     /signin                                    controllers.Application.signin()
+GET     /signin/callback                           controllers.Application.signinCallback()
 
-GET     /signout                         controllers.Application.signout()
+GET     /signout                                   controllers.Application.signout()
 
-GET     /story/home                      controllers.Story.home()
-GET     /story/all/bookmarks             controllers.Story.bookmarks()
-GET     /story/:project                  controllers.Story.view(project: String)
-GET     /story/:project/inbox            controllers.Story.inbox(project: String)
-GET     /story/:project/listen           controllers.Story.listen(project: String)
-GET     /story/:project/level/:level     controllers.Story.byLevel(project: String, level: String)
-GET     /story/:project/last             controllers.Story.last(project: String)
-GET     /story/:project/last/:from       controllers.Story.lastFrom(project: String, from: Long)
-GET     /story/:project/log/:id/:limit   controllers.Story.withContext(project: String, id: String, limit: Int)
-POST    /story/:project/log/:id          controllers.Story.comment(project: String, id: String)
-POST    /story/:project/log/:id/bookmark controllers.Story.bookmark(project: String, id: String)
-POST    /story/eval                      controllers.Story.eval()
+GET     /story/home                                controllers.Story.home()
+GET     /story/all/bookmarks                       controllers.Story.bookmarks()
+GET     /story/:project                            controllers.Story.view(project: String)
+GET     /story/:project/inbox                      controllers.Story.inbox(project: String)
+GET     /story/:project/listen                     controllers.Story.listen(project: String)
+GET     /story/:project/level/:level               controllers.Story.byLevel(project: String, level: String)
+GET     /story/:project/last                       controllers.Story.last(project: String)
+GET     /story/:project/last/:from                 controllers.Story.lastFrom(project: String, from: Long)
+GET     /story/:project/log/:id/more/:limit        controllers.Story.more(project: String, id: String, limit: Int, level: Option[String])
+GET     /story/:project/log/:id/:limit             controllers.Story.withContext(project: String, id: String, limit: Int)
+POST    /story/:project/log/:id                    controllers.Story.comment(project: String, id: String)
+POST    /story/:project/log/:id/bookmark           controllers.Story.bookmark(project: String, id: String)
+POST    /story/eval                                controllers.Story.eval()
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file                    controllers.Assets.at(path="/public", file)
+GET     /assets/*file                              controllers.Assets.at(path="/public", file)

@@ -27,7 +27,6 @@
         };
 
         var _streamChunks = function(chunk) {
-            console.log(chunk);
             var subscribers = [];
             if(chunk.src) {
                 for(var uri in subscriptions) {
@@ -110,6 +109,16 @@
             return uriPattern.replace(':project', params[0]);
         }),
 
+        this.closeStream = function(uriPattern) {
+            return Action(function(params, next) {
+                var nextURI = uriPattern.replace(':project', params[0]);
+                if(!_alreadyConnected(nextURI)) {
+                    _closeStream(uriPattern);
+                }
+                next(params);
+            });
+        };
+
         this.fetch = function(uriPattern, buildURI) {
             return Action(function(params, next) {
                 var uri = uriPattern;
@@ -149,15 +158,16 @@
             return uriPatten.replace(':project', params[0]);
         });
 
-        this.closeStream = function(uriPattern) {
-            return Action(function(params, next) {
-                var nextURI = uriPattern.replace(':project', params[0]);
-                if(!_alreadyConnected(nextURI)) {
-                    _closeStream(uriPattern);
-                }
-                next(params);
-            });
-        };
+        this.fetchMoreFeeds = this.fetch('/story/:project/log/:id/more/6', function(uriPattern, source) {
+            var lastFeed = bucket.collections('feeds').last();
+            var uri = uriPattern.replace(':project', source.params[0])
+                                .replace(':id', lastFeed.id);
+
+            if(source.route == 'past/:project/level/:level') {
+                uri += '?level=' + source.params[1];
+            }
+            return uri;
+        });
 
         this.bookmark = Action(function(bookmark, next) {
             var uri = '/story/:project/log/:id/bookmark'.replace(':id', bookmark.feed)

@@ -10,7 +10,7 @@
             bucket = PlayStory.Bucket,
             modelsDef = PlayStory.ModelsDef,
             server = PlayStory.Server,
-            limit = 11;
+            limit = 10;
 
         //Init
         this.tabsView = new Home.Tabs.TabsView();
@@ -54,6 +54,13 @@
                .and(self.pastDOM.displayNewFeed(limit))
         ).subscribe();
 
+        server.onReceive('/story/:project/log/:id/more/:limit')
+        .map(modelsDef.asFeed)
+        .await(
+            bucket.collections('feeds').putAsAction
+           .and(self.pastDOM.displayNewFeed())
+        ).subscribe();
+
         var isWishedFeed = function(feed) {
             var params = Router.currentRouteAsParams('past/:project/feed/:id/:limit');
             return feed.id == params[1];
@@ -62,15 +69,15 @@
         server.onReceive('/story/:project/log/:id/:limit')
             .map(modelsDef.asFeed)
             .filter(isWishedFeed)
-            .await(this.pastDOM.displayNewFeed(limit)
-                   .then(this.pastDOM.highlightFeed)
+            .await(
+                bucket.collections('feeds').asFifo(limit)
+                .and(this.pastDOM.displayNewFeed(limit)
+                     .then(this.pastDOM.highlightFeed))
         ).subscribe();
 
         server.onReceive('/story/:project/log/:id/:limit')
             .map(modelsDef.asFeed)
-            .filter(function(feed) {
-                return !isWishedFeed(feed);
-            })
+            .filter(function(feed) { return !isWishedFeed(feed); })
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(self.pastDOM.displayNewFeed(limit))
@@ -116,7 +123,7 @@
         .await(this.pastDOM.displayNewComment)
         .subscribe();
 
-         When(this.pastDOM.onBookmarkClick)
+        When(this.pastDOM.onBookmarkClick)
         .map(this.pastDOM.newBookmark)
         .await(server.bookmark.then(this.inboxView.dom.updateStarred))
         .subscribe();
@@ -130,6 +137,25 @@
             return uriPattern.replace(':project', feed.project)
                              .replace(':id', feed.id);
         });
+
+        When(this.pastDOM.onBottomPageReach)
+        .map(function() {
+            var routes = ['past/:project', 'past/:project/level/:level'];
+            var matchedRoutes = routes.filter(function(route) {
+                return Router.isMatchCurrentRoute(route);
+            });
+            if(matchedRoutes.length > 0) {
+                return {
+                    route: matchedRoutes[0],
+                    params: Router.matchCurrentRoute(matchedRoutes[0])
+                };
+            } else return null;
+        })
+        .filter(function(params) {
+            return params != null && bucket.collections('feeds').size() > 0;
+        })
+        .await(server.fetchMoreFeeds)
+        .subscribe();
 
         When(this.pastDOM.onFeedClick)
         .map(this.pastDOM.clickedFeed)
