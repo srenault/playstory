@@ -24,6 +24,16 @@
          var feedTmpl = _.template($("#feed_tmpl").html()),
              commentTmpl = _.template($("#comment_tmpl").html());
 
+         this.onFeedClick = function(next) {
+             elts.$feedsList.on('click', 'li.feed', next);
+         };
+
+         this.clickedFeed = function(evt) {
+             var $submitComment = $(evt.currentTarget),
+                 $currentFeed = $submitComment.closest('li.feed');
+             return $currentFeed;
+         };
+
          this.displayNewFeed = function(limit) {
              return Action(function(feed, next) {
                  elts.$feedsList.prepend(feedTmpl({
@@ -36,8 +46,10 @@
                      }
                  }));
 
-                 var currentFeedsSize = elts.$feedsList.find('li').length;
-                 if(currentFeedsSize > limit) elts.$feedsList.find('li:last').remove();
+                 if(limit) {
+                     var currentFeedsSize = elts.$feedsList.find('li').length;
+                     if(currentFeedsSize > limit) elts.$feedsList.find('li:last').remove();
+                 }
                  next(feed);
              });
          };

@@ -49,40 +49,55 @@ case class Log(
 
 object Log extends MongoDB("logs") {
 
-  private val byBegin = MongoDBObject("date" -> 1)
-  private val byEnd = MongoDBObject("date" -> -1)
+  val byEnd = MongoDBObject("date" -> -1)
 
   def all(max: Int = 50): List[Log] = {
-    find(max, byEnd).toList.map(fromMongoDBObject(_)).flatten
+    collection.find().sort(byEnd)
+                     .limit(max)
+                     .flatMap(fromMongoDBObject(_))
+                     .toList.reverse
   }
 
-  def byId(id: ObjectId): Option[Log] =
-    findOne("_id" -> id).flatMap(Log.fromMongoDBObject(_))
+  def byId(id: ObjectId): Option[Log] = {
+    val byId = MongoDBObject("_id" -> id)
+    collection.findOne(byId).flatMap(Log.fromMongoDBObject(_))
+  }
 
   def byIds(ids: Seq[ObjectId], max: Int = 50): List[Log] = {
     collection.find("_id" $in ids).limit(max)
-              .map(fromMongoDBObject(_))
-              .toList.flatten
+              .flatMap(fromMongoDBObject(_))
+              .toList
   }
 
   def byProject(project: String, max: Int = 50): List[Log] = {
-    find(max, byEnd, "project" -> project).map(fromMongoDBObject(_)).flatten
+    val byProject = MongoDBObject("project" -> project)
+    collection.find(byProject).sort(byEnd)
+                              .limit(max)
+                              .flatMap(fromMongoDBObject(_))
+                              .toList.reverse
   }
 
   def byLevel(level: String, projectOpt: Option[String] = None, max: Int = 50): List[Log] = {
-    val byLevel = ("level" -> level.toUpperCase)
+    val byLevel = MongoDBObject("level" -> level.toUpperCase)
+
     projectOpt.map { project =>
-      val byProject = ("project" -> project)
-      find(max, byEnd, byProject, byLevel).map(fromMongoDBObject(_)).flatten
+      val byProject = MongoDBObject("project" -> project)
+      collection.find(byProject ++ byLevel).sort(byEnd)
+                                           .limit(max)
+                                           .flatMap(fromMongoDBObject(_))
+                                           .toList.reverse
     }.getOrElse {
-      find(max, byEnd, byLevel).map(fromMongoDBObject(_)).flatten
+      collection.find(byLevel).sort(byEnd)
+                              .limit(max)
+                              .flatMap(fromMongoDBObject(_))
+                              .toList.reverse
     }
   }
 
   def byProjectBefore(project: String, before: Long, max: Int = 50): List[Log] = {
     val byProject = MongoDBObject("project" -> project)
     val byBefore = "date" $lt before
-    collection.find(byProject ++ byBefore).limit(max).map(fromMongoDBObject(_)).toList.flatten
+    collection.find(byProject ++ byBefore).limit(max).flatMap(fromMongoDBObject(_)).toList
   }
 
   def byProjectAfter(project: String, after: Long, max: Int = 50, level: Option[String] = None): List[Log] = {
@@ -90,13 +105,13 @@ object Log extends MongoDB("logs") {
     val byAfter = "date" $gt after
     val byLevel = level.map(lvl => MongoDBObject("level" -> lvl.toUpperCase)).getOrElse(MongoDBObject.empty)
 
-    collection.find(byProject ++ byAfter ++ byLevel).limit(max).map(fromMongoDBObject(_)).toList.flatten
+    collection.find(byProject ++ byAfter ++ byLevel).limit(max).flatMap(fromMongoDBObject(_)).toList
   }
 
   def byProjectFrom(project: String, from: Long, max: Int = 50): List[Log] = {
     collection.find(
       "date" $gt from, MongoDBObject("project" -> project)
-    ).limit(max).map(fromMongoDBObject(_)).toList.flatten
+    ).limit(max).flatMap(fromMongoDBObject(_)).toList
   }
 
   def countByLevel(projects: String*): List[(String, Double)] = {
@@ -139,7 +154,7 @@ object Log extends MongoDB("logs") {
     }
   }
 
-  def create(log: Log) = save(log.asMongoDBObject)
+  def create(log: Log) = collection += log.asMongoDBObject
 
   def addComment(id: ObjectId, comment: Comment) = {
     Logger.debug("[Log] Adding log for %s".format(id))
@@ -176,9 +191,9 @@ object Log extends MongoDB("logs") {
           method,
           level,
           thread,
-          comments.toList.map {
+          comments.toList.flatMap {
             case c: DBObject => Comment.fromMongoDBObject(c)
-          }.flatten
+          }
       )
     }
   }

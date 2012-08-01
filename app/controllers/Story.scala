@@ -44,11 +44,6 @@ object Story extends Controller with Secured with Pulling {
     Ok(views.html.home.index(request.user))
   }
 
-  def view(project: String) = Authenticated { implicit request =>
-    Logger.info("[Story] Viewing specific project : " + project)
-    Ok
-  }
-
   def listen(project: String) = Authenticated { implicit request =>
     Logger.info("[Story] Waitings logs...")
     AsyncResult {

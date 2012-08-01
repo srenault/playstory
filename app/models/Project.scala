@@ -32,19 +32,19 @@ object Project extends MongoDB("projects") {
   }
 
   def createIfNot(project: Project) = {
-    findOne("name" -> project.name).ifNone {
-      save(assignAvatar(project).asMongoDBObject)
+    val byName = MongoDBObject("name" -> project.name)
+    collection.findOne(byName).ifNone {
+      collection += (assignAvatar(project).asMongoDBObject)
     }
   }
 
   def byName(name: String): Option[Project] = {
-    findOne("name" -> name).flatMap(fromMongoDBObject(_))
+    val byName = MongoDBObject("name" -> name)
+    collection.findOne(byName).flatMap(fromMongoDBObject(_))
   }
 
   def all(max: Int = 50): List[Project] = {
-    val projects = find(max).map(fromMongoDBObject(_))
-    Logger.debug(projects.toString)
-    projects.flatten
+    collection.find().limit(max).toList.flatMap(fromMongoDBObject(_))
   }
 
   def exist(name : String): Boolean = byName(name).isDefined

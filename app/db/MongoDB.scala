@@ -28,22 +28,5 @@ object MongoDB {
 class MongoDB(collectName: String) {
   import MongoDB._
 
-  val collection = MongoDB.db(collectName)
-
-  def findOne(filters: Tuple2[String, _]*) = {
-    val query  = MongoDBObject.newBuilder ++= filters
-    db(collectName).findOne(query.result)
-  }
-
-  def find(max: Int, filters: Tuple2[String, _]*) = {
-    val query  = MongoDBObject.newBuilder ++= filters
-    db(collectName).find(query.result).limit(max).toList
-  }
-
-  def find(max: Int, sort: MongoDBObject, filters: Tuple2[String, _]*) = {
-    val query  = MongoDBObject.newBuilder ++= filters
-    db(collectName).find(query.result).limit(max).sort(sort).toList
-  }
-
-  def save(model: MongoDBObject) = db(collectName) += model
+  lazy val collection = MongoDB.db(collectName)
 }

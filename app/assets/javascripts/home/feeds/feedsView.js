@@ -10,7 +10,7 @@
             bucket = PlayStory.Bucket,
             modelsDef = PlayStory.ModelsDef,
             server = PlayStory.Server,
-            limit = 10;
+            limit = 10000;
 
         //Init
         this.tabsView = new Home.Tabs.TabsView();
@@ -26,9 +26,9 @@
         server.onReceive('/story/:project/listen')
             .map(modelsDef.asFeed)
             .await(
-                bucket.collections('feeds').asFifo(limit)
+                bucket.collections('feeds').putAsAction
                .and(
-                   this.presentDOM.displayNewFeed(limit)
+                   this.presentDOM.displayNewFeed()
                   .then(this.pastDOM.updateCounter)
                )
         ).subscribe();
@@ -62,7 +62,7 @@
         ).subscribe();
 
         var isWishedFeed = function(feed) {
-            var params = Router.currentRouteAsParams('past/:project/feed/:id/:limit');
+            var params = Router.matchCurrentRoute('past/:project/feed/:id/:limit');
             return feed.id == params[1];
         };
 
@@ -133,29 +133,37 @@
         .await(server.saveNewComment.then(this.pastDOM.displayComment))
         .subscribe();
 
-        var goFeed = Router.goAsAction('past/:project/feed/:id/' + limit, function(uriPattern, feed) {
-            return uriPattern.replace(':project', feed.project)
-                             .replace(':id', feed.id);
-        });
+        var onlySpecifiedRoutes = function(routes) {
+            return function() {
+                var matchedRoutes = routes.filter(function(route) {
+                    return Router.isMatchCurrentRoute(route);
+                });
+                if(matchedRoutes.length > 0) {
+                    return {
+                        route: matchedRoutes[0],
+                        params: Router.matchCurrentRoute(matchedRoutes[0])
+                    };
+                } else return null;
+            };
+        };
+
+        var isRouteValid = function(params) {
+            return params != null && bucket.collections('feeds').size() > 0;
+        };
 
         When(this.pastDOM.onBottomPageReach)
-        .map(function() {
-            var routes = ['past/:project', 'past/:project/level/:level'];
-            var matchedRoutes = routes.filter(function(route) {
-                return Router.isMatchCurrentRoute(route);
-            });
-            if(matchedRoutes.length > 0) {
-                return {
-                    route: matchedRoutes[0],
-                    params: Router.matchCurrentRoute(matchedRoutes[0])
-                };
-            } else return null;
-        })
-        .filter(function(params) {
-            return params != null && bucket.collections('feeds').size() > 0;
-        })
+        .map(onlySpecifiedRoutes(['past/:project',
+                                  'past/:project/level/:level']))
+        .filter(isRouteValid)
         .await(server.fetchMoreFeeds)
         .subscribe();
+
+        var goFeed = function(trigger) {
+            return Router.goAsAction('past/:project/feed/:id/' + limit, function(uriPattern, feed) {
+                return uriPattern.replace(':project', feed.project)
+                                 .replace(':id', feed.id);
+            }, trigger);
+        };
 
         When(this.pastDOM.onFeedClick)
         .map(this.pastDOM.clickedFeed)
@@ -164,7 +172,16 @@
                 id: $feed.attr('id'),
                 project: $feed.data('project')
             };
-        }).await(goFeed.and(this.pastDOM.highlightFeed)).subscribe();
+        }).await(goFeed().and(this.pastDOM.highlightFeed)).subscribe();
+
+        When(this.presentDOM.onFeedClick)
+        .map(this.presentDOM.clickedFeed)
+        .map(function($feed) {
+            return {
+                id: $feed.attr('id'),
+                project: $feed.data('project')
+            };
+        }).await(goFeed(true).and(this.pastDOM.highlightFeed)).subscribe();
     };
 
 })(window.PlayStory,

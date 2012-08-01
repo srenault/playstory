@@ -78,19 +78,27 @@ object User extends MongoDB("users") {
 
   def anonymous: User = User("anonymous", "anonymous", "anonymous@unknown.com", "en")
 
-  def byId(id: ObjectId): Option[User] =
-    findOne("_id" -> id).flatMap(User.fromMongoDBObject(_))
+  def byId(id: ObjectId): Option[User] = {
+    val byId = MongoDBObject("_id" -> id)
+    collection.findOne(byId).flatMap(User.fromMongoDBObject(_))
+  }
 
-  def byEmail(email: String): Option[User] =
-    findOne("email" -> email).flatMap(User.fromMongoDBObject(_))
+  def byEmail(email: String): Option[User] = {
+    val byEmail = MongoDBObject("email" -> email)
+    collection.findOne(byEmail).flatMap(User.fromMongoDBObject(_))
+  }
 
-  def authenticate(pseudo: String, password: String): Option[User] =
-    findOne("pseudo" -> pseudo, "password" -> password).flatMap(User.fromMongoDBObject(_))
+  def authenticate(pseudo: String, password: String): Option[User] = {
+    val byPseudo = MongoDBObject("pseudo" -> pseudo)
+    val byPassword = MongoDBObject("password" -> password)
+    collection.findOne(byPseudo ++ byPassword).flatMap(User.fromMongoDBObject(_))
+  }
 
-  def create(user: User) = save(user.asMongoDBObject)
+  def create(user: User) = collection += user.asMongoDBObject
 
-  def createIfNot(user: User) =
-    byEmail(user.email).ifNone(save(assignAvatar(user).asMongoDBObject))
+  def createIfNot(user: User) = byEmail(user.email).ifNone {
+    collection += (assignAvatar(user).asMongoDBObject)
+  }
 
   def follow(id: ObjectId, project: String) = {
     collection.update(MongoDBObject("_id" -> id), $push("projects" -> project))

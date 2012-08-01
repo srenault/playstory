@@ -37,13 +37,13 @@
                 }
 
                 if(subscribers.length == 0) {
-                    console.log("[Server] [!!!!!] No subscribers found for " + chunk.src);
+                    console.log("[Server] No subscribers found for " + chunk.src);
                 }
 
                 subscribers.forEach(function(s) {
                     s(chunk);
                 });
-            } else console.log("[Server] [!!!!!] No source specified");
+            } else console.log("[Server] No source specified");
         };
 
         var _closeStream = function(uri) {
@@ -184,7 +184,7 @@
 
         this.saveNewComment = Action(function(comment, next) {
             console.log("[Server] Save new comment");
-            var authorId = self.bucket.models('user').get().id;
+            var authorId = bucket.models('user').get().id;
 
             $.ajax({
                 url: '/story/:project/log/:id'.replace(':id', comment.id)

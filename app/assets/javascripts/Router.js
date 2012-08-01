@@ -7,21 +7,32 @@
      PlayStory.Router = (function() {
          console.log("[PlayStory.Router] Init play story router");
 
+         var self=this,
+             subscribers = [];
+
+         var currentRoute = function() {
+             return window.location.hash.substr(1,window.location.hash.length);
+         };
+
+         var loadURL = function() {
+             subscribers.forEach(function(callback) {
+                 callback({
+                     newURL: '#' + currentRoute()
+                 });
+             });
+         };
+
          //Events
          var onRouteChange = function(next) {
+             subscribers.push(next);
              window.addEventListener('hashchange', next);
          };
 
          //Interactions
          var router = When(onRouteChange)
          .map(function(evt) {
-            return evt.newURL.split('#')[1];
+             return evt.newURL.split('#')[1];
          });
-
-         //Utils
-         var currentRoute = function() {
-             return window.location.hash.substr(1,window.location.hash.length);
-         };
 
          //Actions
          var matchParams = function(routeAsRegex) {
@@ -49,7 +60,7 @@
          };
 
          return new (function() {
-             var self = this,
+             var that = this,
                  route = null;
 
              this.currentRoute = currentRoute;
@@ -60,18 +71,19 @@
                      subscribe(specifiedRoute, [action]);
                      return null;
                  } else {
-                     return self;
+                     return that;
                  }
              };
 
-             this.go = function(route) {
+             this.go = function(route, tigger) {
                  history.pushState({}, route, "#" + route);
+                 if(tigger) loadURL();
              };
 
-             this.goAsAction = function(uriPattern, buildURI) {
+             this.goAsAction = function(uriPattern, buildURI, trigger) {
                  return Action(function(feed, next) {
                      var uri = buildURI(uriPattern, feed);
-                     self.go(uri);
+                     that.go(uri, trigger);
                      next(feed);
                  });
              };

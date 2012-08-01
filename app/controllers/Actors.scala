@@ -40,7 +40,7 @@ class StoryActor extends Actor {
     case IsAlive() => projects.foreach {
         case (project, channels) => {
           channels.foreach(channel => {
-            println("push to " + project)
+            Logger.debug("[Actor] Project %s alive".format(project))
             channel.push(Input.Empty)
           })
         }
@@ -59,12 +59,6 @@ class StoryActor extends Actor {
 
   private def findChannels(projectName: String): Set[Channel[Log]] = {
     projects.find(_._1 == projectName).map(_._2).getOrElse(Set.empty)
-  }
-
-  private def findChannels(projectNames: String*): Set[Channel[Log]] = {
-    projects.collect {
-      case (project, channels) if projectNames.find(_ == project).isDefined => channels
-    }.reduceLeft( (ch1, ch2) => ch1 ++ ch2)
   }
 
   private def pushToChannel(project: String, log: Log) = {
@@ -95,7 +89,7 @@ object StoryActor {
   lazy val system = ActorSystem("storyroom")
   lazy val ref = Akka.system.actorOf(Props[StoryActor])
 
-  def start = Akka.system.scheduler.schedule(5 second, 5 second) {
+  def start = Akka.system.scheduler.schedule(1 second, 1 second) {
       StoryActor.ref ! IsAlive()
   }
 }

@@ -11,7 +11,6 @@ GET     /signout                                   controllers.Application.signo
 
 GET     /story/home                                controllers.Story.home()
 GET     /story/all/bookmarks                       controllers.Story.bookmarks()
-GET     /story/:project                            controllers.Story.view(project: String)
 GET     /story/:project/inbox                      controllers.Story.inbox(project: String)
 GET     /story/:project/listen                     controllers.Story.listen(project: String)
 GET     /story/:project/level/:level               controllers.Story.byLevel(project: String, level: String)
