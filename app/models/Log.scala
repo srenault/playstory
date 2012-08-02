@@ -1,6 +1,7 @@
 package models
 
 import java.util.Date
+import scala.util.matching.Regex
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
 import play.api.libs.json._
@@ -28,30 +29,15 @@ case class Log(
 
   def countByLevel(): List[(String, Double)] = Log.countByLevel(project)
 
-  def asMongoDBObject: MongoDBObject = {
-    val log = MongoDBObject.newBuilder
-    log += "_id" -> _id
-    log += "project" -> project
-    log += "logger" -> logger
-    log += "className" -> className
-    log += "date" -> date
-    log += "file" -> file
-    log += "location" -> location
-    log += "line" -> line
-    log += "message" -> message
-    log += "method" -> method
-    log += "level" -> level
-    log += "thread" -> thread
-    log += "comments" -> comments
-    log.result
-  }
+  def asMongoDBObject: MongoDBObject = Log.asMongoDBObject(this)
 }
 
-object Log extends MongoDB("logs") {
+object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "project")) with Searchable {
 
   val byEnd = MongoDBObject("date" -> -1)
 
   def all(max: Int = 50): List[Log] = {
+    println(collection.find().count)
     collection.find().sort(byEnd)
                      .limit(max)
                      .flatMap(fromMongoDBObject(_))
@@ -64,7 +50,17 @@ object Log extends MongoDB("logs") {
   }
 
   def byIds(ids: Seq[ObjectId], max: Int = 50): List[Log] = {
-    collection.find("_id" $in ids).limit(max)
+    collection.find("_id" $in ids).sort(byEnd)
+                                  .limit(max)
+                                  .flatMap(fromMongoDBObject(_))
+                                  .toList
+  }
+
+  def search(project: String, fields: List[Regex], max: Int = 50): List[Log] = {
+    val byProject = MongoDBObject("project" -> project)
+    collection.find(keywords(fields) ++ byProject)
+              .sort(byEnd)
+              .limit(max)
               .flatMap(fromMongoDBObject(_))
               .toList
   }
@@ -97,7 +93,9 @@ object Log extends MongoDB("logs") {
   def byProjectBefore(project: String, before: Long, max: Int = 50): List[Log] = {
     val byProject = MongoDBObject("project" -> project)
     val byBefore = "date" $lt before
-    collection.find(byProject ++ byBefore).limit(max).flatMap(fromMongoDBObject(_)).toList
+    collection.find(byProject ++ byBefore).sort(byEnd)
+                                          .limit(max)
+                                          .flatMap(fromMongoDBObject(_)).toList
   }
 
   def byProjectAfter(project: String, after: Long, max: Int = 50, level: Option[String] = None): List[Log] = {
@@ -105,13 +103,16 @@ object Log extends MongoDB("logs") {
     val byAfter = "date" $gt after
     val byLevel = level.map(lvl => MongoDBObject("level" -> lvl.toUpperCase)).getOrElse(MongoDBObject.empty)
 
-    collection.find(byProject ++ byAfter ++ byLevel).limit(max).flatMap(fromMongoDBObject(_)).toList
+    collection.find(byProject ++ byAfter ++ byLevel).sort(byEnd)
+                                                    .limit(max)
+                                                    .flatMap(fromMongoDBObject(_))
+                                                    .toList
   }
 
   def byProjectFrom(project: String, from: Long, max: Int = 50): List[Log] = {
     collection.find(
       "date" $gt from, MongoDBObject("project" -> project)
-    ).limit(max).flatMap(fromMongoDBObject(_)).toList
+    ).sort(byEnd).limit(max).flatMap(fromMongoDBObject(_)).toList
   }
 
   def countByLevel(projects: String*): List[(String, Double)] = {
@@ -154,7 +155,9 @@ object Log extends MongoDB("logs") {
     }
   }
 
-  def create(log: Log) = collection += log.asMongoDBObject
+  def create(log: Log) = {
+    collection += log.asMongoDBObject
+  }
 
   def addComment(id: ObjectId, comment: Comment) = {
     Logger.debug("[Log] Adding log for %s".format(id))
@@ -162,6 +165,25 @@ object Log extends MongoDB("logs") {
   }
 
   def fromJsObject(json: JsObject) = fromJson[Log](json)(LogFormat)
+
+  def asMongoDBObject(log: Log): MongoDBObject = {
+    val mongoLog = MongoDBObject.newBuilder
+    mongoLog += "_id" -> log._id
+    mongoLog += "project" -> log.project
+    mongoLog += "logger" -> log.logger
+    mongoLog += "className" -> log.className
+    mongoLog += "date" -> log.date
+    mongoLog += "file" -> log.file
+    mongoLog += "location" -> log.location
+    mongoLog += "line" -> log.line
+    mongoLog += "message" -> log.message
+    mongoLog += "method" -> log.method
+    mongoLog += "level" -> log.level
+    mongoLog += "thread" -> log.thread
+    mongoLog += "comments" -> log.comments
+    mongoLog ++= mongoKeywords(asWords(log.message))
+    mongoLog.result
+  }
 
   def fromMongoDBObject(log: MongoDBObject): Option[Log] = {
     for {

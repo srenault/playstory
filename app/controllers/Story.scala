@@ -25,7 +25,7 @@ import com.mongodb.casbah.Imports._
 import scalaz.OptionW
 import scalaz.Scalaz._
 
-import models.{ Log, User, Project, Comment }
+import models.{ Log, User, Project, Comment, Searchable }
 import actors.StoryActor
 import actors.StoryActor._
 
@@ -53,6 +53,12 @@ object Story extends Controller with Secured with Pulling {
         playPulling(chunks).getOrElse(BadRequest)
       }
     }
+  }
+
+  def search(project: String, query: List[String]) = Authenticated { implicit request =>
+    Logger.info("[Story] Searching logs for project " + project)
+    val logs = Log.search(project, Searchable.asRegex(List("module")))
+    Ok(toJson(logs.map(wrappedLog(_))))
   }
 
   def inbox(project: String) = Authenticated { implicit request =>

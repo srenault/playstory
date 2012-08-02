@@ -11,6 +11,7 @@ window.PlayStory = {
                 FeedsPresent: {}
             },
             Inbox: {},
+            Search: {},
             Apps: {}
         }
     }

@@ -10,11 +10,12 @@
             bucket = PlayStory.Bucket,
             modelsDef = PlayStory.ModelsDef,
             server = PlayStory.Server,
-            limit = 10000;
+            limit = 10;
 
         //Init
         this.tabsView = new Home.Tabs.TabsView();
         this.inboxView = new Home.Inbox.InboxView(this.pastDOM);
+        this.searchView = new Home.Search.SearchView();
         this.appsView = new Home.Apps.AppsView();
         this.pastDOM    =  new Home.Feeds.FeedsPastDOM();
         this.presentDOM =  new Home.Feeds.FeedsPresentDOM();

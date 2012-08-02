@@ -169,6 +169,10 @@
             return uri;
         });
 
+        this.searchFeeds = this.fetch('/story/:project/search', function(uriPattern, params) {
+            return uriPattern.replace(':project', params[0]);
+        });
+
         this.bookmark = Action(function(bookmark, next) {
             var uri = '/story/:project/log/:id/bookmark'.replace(':id', bookmark.feed)
                                                         .replace(':project', bookmark.project);

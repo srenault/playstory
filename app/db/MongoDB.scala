@@ -21,12 +21,11 @@ object MongoDB {
     database.authenticate(username, password)
     database
   }
-
-  def clearAll() = db.dropDatabase()
 }
 
-class MongoDB(collectName: String) {
+class MongoDB(collectName: String, indexes: Seq[String] = Nil) {
   import MongoDB._
 
-  lazy val collection = MongoDB.db(collectName)
+  val collection = MongoDB.db(collectName)
+  indexes.foreach(index => collection.ensureIndex(index))
 }
