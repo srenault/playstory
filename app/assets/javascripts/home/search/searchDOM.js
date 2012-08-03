@@ -22,10 +22,22 @@
              });
          };
 
-         this.typedQuery = function(evt) {
-             console.log($(evt.currentTarget).val().split(' '));
+         this.typedKeywords = function(evt) {
              return $(evt.currentTarget).val().split(' ');
          };
+
+         this.fillSearch = Action(function(params, next) {
+             var keywords = params[1].match(/keywords=([\w]*)/g).map(function(keyword) {
+                 return keyword.split('=')[1];
+             }).join(' ');
+             elts.$search.val(keywords);
+             next(params);
+         });
+
+         this.clearSearch = Action(function(params, next) {
+             elts.$search.val('');
+             next(params);
+         });
      };
 
  })(window.PlayStory.Init.Home.Search);

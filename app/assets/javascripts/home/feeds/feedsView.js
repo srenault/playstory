@@ -13,12 +13,13 @@
             limit = 10;
 
         //Init
-        this.tabsView = new Home.Tabs.TabsView();
-        this.inboxView = new Home.Inbox.InboxView(this.pastDOM);
-        this.searchView = new Home.Search.SearchView();
-        this.appsView = new Home.Apps.AppsView();
         this.pastDOM    =  new Home.Feeds.FeedsPastDOM();
         this.presentDOM =  new Home.Feeds.FeedsPresentDOM();
+
+        this.tabsView = new Home.Tabs.TabsView();
+        this.inboxView = new Home.Inbox.InboxView();
+        this.searchView = new Home.Search.SearchView(this.pastDOM);
+        this.appsView = new Home.Apps.AppsView();
 
         server.onReceiveFromTemplate('user')
             .await(bucket.models('user').putAsAction)
@@ -73,7 +74,7 @@
             .await(
                 bucket.collections('feeds').asFifo(limit)
                 .and(this.pastDOM.displayNewFeed(limit)
-                     .then(this.pastDOM.highlightFeed))
+                .then(this.pastDOM.highlightFeed))
         ).subscribe();
 
         server.onReceive('/story/:project/log/:id/:limit')
@@ -84,7 +85,20 @@
                .and(self.pastDOM.displayNewFeed(limit))
         ).subscribe();
 
+        server.onReceive('/story/:project/search?*keywords')
+           .map(modelsDef.asFeed)
+           .await(this.pastDOM.displayNewFeed())
+           .subscribe();
+
+        Router.when('past/:project/search/*keywords').chain(
+            this.pastDOM.clearFeeds,
+            this.searchView.dom.fillSearch,
+            server.searchFeeds,
+            server.streamFeeds
+        );
+ 
         Router.when('past/:project').chain(
+            this.searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
             server.closeStream('/story/:project/listen'),
@@ -93,11 +107,13 @@
        .and(server.fetchLastFeeds);
 
         Router.when('present/:project').chain(
-            server.closeStream('/story/:project/listen').then(
-            server.streamFeeds)
+            this.searchView.dom.clearSearch,
+            server.closeStream('/story/:project/listen'),
+            server.streamFeeds
         );
 
         Router.when('past/:project/level/:level').chain(
+            this.searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
             server.closeStream('/story/:project/listen'),
@@ -106,6 +122,7 @@
         );
 
         Router.when('bookmarks').chain(
+            this.searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
             server.closeStream('/story/:project/listen'),
@@ -114,6 +131,7 @@
         );
 
         Router.when('past/:project/feed/:id/:limit').chain(
+            this.searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
             server.closeStream('/story/:project/listen'),

@@ -28,6 +28,7 @@
 
         var _streamChunks = function(chunk) {
             var subscribers = [];
+
             if(chunk.src) {
                 for(var uri in subscriptions) {
                     if(RouterUtils.routeAsRegex(uri).test(chunk.src)) {
@@ -169,8 +170,9 @@
             return uri;
         });
 
-        this.searchFeeds = this.fetch('/story/:project/search', function(uriPattern, params) {
-            return uriPattern.replace(':project', params[0]);
+        this.searchFeeds = this.fetch('/story/:project/search?:keywords', function(uriPattern, params) {
+            return uriPattern.replace(':project', params[0])
+                             .replace(':keywords', params[1]);
         });
 
         this.bookmark = Action(function(bookmark, next) {

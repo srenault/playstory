@@ -81,10 +81,10 @@
              };
 
              this.goAsAction = function(uriPattern, buildURI, trigger) {
-                 return Action(function(feed, next) {
-                     var uri = buildURI(uriPattern, feed);
+                 return Action(function(any, next) {
+                     var uri = buildURI(uriPattern, any);
                      that.go(uri, trigger);
-                     next(feed);
+                     next(any);
                  });
              };
 

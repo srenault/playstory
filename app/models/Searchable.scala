@@ -6,10 +6,10 @@ import db.MongoDB
 
 trait Searchable {
   def asWords(sentence: String): List[String] = sentence.split(" ").toList
-  def mongoKeywords(fields: List[String]): MongoDBObject = {
+  def asKeywords(fields: List[String]): MongoDBObject = {
     MongoDBObject("keywords" -> fields)
   }
-  def keywords(fields: List[Regex]): MongoDBObject = ("keywords" $all Array("""(i?)module""".r))//("keywords" $all fields)
+  def byKeywords(fields: List[Regex]): MongoDBObject = ("keywords" $all fields)
 }
 
 object Searchable {

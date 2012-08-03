@@ -11,15 +11,26 @@
         //Init
         this.dom = new Tabs.TabsDOM();
 
-        Router.when('past/:project', this.dom.turnOnPastTab);
-        Router.when('present/:project', this.dom.turnOnPresentTab);
-        Router.when('past/:project/level/:level', this.dom.turnOnPastTab);
-        Router.when('past/:project/feed/:id/:limit', this.dom.turnOnPastTab);
-
-        Router.when('past/:project', this.dom.refreshNavigation);
-        Router.when('present/:project', this.dom.refreshNavigation);
-        Router.when('past/:project/level/:level', this.dom.refreshNavigation);
-        Router.when('past/:project/feed/:id/:limit', this.dom.refreshNavigation);
+        Router.when('past/:project').chain(
+            this.dom.turnOnPastTab,
+            this.dom.refreshNavigation
+        );
+        Router.when('present/:project').chain(
+            this.dom.turnOnPresentTab,
+            this.dom.refreshNavigation
+        );
+        Router.when('past/:project/level/:level').chain(
+            this.dom.turnOnPastTab,
+            this.dom.refreshNavigation
+        );
+        Router.when('past/:project/feed/:id/:limit').chain(
+            this.dom.turnOnPastTab,
+            this.dom.refreshNavigation
+        );
+        Router.when('past/:project/search/*keywords').chain(
+            this.dom.turnOnPastTab,
+            this.dom.refreshNavigation
+        );
 
         //Routes
         When(this.dom.onPastTabClick)

@@ -55,9 +55,9 @@ object Story extends Controller with Secured with Pulling {
     }
   }
 
-  def search(project: String, query: List[String]) = Authenticated { implicit request =>
+  def search(project: String, keywords: List[String]) = Authenticated { implicit request =>
     Logger.info("[Story] Searching logs for project " + project)
-    val logs = Log.search(project, Searchable.asRegex(List("module")))
+    val logs = Log.search(project, Searchable.asRegex(keywords))
     Ok(toJson(logs.map(wrappedLog(_))))
   }
 

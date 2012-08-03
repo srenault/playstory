@@ -24,13 +24,18 @@
             .subscribe();
 
         Router.when('past/:project').chain(
-            this.dom.refreshNavigation,
-            server.fetchInbox
+            server.fetchInbox,
+            this.dom.refreshNavigation
         );
 
         Router.when('present/:project', this.dom.refreshNavigation);
 
         Router.when('past/:project/level/:level').chain(
+            server.fetchInbox,
+            this.dom.refreshNavigation
+        );
+
+        Router.when('past/:project/search/*keywords').chain(
             server.fetchInbox,
             this.dom.refreshNavigation
         );

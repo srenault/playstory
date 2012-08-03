@@ -53,16 +53,16 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     collection.find("_id" $in ids).sort(byEnd)
                                   .limit(max)
                                   .flatMap(fromMongoDBObject(_))
-                                  .toList
+                                  .toList.reverse
   }
 
   def search(project: String, fields: List[Regex], max: Int = 50): List[Log] = {
     val byProject = MongoDBObject("project" -> project)
-    collection.find(keywords(fields) ++ byProject)
+    collection.find(byKeywords(fields) ++ byProject)
               .sort(byEnd)
               .limit(max)
               .flatMap(fromMongoDBObject(_))
-              .toList
+              .toList.reverse
   }
 
   def byProject(project: String, max: Int = 50): List[Log] = {
@@ -95,7 +95,8 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     val byBefore = "date" $lt before
     collection.find(byProject ++ byBefore).sort(byEnd)
                                           .limit(max)
-                                          .flatMap(fromMongoDBObject(_)).toList
+                                          .flatMap(fromMongoDBObject(_))
+                                          .toList.reverse
   }
 
   def byProjectAfter(project: String, after: Long, max: Int = 50, level: Option[String] = None): List[Log] = {
@@ -106,13 +107,13 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     collection.find(byProject ++ byAfter ++ byLevel).sort(byEnd)
                                                     .limit(max)
                                                     .flatMap(fromMongoDBObject(_))
-                                                    .toList
+                                                    .toList.reverse
   }
 
   def byProjectFrom(project: String, from: Long, max: Int = 50): List[Log] = {
     collection.find(
       "date" $gt from, MongoDBObject("project" -> project)
-    ).sort(byEnd).limit(max).flatMap(fromMongoDBObject(_)).toList
+    ).sort(byEnd).limit(max).flatMap(fromMongoDBObject(_)).toList.reverse
   }
 
   def countByLevel(projects: String*): List[(String, Double)] = {
@@ -181,7 +182,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     mongoLog += "level" -> log.level
     mongoLog += "thread" -> log.thread
     mongoLog += "comments" -> log.comments
-    mongoLog ++= mongoKeywords(asWords(log.message))
+    mongoLog ++= asKeywords(asWords(log.message))
     mongoLog.result
   }
 
@@ -201,19 +202,8 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
       thread    <- log.getAs[String]("thread")
     } yield {
       val comments: BasicDBList = log.getAs[BasicDBList]("comments").getOrElse(new BasicDBList())
-      Log(_id,
-          project,
-          logger,
-          className,
-          date,
-          file,
-          location,
-          line,
-          message,
-          method,
-          level,
-          thread,
-          comments.toList.flatMap {
+      Log(_id, project, logger, className, date, file, location, line, message,
+          method, level, thread, comments.toList.flatMap {
             case c: DBObject => Comment.fromMongoDBObject(c)
           }
       )
