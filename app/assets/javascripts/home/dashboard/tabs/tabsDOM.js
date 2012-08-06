@@ -6,14 +6,38 @@
 
      Tabs.TabsDOM = function() {
          console.log("[Tabs.DOM] Init tabs DOM");
+         var self = this;
 
          //DOM elements
          var elts = {
+             $middleColumn: $('.column-middle'),
+             $tabs: $('.tabs'),
              $presentTab: $('.tabs .present'),
              $pastTab: $('.tabs .past'),
              $pastPannel: $('.feeds.past'),
              $presentPannel: $('.feeds.present')
          };
+
+         var tmpl = _.template($("#tabs_tmpl").html());
+
+         this.render = function() {
+             elts.$middleColumn.append(tmpl({
+             }));
+         };
+
+         this.renderAsAction = Action(function(any, next) {
+             self.render();
+             next(any);
+         });
+
+         this.destroy = function() {
+            elts.$tabs.remove();
+         };
+
+         this.destroyAsAction = Action(function(any, next) {
+             self.destroy();
+             next(any);
+         });
 
          this.onPastTabClick = function(next) {
              elts.$pastTab.find('a').click(next);

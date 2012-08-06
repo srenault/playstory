@@ -1,5 +1,23 @@
 @()
 
+<script id="feeds_past_tmpl" type="text/html">
+  <div class="feeds past">
+    <div class="more-feeds">
+      <a href="#"><span class="counter"></span> more logs...</a>
+    </div>
+    <ul>
+   </ul>
+  </div>
+</script>
+
+<script id="feeds_present_tmpl" type="text/html">
+  <div class="feeds present">
+    <div class="waiting-feeds">Waiting feeds ...</div>
+    <ul>
+    </ul>
+  </div>
+</script>
+
 <script id="feed_tmpl" type="text/html">
   <li id="<%= feed.id %>" data-project="<%= feed.project.name %>" class="feed <%= feed.level %>">
     <div class="avatar">

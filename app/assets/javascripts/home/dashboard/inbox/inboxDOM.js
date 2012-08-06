@@ -6,9 +6,11 @@
 
      Inbox.InboxDOM = function() {
          console.log("[Inbox.DOM] Init Inbox DOM");
+         var self = this;
 
          //DOM elements
          var elts = new (function() {
+             this.$leftColumn = $('.column-left');
              this.$inbox = $('.inbox');
              this.$levels = this.$inbox.find('ul.levels li:not(.all)');
              this.$info = this.$inbox.find('li.info');
@@ -20,6 +22,27 @@
              this.$all = this.$inbox.find("ul li.all a");
              this.$starred = this.$inbox.find("ul.mainstream li a");
          })();
+
+         var tmpl = _.template($("#inbox_tmpl").html());
+
+         this.render = function() {
+             elts.$leftColumn.append(tmpl({
+             }));
+         };
+
+         this.renderAsAction = Action(function(any, next) {
+             self.render();
+             next(any);
+         });
+
+         this.destroy = function() {
+            elts.$inbox.remove();
+         };
+
+         this.destroyAsAction = Action(function(any, next) {
+             self.destroy();
+             next(any);
+         });
 
          var summup = function($counter) {
              var currentCounter = $counter.text().replace(' (','')
@@ -57,7 +80,7 @@
          });
 
          this.refreshNavigation = Action(function(params, next) {
-             var noFilterURL = '#past/:project'.replace(':project', params[0]);
+             var noFilterURL = '#dashboard/past/:project'.replace(':project', params[0]);
              elts.$all.attr('href', noFilterURL);
 
              elts.$levels.each(function(index, l) {
@@ -65,7 +88,7 @@
                      level = $level.attr('class');
 
                  if(level) {
-                     var uri = ('#past/:project/level/' + level).replace(':project', params[0]);
+                     var uri = ('#dashboard/past/:project/level/' + level).replace(':project', params[0]);
                      $level.find('a').attr('href', uri);
                  }
              });

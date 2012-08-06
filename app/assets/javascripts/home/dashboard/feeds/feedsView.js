@@ -21,6 +21,18 @@
         this.searchView = new Home.Search.SearchView(this.pastDOM);
         this.appsView = new Home.Apps.AppsView();
 
+        var displayDashboard = this.tabsView.dom.renderAsAction
+                              .and(this.inboxView.dom.renderAsAction)
+                              .and(this.pastDOM.renderAsAction)
+                              .and(this.presentDOM.renderAsAction)
+                              .and(this.appsView.dom.renderAsAction),
+
+            destroyDashboard = this.tabsView.dom.destroyAsAction
+                              .and(this.inboxView.dom.destroyAsAction)
+                              .and(this.pastDOM.destroyAsAction)
+                              .and(this.presentDOM.destroyAsAction)
+                              .and(this.appsView.dom.destroyAsAction);
+
         server.onReceiveFromTemplate('user')
             .await(bucket.models('user').putAsAction)
             .subscribe();
@@ -90,14 +102,15 @@
            .await(this.pastDOM.displayNewFeed())
            .subscribe();
 
-        Router.when('past/:project/search/*keywords').chain(
+        Router.when('dashboard/past/:project/search/*keywords').chain(
             this.pastDOM.clearFeeds,
             this.searchView.dom.fillSearch,
             server.searchFeeds,
             server.streamFeeds
         );
  
-        Router.when('past/:project').chain(
+        Router.when('dashboard/past/:project').chain(
+            displayDashboard,
             this.searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
@@ -106,13 +119,13 @@
         )
        .and(server.fetchLastFeeds);
 
-        Router.when('present/:project').chain(
+        Router.when('dashboard/present/:project').chain(
             this.searchView.dom.clearSearch,
             server.closeStream('/story/:project/listen'),
             server.streamFeeds
         );
 
-        Router.when('past/:project/level/:level').chain(
+        Router.when('dashboard/past/:project/level/:level').chain(
             this.searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
@@ -121,7 +134,7 @@
             server.fetchFeedsByLevel
         );
 
-        Router.when('bookmarks').chain(
+        Router.when('dashboard/bookmarks').chain(
             this.searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
@@ -130,7 +143,7 @@
             server.fetch('/story/all/bookmarks')
         );
 
-        Router.when('past/:project/feed/:id/:limit').chain(
+        Router.when('dashboard/past/:project/feed/:id/:limit').chain(
             this.searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
@@ -171,14 +184,14 @@
         };
 
         When(this.pastDOM.onBottomPageReach)
-        .map(onlySpecifiedRoutes(['past/:project',
-                                  'past/:project/level/:level']))
+        .map(onlySpecifiedRoutes(['dashboard/past/:project',
+                                  'dashboard/past/:project/level/:level']))
         .filter(isRouteValid)
         .await(server.fetchMoreFeeds)
         .subscribe();
 
         var goFeed = function(trigger) {
-            return Router.goAsAction('past/:project/feed/:id/' + limit, function(uriPattern, feed) {
+            return Router.goAsAction('dashboard/past/:project/feed/:id/' + limit, function(uriPattern, feed) {
                 return uriPattern.replace(':project', feed.project)
                                  .replace(':id', feed.id);
             }, trigger);

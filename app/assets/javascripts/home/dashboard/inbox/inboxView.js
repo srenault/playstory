@@ -23,19 +23,19 @@
             .await(this.dom.initLevels)
             .subscribe();
 
-        Router.when('past/:project').chain(
+        Router.when('dashboard/past/:project').chain(
             server.fetchInbox,
             this.dom.refreshNavigation
         );
 
-        Router.when('present/:project', this.dom.refreshNavigation);
+        Router.when('dashboard/present/:project', this.dom.refreshNavigation);
 
-        Router.when('past/:project/level/:level').chain(
+        Router.when('dashboard/past/:project/level/:level').chain(
             server.fetchInbox,
             this.dom.refreshNavigation
         );
 
-        Router.when('past/:project/search/*keywords').chain(
+        Router.when('dashboard/past/:project/search/*keywords').chain(
             server.fetchInbox,
             this.dom.refreshNavigation
         );

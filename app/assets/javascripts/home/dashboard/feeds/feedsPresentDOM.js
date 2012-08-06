@@ -6,6 +6,7 @@
 
      Feeds.FeedsPresentDOM = function() {
          console.log("[FeedsPresent.DOM] Init feeds present DOM");
+         var self = this;
 
          //Subscriptions
          var subscriptions = [];
@@ -16,13 +17,34 @@
 
          //DOM elements
          var elts = new (function() {
+             this.$middleColumn = $('.column-middle');
              this.$feedsContainer = $('.feeds.present');
              this.$waitingFeeds = this.$feedsContainer.find('.waiting-feeds');
              this.$feedsList = $('.feeds.present ul');
          })();
 
-         var feedTmpl = _.template($("#feed_tmpl").html()),
+         var tmpl = _.template($("#feeds_present_tmpl").html()),
+             feedTmpl = _.template($("#feed_tmpl").html()),
              commentTmpl = _.template($("#comment_tmpl").html());
+
+         this.render = function() {
+             elts.$middleColumn.append(tmpl({
+             }));
+         };
+
+         this.renderAsAction = Action(function(any, next) {
+             self.render();
+             next(any);
+         });
+
+         this.destroy = function() {
+            elts.$feedsContainer.remove();
+         };
+
+         this.destroyAsAction = Action(function(any, next) {
+             self.destroy();
+             next(any);
+         });
 
          this.onFeedClick = function(next) {
              elts.$feedsList.on('click', 'li.feed', next);

@@ -6,11 +6,12 @@
 
      Feeds.FeedsPastDOM = function() {
          console.log("[FeedsPast.DOM] Init feeds past DOM");
-
-         var bucket = PlayStory.Bucket;
+         var self = this,
+             bucket = PlayStory.Bucket;
 
          //DOM elements
          var elts = new (function() {
+             this.$middleColumn = $('.column-middle');
              this.$feedsContainer = $('.feeds.past');
              this.$feedsList = $('.feeds.past ul');
              this.$feeds = function() { return this.$feedsList.find('li'); };
@@ -21,9 +22,29 @@
              };
          })();
 
-         var feedTmpl = _.template($("#feed_tmpl").html()),
+         var tmpl = _.template($("#feeds_past_tmpl").html()),
+             feedTmpl = _.template($("#feed_tmpl").html()),
              newCommentTmpl = _.template($("#new_comment_tmpl").html()),
              commentTmpl = _.template($("#comment_tmpl").html());
+
+         this.render = function() {
+             elts.$middleColumn.append(tmpl({
+             }));
+         };
+
+         this.renderAsAction = Action(function(any, next) {
+             self.render();
+             next(any);
+         });
+
+         this.destroy = function() {
+            elts.$feedsContainer.remove();
+         };
+
+         this.destroyAsAction = Action(function(any, next) {
+             self.destroy();
+             next(any);
+         });
 
          //Events
          this.onBottomPageReach = function(next) {
@@ -92,8 +113,6 @@
                  project: project
              };
          };
-
-         //Actions
 
          this.clearFeeds = Action(function(evt, next) {
              elts.$feedsList.empty();

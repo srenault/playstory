@@ -6,55 +6,12 @@
 @main("Play Story > Home", user) {
 
 <section class="column-left">
-  <div class="inbox">
-    <h3>INBOX</h3>
-    <ul class="mainstream">
-      <li><a href="#bookmarks">STARRED <span> (@user.bookmarkIds.size)</span></a></li>
-    </ul>
-    <ul class="levels">
-      <li><hr/></li>
-      <li class="all"><a href="#all">ALL</a></li>
-      <li class="debug"><a href="#past/debug">DEBUG<span></span></a></li>
-      <li class="error"><a href="#past/error">ERROR<span></span></a></li>
-      <li class="fatal"><a href="#past/fatal">FATAL<span></span></a></li>
-      <li class="info"><a href="#past/info">INFO<span></span></a></li>
-      <li class="trace"><a href="#past/trace">TRACE<span></span></a></li>
-      <li class="warn"><a href="#past/warn">WARN<span></span></a></li>
-    </ul>
-  </div>
 </section>
 
 <section class="column-middle">
-  <ul class="tabs">
-    <li class="past on"><a href="#past/all">PAST</a></li>
-    <li class="present"><a href="#present/all">PRESENT</a></li>
-  </ul>
-  <div class="feeds present">
-    <div class="waiting-feeds">Waiting feeds ...</div>
-    <ul>
-    </ul>
-  </div>
-  <div class="feeds past">
-    <div class="more-feeds">
-      <a href="#"><span class="counter"></span> more logs...</a>
-    </div>
-    <ul>
-    </ul>
 </section>
 
 <section class="column-right">
-  <div class="apps">
-    <h3>APPS</h3>
-    <ul>
-      <li><a href="#">CREATE</a></li>
-      <li><a href="#">DISCOVER</a></li>
-      <li><hr/></li>
-      <li class="project"><a href="#past/all">ALL</a></li>
-      @user.projects.map { project =>
-      <li class="project"><a href="#past/@project.name">@project.realName</a></li>
-      }
-    </ul>
-  </div>
 </section>
 
 }{
@@ -62,8 +19,11 @@
 <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/story/home.css")">
 }{
 <!-- Home javascript templates -->
-@feeds()
-@comment()
+@dashboard.feeds()
+@dashboard.tabs()
+@dashboard.apps()
+@dashboard.inbox()
+@dashboard.comment()
 <!-- Home javascript imports -->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/utils.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/namespace.js")"></script>

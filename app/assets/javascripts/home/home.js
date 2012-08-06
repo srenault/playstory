@@ -9,7 +9,7 @@ $(document).ready(function() {
         PlayStory.Home = new (function() {
             var router = PlayStory.Router;
             if(router.currentRoute() == '') {
-                router.go('past/all');
+                router.go('dashboard/past/all');
             }
 
             this.FeedsView = new PlayStory.Init.Home.Feeds.FeedsView();

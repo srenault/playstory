@@ -11,23 +11,23 @@
         //Init
         this.dom = new Tabs.TabsDOM();
 
-        Router.when('past/:project').chain(
+        Router.when('dashboard/past/:project').chain(
             this.dom.turnOnPastTab,
             this.dom.refreshNavigation
         );
-        Router.when('present/:project').chain(
+        Router.when('dashboard/present/:project').chain(
             this.dom.turnOnPresentTab,
             this.dom.refreshNavigation
         );
-        Router.when('past/:project/level/:level').chain(
+        Router.when('dashboard/past/:project/level/:level').chain(
             this.dom.turnOnPastTab,
             this.dom.refreshNavigation
         );
-        Router.when('past/:project/feed/:id/:limit').chain(
+        Router.when('dashboard/past/:project/feed/:id/:limit').chain(
             this.dom.turnOnPastTab,
             this.dom.refreshNavigation
         );
-        Router.when('past/:project/search/*keywords').chain(
+        Router.when('dashboard/past/:project/search/*keywords').chain(
             this.dom.turnOnPastTab,
             this.dom.refreshNavigation
         );
