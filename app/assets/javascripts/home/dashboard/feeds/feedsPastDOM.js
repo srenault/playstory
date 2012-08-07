@@ -13,7 +13,7 @@
          var elts = {
              $middleColumn : function() { return $('.column-middle'); },
              $feedsContainer : function() { return $('.feeds.past'); },
-             $feedsList : function() { return $('.feeds.past ul'); },
+             $feedsList : function() { return $('.feeds.past ul.feeds'); },
              $feeds : function() { return $('.feeds.past ul li'); },
              $moreFeeds : function() { return $('.feeds.past .more-feeds'); },
              $counter : function() { return $('.feeds.past .more-feeds .counter'); },

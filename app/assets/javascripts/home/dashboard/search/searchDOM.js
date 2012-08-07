@@ -6,11 +6,29 @@
 
      Search.SearchDOM = function() {
          console.log("[Search.DOM] Init Search DOM");
+         var self = this;
 
          //DOM elements
          var elts = {
+             $content: function() { return $('.content'); },
              $searchContainer : function() { return $('.search'); },
-             $search : function() { return $('. search input[name=search]'); }
+             $search : function() { return $('.search input[name=search]'); }
+         };
+
+         var tmpl = _.template($("#search_tmpl").html());
+
+         this.render = function() {
+             elts.$content().prepend(tmpl({
+             }));
+         };
+
+         this.renderAsAction = Action(function(any, next) {
+             self.render();
+             next(any);
+         });
+
+         this.destroy = function() {
+            elts.$content().empty();
          };
 
          this.onTypingEnter = function(next) {

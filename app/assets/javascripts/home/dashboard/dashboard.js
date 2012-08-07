@@ -14,7 +14,8 @@
         this.feedsView = new Dashboard.Feeds.FeedsView(this.searchView, this.inboxView);
 
         var renderDashboard = this.layoutDOM.renderAsAction.then(
-            this.tabsView.dom.renderAsAction
+            this.searchView.dom.renderAsAction
+           .and(this.tabsView.dom.renderAsAction)
            .and(this.inboxView.dom.renderAsAction)
            .and(this.feedsView.pastDOM.renderAsAction)
            .and(this.feedsView.presentDOM.renderAsAction)
@@ -29,7 +30,8 @@
            .and(this.appsView.dom.destroyAsAction)
         );
 
-        Router.when('dashboard/*any', renderDashboard);
+        //Router.when('dashboard/*any', renderDashboard);
+        renderDashboard._do();
     };
 
 })(window.PlayStory,

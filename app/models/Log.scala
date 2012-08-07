@@ -37,7 +37,6 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   val byEnd = MongoDBObject("date" -> -1)
 
   def all(max: Int = 50): List[Log] = {
-    println(collection.find().count)
     collection.find().sort(byEnd)
                      .limit(max)
                      .flatMap(fromMongoDBObject(_))
