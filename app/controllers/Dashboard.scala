@@ -29,10 +29,10 @@ import models.{ Log, User, Project, Comment, Searchable }
 import actors.StoryActor
 import actors.StoryActor._
 
-object Story extends Controller with Secured with Pulling {
+object Dashboard extends Controller with Secured with Pulling {
 
   def home = Authenticated { implicit request =>
-    Logger.info("[Story] Welcome : " + request.user)
+    Logger.info("[Dashboard] Welcome : " + request.user)
 
     Project.byName("onconnect").foreach { project =>
       request.user.follow(project)
@@ -45,7 +45,7 @@ object Story extends Controller with Secured with Pulling {
   }
 
   def listen(project: String) = Authenticated { implicit request =>
-    Logger.info("[Story] Waitings logs...")
+    Logger.info("[Dashboard] Waitings logs...")
     AsyncResult {
       implicit val timeout = Timeout(5 second)
       (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
@@ -56,13 +56,13 @@ object Story extends Controller with Secured with Pulling {
   }
 
   def search(project: String, keywords: List[String]) = Authenticated { implicit request =>
-    Logger.info("[Story] Searching logs for project " + project)
+    Logger.info("[Dashboard] Searching logs for project " + project)
     val logs = Log.search(project, Searchable.asRegex(keywords))
     Ok(toJson(logs.map(wrappedLog(_))))
   }
 
   def inbox(project: String) = Authenticated { implicit request =>
-    Logger.info("[Story] Getting inbox data of %s...".format(project))
+    Logger.info("[Dashboard] Getting inbox data of %s...".format(project))
 
     val countersOpt = project match {
       case Project.ALL => Some(Log.countByLevel())
@@ -83,7 +83,7 @@ object Story extends Controller with Secured with Pulling {
   )
 
   def comment(project: String, id: String) = Authenticated { implicit request =>
-    Logger.info("[Story] Comment log #%s from project %s".format(id, project))
+    Logger.info("[Dashboard] Comment log #%s from project %s".format(id, project))
     commentForm.bindFromRequest.fold(
       error => BadRequest,
       newComment => Log.byId(new ObjectId(id)).map { l =>
@@ -94,7 +94,7 @@ object Story extends Controller with Secured with Pulling {
   }
 
   def bookmark(project: String, id: String) = Authenticated { implicit request =>
-    Logger.info("[Story] Bookmark log #%s from project %s".format(id, project))
+    Logger.info("[Dashboard] Bookmark log #%s from project %s".format(id, project))
     val logId = new ObjectId(id)
     (request.user.hasBookmark(logId), Log.byId(logId)) match {
       case (false, Some(_)) => {
@@ -106,12 +106,12 @@ object Story extends Controller with Secured with Pulling {
   }
 
   def bookmarks() = Authenticated { implicit request =>
-    Logger.info("[Story] Getting all bookmarks ")
+    Logger.info("[Dashboard] Getting all bookmarks ")
     Ok(toJson(request.user.bookmarks.map(wrappedLog(_))))
   }
 
   def byLevel(project: String, level: String) = Action { implicit request =>
-    Logger.info("[Story] Getting logs by level for %s".format(project))
+    Logger.info("[Dashboard] Getting logs by level for %s".format(project))
     val logs = project match {
       case Project.ALL => Log.byLevel(level).map(wrappedLog(_))
       case _ => Log.byLevel(level, Some(project)).map(wrappedLog(_))
@@ -120,7 +120,7 @@ object Story extends Controller with Secured with Pulling {
   }
 
   def more(project: String, id: String, limit: Int, level: Option[String]) = Action { implicit request =>
-    Logger.info("[Story] Getting more logs from project %s and log %s.".format(project, id))
+    Logger.info("[Dashboard] Getting more logs from project %s and log %s.".format(project, id))
     Log.byId(new ObjectId(id)).map { log =>
       val logs = Log.byProjectAfter(project, log.date, limit, level)
       Ok(toJson(logs.map(wrappedLog(_))))
@@ -128,7 +128,7 @@ object Story extends Controller with Secured with Pulling {
   }
 
   def withContext(project: String, id: String, limit: Int) = Action { implicit request =>
-    Logger.info("[Story] Getting on log %s with its context for project %s.".format(project, id))
+    Logger.info("[Dashboard] Getting on log %s with its context for project %s.".format(project, id))
     val limitBefore, limitAfter = Math.round(limit/2)
     val logsOpt: Option[List[Log]] = Log.byId(new ObjectId(id)).map { log =>
       val beforeLogs = Log.byProjectBefore(project, log.date, limitBefore)
@@ -141,7 +141,7 @@ object Story extends Controller with Secured with Pulling {
   }
 
   def lastFrom(project: String, from: Long) = Action { implicit request =>
-    Logger.info("[Story] Getting history of %s from %".format(project, from))
+    Logger.info("[Dashboard] Getting history of %s from %".format(project, from))
     val logs = project match {
       case Project.ALL => Log.all().map(wrappedLog(_))
       case _ => Log.byProjectFrom(project, from).map(wrappedLog(_))
@@ -151,7 +151,7 @@ object Story extends Controller with Secured with Pulling {
   }
 
   def last(project: String) = Action { implicit request =>
-    Logger.info("[Story] Getting history of %s".format(project))
+    Logger.info("[Dashboard] Getting history of %s".format(project))
 
     val logs = project match {
       case Project.ALL => Log.all().map(wrappedLog(_))
@@ -167,8 +167,8 @@ object Story extends Controller with Secured with Pulling {
         StoryActor.ref ! NewLog(Log.fromJsObject(log))
         Ok
       }
-      case log: JsValue => BadRequest("[Story] Not a json object")
-      case _ => BadRequest("[Story] Invalid Log format: " + request.body)
+      case log: JsValue => BadRequest("[Dashboard] Not a json object")
+      case _ => BadRequest("[Dashboard] Invalid Log format: " + request.body)
     }
   }
 

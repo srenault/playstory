@@ -14,12 +14,12 @@
         //Init
         this.dom = new Inbox.InboxDOM();
 
-        server.onReceive('/story/:project/listen')
+        server.onReceive(PlayRoutes.controllers.Dashboard.listen(':project').url)
             .map(modelsDef.asFeed)
             .await(this.dom.updateLevels)
             .subscribe();
 
-        server.onReceive('/story/:project/inbox')
+        server.onReceive(PlayRoutes.controllers.Dashboard.inbox(':project').url)
             .await(this.dom.initLevels)
             .subscribe();
 
@@ -42,5 +42,5 @@
     };
 
 })(window.PlayStory,
-   window.PlayStory.Init.Home.Inbox,
+   window.PlayStory.Init.Home.Dashboard.Inbox,
    window.PlayStory.Router);

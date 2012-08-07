@@ -12,7 +12,7 @@ $(document).ready(function() {
                 router.go('dashboard/past/all');
             }
 
-            this.FeedsView = new PlayStory.Init.Home.Feeds.FeedsView();
+            this.dashboard = new PlayStory.Init.Home.Dashboard();
         })();
     })(window.PlayStory);
 });

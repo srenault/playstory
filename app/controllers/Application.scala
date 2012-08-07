@@ -43,7 +43,7 @@ object Application extends Controller with GoogleOpenID {
             } yield {
               User.createIfNot(User(lastname, firstname, email, language))
               Logger.info("[OpenID] Authentication successful")
-              Redirect(routes.Story.home).withSession("user" -> email)
+              Redirect(routes.Dashboard.home).withSession("user" -> email)
             }) getOrElse {
               Logger.info("[OpenID] Authentication successful but some required fields miss")
               Redirect(routes.Application.index)
@@ -62,4 +62,6 @@ object Application extends Controller with GoogleOpenID {
     Logger.info("Bye bye !")
     Redirect(routes.Application.index) withNewSession
   }
+
+  def home = TODO
 }

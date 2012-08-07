@@ -10,17 +10,17 @@
              bucket = PlayStory.Bucket;
 
          //DOM elements
-         var elts = new (function() {
-             this.$middleColumn = $('.column-middle');
-             this.$feedsContainer = $('.feeds.past');
-             this.$feedsList = $('.feeds.past ul');
-             this.$feeds = function() { return this.$feedsList.find('li'); };
-             this.$moreFeeds = this.$feedsContainer.find('.more-feeds');
-             this.$counter = this.$moreFeeds.find('.counter');
-             this.findFeed = function(id) {
-                 return this.$feedsList.find('#' + id);
-             };
-         })();
+         var elts = {
+             $middleColumn : function() { return $('.column-middle'); },
+             $feedsContainer : function() { return $('.feeds.past'); },
+             $feedsList : function() { return $('.feeds.past ul'); },
+             $feeds : function() { return $('.feeds.past ul li'); },
+             $moreFeeds : function() { return $('.feeds.past .more-feeds'); },
+             $counter : function() { return $('.feeds.past .more-feeds .counter'); },
+             findFeed : function(id) {
+                 return $('.feeds.past ul #' + id);
+             }
+         };
 
          var tmpl = _.template($("#feeds_past_tmpl").html()),
              feedTmpl = _.template($("#feed_tmpl").html()),
@@ -28,7 +28,7 @@
              commentTmpl = _.template($("#comment_tmpl").html());
 
          this.render = function() {
-             elts.$middleColumn.append(tmpl({
+             elts.$middleColumn().append(tmpl({
              }));
          };
 
@@ -38,7 +38,7 @@
          });
 
          this.destroy = function() {
-            elts.$feedsContainer.remove();
+            elts.$feedsContainer().remove();
          };
 
          this.destroyAsAction = Action(function(any, next) {
@@ -60,23 +60,23 @@
          };
 
          this.onMoreFeedsClick = function(next) {
-             elts.$moreFeeds.click(next);
+             elts.$moreFeeds().click(next);
          };
 
          this.onNewCommentClick = function(next) {
-             elts.$feedsContainer.on('click', 'a.comment', next);
+             elts.$feedsContainer().on('click', 'a.comment', next);
          };
 
          this.onSubmitCommentClick = function(next) {
-             elts.$feedsContainer.on('click', '.comments .new.comment button.save', next);
+             elts.$feedsContainer().on('click', '.comments .new.comment button.save', next);
          };
 
          this.onBookmarkClick = function(next) {
-             elts.$feedsContainer.on('click', '.footer .bookmark', next);
+             elts.$feedsContainer().on('click', '.footer .bookmark', next);
          };
 
          this.onFeedClick = function(next) {
-             elts.$feedsList.on('click', 'li.feed', next);
+             elts.$feedsList().on('click', 'li.feed', next);
          };
 
          this.newComment = function(evt) {
@@ -115,7 +115,7 @@
          };
 
          this.clearFeeds = Action(function(evt, next) {
-             elts.$feedsList.empty();
+             elts.$feedsList().empty();
              next(evt);
          });
 
@@ -145,15 +145,15 @@
          });
 
          this.updateCounter = Action(function(evt, next) {
-             var current = parseInt(elts.$counter.text());
+             var current = parseInt(elts.$counter().text());
              if(isNaN(current)) current = 0;
-             elts.$counter.text(current+1);
+             elts.$counter().text(current+1);
              elts.$moreFeeds.show();
          });
 
          this.displayNewFeed = function(limit) {
              return Action(function(feed, next) {
-                 elts.$feedsList.prepend(feedTmpl({
+                 elts.$feedsList().prepend(feedTmpl({
                      feed: feed,
                      commentView: function(comment) {
                          return commentTmpl({
@@ -164,8 +164,8 @@
                  }));
 
                  if(limit) {
-                     var currentFeedsSize = elts.$feedsList.find('li').length;
-                     if(currentFeedsSize > limit) elts.$feedsList.find('li:last').remove();
+                     var currentFeedsSize = elts.$feeds().length;
+                     if(currentFeedsSize > limit) elts.$feedsList().find('li:last').remove();
                  }
                  next(feed);
              });
@@ -173,4 +173,4 @@
      };
 
  })(window.PlayStory,
-    window.PlayStory.Init.Home.Feeds);
+    window.PlayStory.Init.Home.Dashboard.Feeds);

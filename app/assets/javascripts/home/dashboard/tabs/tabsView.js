@@ -42,4 +42,5 @@
         .subscribe();
     };
 
-})(window.PlayStory.Init.Home.Tabs, window.PlayStory.Router);
+})(window.PlayStory.Init.Home.Dashboard.Tabs,
+   window.PlayStory.Router);

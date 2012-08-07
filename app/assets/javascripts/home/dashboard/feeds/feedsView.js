@@ -2,9 +2,9 @@
  * feedsView.js
  */
 
-(function(PlayStory, Home, Router) {
+(function(PlayStory, Dashboard, Router) {
 
-    Home.Feeds.FeedsView = function() {
+    Dashboard.Feeds.FeedsView = function(searchView, inboxView) {
         console.log("[Feeds.View] Init feeds past view");
         var self = this,
             bucket = PlayStory.Bucket,
@@ -12,32 +12,14 @@
             server = PlayStory.Server,
             limit = 10;
 
-        //Init
-        this.pastDOM    =  new Home.Feeds.FeedsPastDOM();
-        this.presentDOM =  new Home.Feeds.FeedsPresentDOM();
-
-        this.tabsView = new Home.Tabs.TabsView();
-        this.inboxView = new Home.Inbox.InboxView();
-        this.searchView = new Home.Search.SearchView(this.pastDOM);
-        this.appsView = new Home.Apps.AppsView();
-
-        var displayDashboard = this.tabsView.dom.renderAsAction
-                              .and(this.inboxView.dom.renderAsAction)
-                              .and(this.pastDOM.renderAsAction)
-                              .and(this.presentDOM.renderAsAction)
-                              .and(this.appsView.dom.renderAsAction),
-
-            destroyDashboard = this.tabsView.dom.destroyAsAction
-                              .and(this.inboxView.dom.destroyAsAction)
-                              .and(this.pastDOM.destroyAsAction)
-                              .and(this.presentDOM.destroyAsAction)
-                              .and(this.appsView.dom.destroyAsAction);
+        this.pastDOM    =  new Dashboard.Feeds.FeedsPastDOM();
+        this.presentDOM =  new Dashboard.Feeds.FeedsPresentDOM();
 
         server.onReceiveFromTemplate('user')
             .await(bucket.models('user').putAsAction)
             .subscribe();
 
-        server.onReceive('/story/:project/listen')
+        server.onReceive(PlayRoutes.controllers.Dashboard.listen(':project').url)
             .map(modelsDef.asFeed)
             .await(
                 bucket.collections('feeds').putAsAction
@@ -47,28 +29,28 @@
                )
         ).subscribe();
 
-        server.onReceive('/story/:project/last')
+        server.onReceive(PlayRoutes.controllers.Dashboard.last(':project').url)
             .map(modelsDef.asFeed)
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(this.pastDOM.displayNewFeed(limit))
         ).subscribe();
 
-        server.onReceive('/story/:project/level/:level')
+        server.onReceive(PlayRoutes.controllers.Dashboard.byLevel(':project', ':level').url)
             .map(modelsDef.asFeed)
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(self.pastDOM.displayNewFeed(limit))
         ).subscribe();
 
-        server.onReceive('/story/all/bookmarks')
+        server.onReceive(PlayRoutes.controllers.Dashboard.bookmarks())
             .map(modelsDef.asFeed)
             .await(
                 bucket.collections('feeds').asFifo(limit)
                .and(self.pastDOM.displayNewFeed(limit))
         ).subscribe();
 
-        server.onReceive('/story/:project/log/:id/more/:limit')
+        server.onReceive(PlayRoutes.controllers.Dashboard.more(':project', 'id:', ':level', ':limit').url)
         .map(modelsDef.asFeed)
         .await(
             bucket.collections('feeds').putAsAction
@@ -89,7 +71,7 @@
                 .then(this.pastDOM.highlightFeed))
         ).subscribe();
 
-        server.onReceive('/story/:project/log/:id/:limit')
+        server.onReceive(PlayRoutes.controllers.Dashboard.withContext(':project', ':id', ':limit').url)
             .map(modelsDef.asFeed)
             .filter(function(feed) { return !isWishedFeed(feed); })
             .await(
@@ -97,21 +79,20 @@
                .and(self.pastDOM.displayNewFeed(limit))
         ).subscribe();
 
-        server.onReceive('/story/:project/search?*keywords')
+        server.onReceive('/dashboard/:project/search?*keywords')
            .map(modelsDef.asFeed)
            .await(this.pastDOM.displayNewFeed())
            .subscribe();
 
         Router.when('dashboard/past/:project/search/*keywords').chain(
             this.pastDOM.clearFeeds,
-            this.searchView.dom.fillSearch,
+            searchView.dom.fillSearch,
             server.searchFeeds,
             server.streamFeeds
         );
  
         Router.when('dashboard/past/:project').chain(
-            displayDashboard,
-            this.searchView.dom.clearSearch,
+            searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
             server.closeStream('/story/:project/listen'),
@@ -120,13 +101,13 @@
        .and(server.fetchLastFeeds);
 
         Router.when('dashboard/present/:project').chain(
-            this.searchView.dom.clearSearch,
+            searchView.dom.clearSearch,
             server.closeStream('/story/:project/listen'),
             server.streamFeeds
         );
 
         Router.when('dashboard/past/:project/level/:level').chain(
-            this.searchView.dom.clearSearch,
+            searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
             server.closeStream('/story/:project/listen'),
@@ -135,7 +116,7 @@
         );
 
         Router.when('dashboard/bookmarks').chain(
-            this.searchView.dom.clearSearch,
+            searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
             server.closeStream('/story/:project/listen'),
@@ -144,7 +125,7 @@
         );
 
         Router.when('dashboard/past/:project/feed/:id/:limit').chain(
-            this.searchView.dom.clearSearch,
+            searchView.dom.clearSearch,
             bucket.collections('feeds').resetAsAction,
             this.pastDOM.clearFeeds,
             server.closeStream('/story/:project/listen'),
@@ -157,7 +138,7 @@
 
         When(this.pastDOM.onBookmarkClick)
         .map(this.pastDOM.newBookmark)
-        .await(server.bookmark.then(this.inboxView.dom.updateStarred))
+        .await(server.bookmark.then(inboxView.dom.updateStarred))
         .subscribe();
  
         When(this.pastDOM.onSubmitCommentClick)
@@ -217,5 +198,5 @@
     };
 
 })(window.PlayStory,
-   window.PlayStory.Init.Home,
+   window.PlayStory.Init.Home.Dashboard,
    window.PlayStory.Router);

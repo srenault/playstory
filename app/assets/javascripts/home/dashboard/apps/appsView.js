@@ -18,5 +18,5 @@
         Router.when('dashboard/past/:project/level/:level',this.dom.refreshNavigation('past'));
     };
 
-})(window.PlayStory.Init.Home.Apps,
+})(window.PlayStory.Init.Home.Dashboard.Apps,
    window.PlayStory.Router);

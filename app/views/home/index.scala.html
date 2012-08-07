@@ -1,29 +1,36 @@
-@(user: models.User)
+@(user: models.User)(implicit request: RequestHeader)
 
 @import play.api.libs.json._
 @import play.api.libs.json.Json._
+@import helper.javascriptRouter
 
 @main("Play Story > Home", user) {
-
-<section class="column-left">
-</section>
-
-<section class="column-middle">
-</section>
-
-<section class="column-right">
-</section>
 
 }{
 <!-- Home CSS imports -->
 <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/story/home.css")">
 }{
 <!-- Home javascript templates -->
+@dashboard.layout()
 @dashboard.feeds()
 @dashboard.tabs()
 @dashboard.apps()
 @dashboard.inbox()
 @dashboard.comment()
+
+<!-- Play Javascript routers -->
+@javascriptRouter("PlayRoutes")(
+  routes.javascript.Dashboard.listen,
+  routes.javascript.Dashboard.last,
+  routes.javascript.Dashboard.byLevel,
+  routes.javascript.Dashboard.bookmarks,
+  routes.javascript.Dashboard.bookmark,
+  routes.javascript.Dashboard.withContext,
+  routes.javascript.Dashboard.comment,
+  routes.javascript.Dashboard.more,
+  routes.javascript.Dashboard.inbox
+)
+
 <!-- Home javascript imports -->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/utils.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/namespace.js")"></script>
@@ -32,18 +39,19 @@
 <script type="text/javascript" src="@routes.Assets.at("javascripts/Bucket.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/Server.js")"></script>
 
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/search/searchDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/inbox/inboxDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/apps/appsDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPresentDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPastDOM.js")"></script>
-
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/search/searchView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/inbox/inboxView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/apps/appsView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/search/searchDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/tabs/TabsDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/inbox/inboxDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/apps/appsDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/feeds/feedsPresentDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/feeds/feedsPastDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/search/searchView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/tabs/TabsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/inbox/inboxView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/apps/appsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/feeds/feedsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/layoutDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/dashboard.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/home.js")"></script>
 
 <!-- Init Home page -->
