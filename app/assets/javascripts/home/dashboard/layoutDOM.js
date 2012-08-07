@@ -10,13 +10,13 @@
 
          //DOM elements
          var elts = {
-             $content: $('.content')
+             $content: function() { return $('.content'); }
          };
 
          var tmpl = _.template($("#layout_tmpl").html());
 
          this.render = function() {
-             elts.$content.append(tmpl({
+             elts.$content().append(tmpl({
              }));
          };
 
@@ -26,7 +26,7 @@
          });
 
          this.destroy = function() {
-            elts.$content.empty();
+            elts.$content().empty();
          };
 
          this.destroyAsAction = Action(function(any, next) {
