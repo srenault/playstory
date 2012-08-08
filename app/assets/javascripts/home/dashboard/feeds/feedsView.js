@@ -4,12 +4,11 @@
 
 (function(PlayStory, Dashboard, Router) {
 
-    Dashboard.Feeds.FeedsView = function(searchView, inboxView) {
+    Dashboard.Feeds.FeedsView = function(server, searchView, inboxView) {
         console.log("[Feeds.View] Init feeds past view");
         var self = this,
             bucket = PlayStory.Bucket,
             modelsDef = PlayStory.ModelsDef,
-            server = PlayStory.Server,
             limit = 10;
 
         this.pastDOM    =  new Dashboard.Feeds.FeedsPastDOM();
@@ -19,182 +18,186 @@
             .await(bucket.models('user').putAsAction)
             .subscribe();
 
-        server.onReceive(PlayRoutes.controllers.Dashboard.listen(':project').url)
-            .map(modelsDef.asFeed)
-            .await(
-                bucket.collections('feeds').putAsAction
-               .and(
-                   this.presentDOM.displayNewFeed()
-                  .then(this.pastDOM.updateCounter)
-               )
-        ).subscribe();
 
-        server.onReceive(PlayRoutes.controllers.Dashboard.last(':project').url)
-            .map(modelsDef.asFeed)
-            .await(
-                bucket.collections('feeds').asFifo(limit)
-               .and(this.pastDOM.displayNewFeed(limit))
-        ).subscribe();
+        this.lazyInit = function() {
 
-        server.onReceive(PlayRoutes.controllers.Dashboard.byLevel(':project', ':level').url)
-            .map(modelsDef.asFeed)
-            .await(
-                bucket.collections('feeds').asFifo(limit)
-               .and(self.pastDOM.displayNewFeed(limit))
-        ).subscribe();
+            server.onReceive(server.urls.listen)
+                .map(modelsDef.asFeed)
+                .await(
+                    bucket.collections('feeds').putAsAction
+                        .and(
+                            this.presentDOM.displayNewFeed()
+                                .then(this.pastDOM.updateCounter)
+                        )
+                ).subscribe();
 
-        server.onReceive(PlayRoutes.controllers.Dashboard.bookmarks())
-            .map(modelsDef.asFeed)
-            .await(
-                bucket.collections('feeds').asFifo(limit)
-               .and(self.pastDOM.displayNewFeed(limit))
-        ).subscribe();
+            server.onReceive(server.urls.last)
+                .map(modelsDef.asFeed)
+                .await(
+                    bucket.collections('feeds').asFifo(limit)
+                        .and(this.pastDOM.displayNewFeed(limit))
+            ).subscribe();
 
-        server.onReceive(PlayRoutes.controllers.Dashboard.more(':project', 'id:', ':level', ':limit').url)
-        .map(modelsDef.asFeed)
-        .await(
-            bucket.collections('feeds').putAsAction
-           .and(self.pastDOM.displayNewFeed())
-        ).subscribe();
+            server.onReceive(server.urls.byLevel)
+                .map(modelsDef.asFeed)
+                .await(
+                    bucket.collections('feeds').asFifo(limit)
+                        .and(self.pastDOM.displayNewFeed(limit))
+            ).subscribe();
 
-        var isWishedFeed = function(feed) {
-            var params = Router.matchCurrentRoute('past/:project/feed/:id/:limit');
-            return feed.id == params[1];
-        };
+            server.onReceive(server.urls.bookmarks)
+                .map(modelsDef.asFeed)
+                .await(
+                    bucket.collections('feeds').asFifo(limit)
+                        .and(self.pastDOM.displayNewFeed(limit))
+                ).subscribe();
 
-        server.onReceive('/story/:project/log/:id/:limit')
-            .map(modelsDef.asFeed)
-            .filter(isWishedFeed)
-            .await(
-                bucket.collections('feeds').asFifo(limit)
-                .and(this.pastDOM.displayNewFeed(limit)
-                .then(this.pastDOM.highlightFeed))
-        ).subscribe();
+            server.onReceive(server.urls.more)
+                .map(modelsDef.asFeed)
+                .await(
+                    bucket.collections('feeds').putAsAction
+                        .and(self.pastDOM.displayNewFeed())
+            ).subscribe();
 
-        server.onReceive(PlayRoutes.controllers.Dashboard.withContext(':project', ':id', ':limit').url)
-            .map(modelsDef.asFeed)
-            .filter(function(feed) { return !isWishedFeed(feed); })
-            .await(
-                bucket.collections('feeds').asFifo(limit)
-               .and(self.pastDOM.displayNewFeed(limit))
-        ).subscribe();
+            var isWishedFeed = function(feed) {
+                var params = Router.matchCurrentRoute('past/:project/feed/:id/:limit');
+                return feed.id == params[1];
+            };
 
-        server.onReceive('/dashboard/:project/search?*keywords')
-           .map(modelsDef.asFeed)
-           .await(this.pastDOM.displayNewFeed())
-           .subscribe();
+            server.onReceive(server.urls.withContext)
+                .map(modelsDef.asFeed)
+                .filter(isWishedFeed)
+                .await(
+                    bucket.collections('feeds').asFifo(limit)
+                        .and(this.pastDOM.displayNewFeed(limit)
+                             .then(this.pastDOM.highlightFeed))
+                ).subscribe();
 
-        Router.when('dashboard/past/:project/search/*keywords').chain(
-            this.pastDOM.clearFeeds,
-            searchView.dom.fillSearch,
-            server.searchFeeds,
-            server.streamFeeds
-        );
- 
-        Router.when('dashboard/past/:project').chain(
-            searchView.dom.clearSearch,
-            bucket.collections('feeds').resetAsAction,
-            this.pastDOM.clearFeeds,
-            server.closeStream('/story/:project/listen'),
-            server.streamFeeds
-        )
-       .and(server.fetchLastFeeds);
+            server.onReceive(server.urls.withContext)
+                .map(modelsDef.asFeed)
+                .filter(function(feed) { return !isWishedFeed(feed); })
+                .await(
+                    bucket.collections('feeds').asFifo(limit)
+                        .and(self.pastDOM.displayNewFeed(limit))
+            ).subscribe();
 
-        Router.when('dashboard/present/:project').chain(
-            searchView.dom.clearSearch,
-            server.closeStream('/story/:project/listen'),
-            server.streamFeeds
-        );
+            server.onReceive('/dashboard/:project/search?*keywords')
+                .map(modelsDef.asFeed)
+                .await(this.pastDOM.displayNewFeed())
+                .subscribe();
 
-        Router.when('dashboard/past/:project/level/:level').chain(
-            searchView.dom.clearSearch,
-            bucket.collections('feeds').resetAsAction,
-            this.pastDOM.clearFeeds,
-            server.closeStream('/story/:project/listen'),
-            server.streamFeeds,
-            server.fetchFeedsByLevel
-        );
+            Router.when('dashboard/past/:project/search/*keywords').chain(
+                this.pastDOM.clearFeeds,
+                searchView.dom.fillSearch,
+                server.searchFeeds,
+                server.streamFeeds
+            );
+            
+            Router.when('dashboard/past/:project').chain(
+                searchView.dom.clearSearch,
+                bucket.collections('feeds').resetAsAction,
+                this.pastDOM.clearFeeds,
+                server.closeStream('/story/:project/listen'),
+                server.streamFeeds
+            )
+                .and(server.fetchLastFeeds);
 
-        Router.when('dashboard/bookmarks').chain(
-            searchView.dom.clearSearch,
-            bucket.collections('feeds').resetAsAction,
-            this.pastDOM.clearFeeds,
-            server.closeStream('/story/:project/listen'),
-            server.streamFeeds,
-            server.fetch('/story/all/bookmarks')
-        );
+            Router.when('dashboard/present/:project').chain(
+                searchView.dom.clearSearch,
+                server.closeStream('/story/:project/listen'),
+                server.streamFeeds
+            );
 
-        Router.when('dashboard/past/:project/feed/:id/:limit').chain(
-            searchView.dom.clearSearch,
-            bucket.collections('feeds').resetAsAction,
-            this.pastDOM.clearFeeds,
-            server.closeStream('/story/:project/listen'),
-            server.streamFeeds
-        ).and(server.fetchFeedWithContext);
+            Router.when('dashboard/past/:project/level/:level').chain(
+                searchView.dom.clearSearch,
+                bucket.collections('feeds').resetAsAction,
+                this.pastDOM.clearFeeds,
+                server.closeStream('/story/:project/listen'),
+                server.streamFeeds,
+                server.fetchFeedsByLevel
+            );
 
-        When(this.pastDOM.onNewCommentClick)
-        .await(this.pastDOM.displayNewComment)
-        .subscribe();
+            Router.when('dashboard/bookmarks').chain(
+                searchView.dom.clearSearch,
+                bucket.collections('feeds').resetAsAction,
+                this.pastDOM.clearFeeds,
+                server.closeStream('/story/:project/listen'),
+                server.streamFeeds,
+                server.fetch('/story/all/bookmarks')
+            );
 
-        When(this.pastDOM.onBookmarkClick)
-        .map(this.pastDOM.newBookmark)
-        .await(server.bookmark.then(inboxView.dom.updateStarred))
-        .subscribe();
- 
-        When(this.pastDOM.onSubmitCommentClick)
-        .map(this.pastDOM.newComment)
-        .await(server.saveNewComment.then(this.pastDOM.displayComment))
-        .subscribe();
+            Router.when('dashboard/past/:project/feed/:id/:limit').chain(
+                searchView.dom.clearSearch,
+                bucket.collections('feeds').resetAsAction,
+                this.pastDOM.clearFeeds,
+                server.closeStream('/story/:project/listen'),
+                server.streamFeeds
+            ).and(server.fetchFeedWithContext);
 
-        var onlySpecifiedRoutes = function(routes) {
-            return function() {
-                var matchedRoutes = routes.filter(function(route) {
-                    return Router.isMatchCurrentRoute(route);
-                });
-                if(matchedRoutes.length > 0) {
+            When(this.pastDOM.onNewCommentClick)
+                .await(this.pastDOM.displayNewComment)
+                .subscribe();
+
+            When(this.pastDOM.onBookmarkClick)
+                .map(this.pastDOM.newBookmark)
+                .await(server.bookmark.then(inboxView.dom.updateStarred))
+                .subscribe();
+            
+            When(this.pastDOM.onSubmitCommentClick)
+                .map(this.pastDOM.newComment)
+                .await(server.saveNewComment.then(this.pastDOM.displayComment))
+                .subscribe();
+
+            var onlySpecifiedRoutes = function(routes) {
+                return function() {
+                    var matchedRoutes = routes.filter(function(route) {
+                        return Router.isMatchCurrentRoute(route);
+                    });
+                    if(matchedRoutes.length > 0) {
+                        return {
+                            route: matchedRoutes[0],
+                            params: Router.matchCurrentRoute(matchedRoutes[0])
+                        };
+                    } else return null;
+                };
+            };
+
+            var isRouteValid = function(params) {
+                return params != null && bucket.collections('feeds').size() > 0;
+            };
+
+            When(this.pastDOM.onBottomPageReach)
+                .map(onlySpecifiedRoutes(['dashboard/past/:project',
+                                          'dashboard/past/:project/level/:level']))
+                .filter(isRouteValid)
+                .await(server.fetchMoreFeeds)
+                .subscribe();
+
+            var goFeed = function(trigger) {
+                return Router.goAsAction('dashboard/past/:project/feed/:id/' + limit, function(uriPattern, feed) {
+                    return uriPattern.replace(':project', feed.project)
+                        .replace(':id', feed.id);
+                }, trigger);
+            };
+
+            When(this.pastDOM.onFeedClick)
+                .map(this.pastDOM.clickedFeed)
+                .map(function($feed) {
                     return {
-                        route: matchedRoutes[0],
-                        params: Router.matchCurrentRoute(matchedRoutes[0])
+                        id: $feed.attr('id'),
+                        project: $feed.data('project')
                     };
-                } else return null;
-            };
+                }).await(goFeed().and(this.pastDOM.highlightFeed)).subscribe();
+
+            When(this.presentDOM.onFeedClick)
+                .map(this.presentDOM.clickedFeed)
+                .map(function($feed) {
+                    return {
+                        id: $feed.attr('id'),
+                        project: $feed.data('project')
+                    };
+                }).await(goFeed(true).and(this.pastDOM.highlightFeed)).subscribe();
         };
-
-        var isRouteValid = function(params) {
-            return params != null && bucket.collections('feeds').size() > 0;
-        };
-
-        When(this.pastDOM.onBottomPageReach)
-        .map(onlySpecifiedRoutes(['dashboard/past/:project',
-                                  'dashboard/past/:project/level/:level']))
-        .filter(isRouteValid)
-        .await(server.fetchMoreFeeds)
-        .subscribe();
-
-        var goFeed = function(trigger) {
-            return Router.goAsAction('dashboard/past/:project/feed/:id/' + limit, function(uriPattern, feed) {
-                return uriPattern.replace(':project', feed.project)
-                                 .replace(':id', feed.id);
-            }, trigger);
-        };
-
-        When(this.pastDOM.onFeedClick)
-        .map(this.pastDOM.clickedFeed)
-        .map(function($feed) {
-            return {
-                id: $feed.attr('id'),
-                project: $feed.data('project')
-            };
-        }).await(goFeed().and(this.pastDOM.highlightFeed)).subscribe();
-
-        When(this.presentDOM.onFeedClick)
-        .map(this.presentDOM.clickedFeed)
-        .map(function($feed) {
-            return {
-                id: $feed.attr('id'),
-                project: $feed.data('project')
-            };
-        }).await(goFeed(true).and(this.pastDOM.highlightFeed)).subscribe();
     };
 
 })(window.PlayStory,

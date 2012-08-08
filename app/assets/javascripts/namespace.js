@@ -13,5 +13,8 @@ window.PlayStory = {
                 Apps: {}
             }
         }
+    },
+    Home: {
+        Dashboard: {}
     }
 };

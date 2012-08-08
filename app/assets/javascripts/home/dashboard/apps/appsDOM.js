@@ -8,7 +8,6 @@
          console.log("[Inbox.DOM] Init Apps DOM");
          var self = this;
 
-         //DOM elements
          var elts = {
              $rightColumn : function() { return $('.column-right'); },
              $apps : function() { return  $('.apps'); },
@@ -39,14 +38,16 @@
          this.refreshNavigation = function(pastOrPresent) {
              return Action(function(any, next) {
                  elts.$projects().find('a').each(function(index, elt) {
-                     var project = $(elt).attr('href').split('/')[1],
-                         uri = ('#:tabs/:project').replace(':tabs', pastOrPresent)
+                     var project = $(elt).attr('href').split('/')[2],
+                         uri = ('#dashboard/:tabs/:project').replace(':tabs', pastOrPresent)
                                                   .replace(':project', project);
                      $(elt).attr('href', uri);
                  });
                  next(any);
              });
          };
+
+         return this;
      };
 
  })(window.PlayStory.Init.Home.Dashboard.Apps);

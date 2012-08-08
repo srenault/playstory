@@ -11,11 +11,12 @@
         //Init
         this.dom = new Apps.AppsDOM();
 
-        Router.when('dashboard/past/:project', this.dom.refreshNavigation('past'));
+        this.lazyInit = function() {
 
-        Router.when('dashboard/present/:project', this.dom.refreshNavigation('present'));
-
-        Router.when('dashboard/past/:project/level/:level',this.dom.refreshNavigation('past'));
+            Router.when('dashboard/past/:project', this.dom.refreshNavigation('past'));
+            Router.when('dashboard/present/:project', this.dom.refreshNavigation('present'));
+            Router.when('dashboard/past/:project/level/:level',this.dom.refreshNavigation('past'));
+        };
     };
 
 })(window.PlayStory.Init.Home.Dashboard.Apps,

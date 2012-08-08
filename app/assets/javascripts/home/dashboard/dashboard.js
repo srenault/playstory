@@ -2,16 +2,20 @@
  * dashboard.js
  */
 
-(function(PlayStory, Home, Dashboard, Router) {
+(function(PlayStory, Init, Home, Router) {
 
-    Home.Dashboard = function() {
-
-        this.layoutDOM = new Dashboard.LayoutDOM();
-        this.tabsView = new Dashboard.Tabs.TabsView();
-        this.inboxView = new Dashboard.Inbox.InboxView();
-        this.searchView = new Dashboard.Search.SearchView(this.pastDOM);
-        this.appsView = new Dashboard.Apps.AppsView();
-        this.feedsView = new Dashboard.Feeds.FeedsView(this.searchView, this.inboxView);
+    Init.Home.Dashboard.init = function() {
+        this.Server     = new Init.Home.Dashboard.Server();
+        this.layoutDOM  = new Init.Home.Dashboard.LayoutDOM();
+        this.tabsView   = new Init.Home.Dashboard.Tabs.TabsView();
+        this.inboxView  = new Init.Home.Dashboard.Inbox.InboxView(this.Server);
+        this.searchView = new Init.Home.Dashboard.Search.SearchView();
+        this.appsView   = new Init.Home.Dashboard.Apps.AppsView();
+        this.feedsView  = new Init.Home.Dashboard.Feeds.FeedsView(
+            this.Server,
+            this.searchView,
+            this.inboxView
+        );
 
         var renderDashboard = this.layoutDOM.renderAsAction.then(
             this.searchView.dom.renderAsAction
@@ -20,7 +24,13 @@
            .and(this.feedsView.pastDOM.renderAsAction)
            .and(this.feedsView.presentDOM.renderAsAction)
            .and(this.appsView.dom.renderAsAction)
-        );
+        ).then(this.tabsView.lazyInitAsAction);
+
+        this.tabsView.lazyInit();
+        this.inboxView.lazyInit();
+        this.appsView.lazyInit();
+        this.searchView.lazyInit();
+        this.feedsView.lazyInit();
 
         var destroyDashboard = this.layoutDOM.renderAsAction.then(
             this.tabsView.dom.destroyAsAction
@@ -32,10 +42,11 @@
 
         //Router.when('dashboard/*any', renderDashboard);
         renderDashboard._do();
+        return this;
     };
 
 })(window.PlayStory,
-   window.PlayStory.Init.Home,
-   window.PlayStory.Init.Home.Dashboard,
+   window.PlayStory.Init,
+   window.PlayStory.Home,
    window.PlayStory.Router
 );

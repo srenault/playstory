@@ -14,7 +14,7 @@
         //Init
         this.dom = new Search.SearchDOM();
 
-        this.subscribe = function() {
+        this.lazyInit = function() {
             var goSearchedFeed = Router.goAsAction('past/:project/search/:query', function(uriPattern, query) {
                 return uriPattern.replace(':project', query.project)
                     .replace(':query', query.keywords);
@@ -31,14 +31,8 @@
                         keywords: keywords,
                         project: 'onconnect'
                     };
-                })
-                .await(goSearchedFeed).subscribe();
+            }).await(goSearchedFeed).subscribe();
         };
-
-        this.subscribeAsAction = Action(function(any, next) {
-            self.subscribe();
-            next(any);
-        });
     };
 
 })(window.PlayStory,
