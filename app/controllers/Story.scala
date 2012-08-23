@@ -129,7 +129,7 @@ object Story extends Controller with Secured with Pulling {
 
   def withContext(project: String, id: String, limit: Int) = Action { implicit request =>
     Logger.info("[Story] Getting on log %s with its context for project %s.".format(project, id))
-    val limitBefore, limitAfter = Math.round(limit/2)
+    val limitBefore, limitAfter = scala.math.round(limit/2)
     val logsOpt: Option[List[Log]] = Log.byId(new ObjectId(id)).map { log =>
       val beforeLogs = Log.byProjectBefore(project, log.date, limitBefore)
       val afterLogs = Log.byProjectAfter(project, log.date, limitAfter)

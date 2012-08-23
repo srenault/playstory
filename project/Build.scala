@@ -9,10 +9,12 @@ object ApplicationBuild extends Build {
 
   val appDependencies = Seq(
     "org.scalaz" %% "scalaz-core" % "6.0.4",
-    "com.mongodb.casbah" %% "casbah" % "2.1.5-1"
+    "com.mongodb.casbah" % "casbah_2.9.1" % "2.1.5-1",
+    "reactivemongo" %% "reactivemongo" % "0.1-SNAPSHOT",
+    "play.modules.reactivemongo" %% "play2-reactivemongo" % "0.1-SNAPSHOT"
   )
 
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
-    resolvers += ("mandubian-mvn snapshots" at "https://github.com/mandubian/mandubian-mvn/raw/master/snapshots")
+    resolvers += "sgodbillon" at "https://bitbucket.org/sgodbillon/repository/raw/master/snapshots/"
   )
 }
