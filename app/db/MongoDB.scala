@@ -23,7 +23,7 @@ object MongoDB {
   }
 }
 
-class MongoDB(collectName: String, indexes: Seq[String] = Nil) {
+class MongoDB(collectName: String, indexes: Seq[String] = Nil) extends MongoDBAsync(collectName) {
   import MongoDB._
 
   val collection = MongoDB.db(collectName)

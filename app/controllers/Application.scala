@@ -26,16 +26,16 @@ object Application extends Controller with GoogleOpenID with MongoController {
 
   def index = Action { implicit request =>
     Logger.info("Welcome unauthenticated user !")
-    //Ok(views.html.signin())
-    MongoAsyncResult {
-      val coll = ReactiveMongoPlugin.collection("logs")
-        val query: JsValue = Json.obj(
-          "project" -> "onconnect"
-        )
+    Ok(views.html.signin())
+    // MongoAsyncResult {
+    //   val coll = ReactiveMongoPlugin.collection("logs")
+    //     val query: JsValue = Json.obj(
+    //       "project" -> "scanup"
+    //     )
 
-      val found = coll.find[JsValue, JsValue, JsValue](query, Json.obj("file" -> 1, "line" -> 1, "date" -> 1, "project" -> 1, "comments" -> 1), QueryOpts().awaitData)
-      (found.enumerate() &> Enumeratee.take(10) |>>> Iteratee.getChunks[JsValue]).map(s => Ok(s.toString))
-    }
+    //   val found = coll.find[JsValue, JsValue, JsValue](query, Json.obj("comments" -> 1), QueryOpts().awaitData)
+    //   (found.enumerate() &> Enumeratee.take(10) |>>> Iteratee.getChunks[JsValue]).map(s => Ok(s.toString))
+    // }
   }
 
   def signin = Action { implicit request =>

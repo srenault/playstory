@@ -4,8 +4,10 @@ import java.util.Date
 import scala.util.matching.Regex
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
+import play.modules.reactivemongo.PlayBsonImplicits.JsValueWriter
 import play.api.libs.json._
 import play.api.libs.json.Json._
+import play.api.libs.iteratee.Enumerator
 import play.Logger
 import db.MongoDB
 
@@ -37,7 +39,6 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   val byEnd = MongoDBObject("date" -> -1)
 
   def all(max: Int = 50): List[Log] = {
-    println(collection.find().count)
     collection.find().sort(byEnd)
                      .limit(max)
                      .flatMap(fromMongoDBObject(_))
@@ -160,6 +161,14 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     collection += log.asMongoDBObject
   }
 
+  def create(stream: Enumerator[JsValue]) = {
+    collectAsync.insert[JsValue](stream, 1)(JsValueWriter)
+  }
+
+  def createAsync(log: JsValue) = {
+    collectAsync.insert[JsValue](log)(JsValueWriter)
+  }
+
   def addComment(id: ObjectId, comment: Comment) = {
     Logger.debug("[Log] Adding log for %s".format(id))
     collection.update(MongoDBObject("_id" -> id), $push("comments" -> comment.asMongoDBObject))
@@ -238,7 +247,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     )
 
     def writes(l: Log): JsValue = JsObject(Seq(
-      "_id" -> JsString(l._id.toString),
+      "_id" -> Json.obj("$oid" -> l._id.toString),
       "project" -> JsString(l.project),
       "logger" -> JsString(l.logger),
       "class" -> JsString(l.className),
