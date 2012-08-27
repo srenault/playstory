@@ -39,6 +39,8 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   val byEnd = MongoDBObject("date" -> -1)
 
   def all(max: Int = 50): List[Log] = {
+    println(">>>>>>>>>>>")
+    println(collection.find().toList.size)
     collection.find().sort(byEnd)
                      .limit(max)
                      .flatMap(fromMongoDBObject(_))
@@ -196,6 +198,19 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   }
 
   def fromMongoDBObject(log: MongoDBObject): Option[Log] = {
+    log.getAs[ObjectId]("_id").get
+    log.getAs[String]("project").get
+    log.getAs[String]("logger").get
+    log.getAs[String]("className").get
+    log.getAs[Long]("date").get
+    log.getAs[String]("file").get
+    log.getAs[String]("location").get
+    log.getAs[Long]("line").get
+    log.getAs[String]("message").get
+    log.getAs[String]("method").get
+    log.getAs[String]("level").get
+    log.getAs[String]("thread").get
+
     for {
       _id       <- log.getAs[ObjectId]("_id")
       project   <- log.getAs[String]("project")
@@ -234,7 +249,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
       (json \ "_id").asOpt[String].map(new ObjectId(_)).getOrElse(new ObjectId),
       (json \ "project").as[String],
       (json \ "logger").as[String],
-      (json \ "class").as[String],
+      (json \ "className").asOpt[String].getOrElse(""), //TODO kill me !
       (json \ "date").as[String].toLong,
       (json \ "file").as[String],
       (json \ "location").as[String],
@@ -250,7 +265,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
       "_id" -> Json.obj("$oid" -> l._id.toString),
       "project" -> JsString(l.project),
       "logger" -> JsString(l.logger),
-      "class" -> JsString(l.className),
+      "className" -> JsString(l.className),
       "date" -> JsNumber(l.date),
       "file" -> JsString(l.file),
       "location" -> JsString(l.location),

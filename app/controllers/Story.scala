@@ -35,14 +35,6 @@ object Story extends Controller with Secured with Pulling {
   def home = Authenticated { implicit request =>
     Logger.info("[Story] Welcome : " + request.user)
 
-    val id = new ObjectId
-   val log = Log(id, "project", "logger", "className", 1000000, "file", "location", 100, "message", "method", "level", "thread", Nil)
-   println(">>>>>>>>>>>>>>>>>>>>   " + id)
-   Log.createAsync(toJson(log))
-   println(Log.byId(id))
-//    Log.create(log)
-//   println(Log.byId(new ObjectId("503766531a88781c15a84e5b")))
-
     Project.byName("onconnect").foreach { project =>
       request.user.follow(project)
     }
