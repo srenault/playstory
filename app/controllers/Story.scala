@@ -37,6 +37,10 @@ object Story extends Controller with Secured with Pulling {
       Log.byIdAsync(new ObjectId("503bee581a88f8c35d7a3245")).map { log =>
         Ok(log.toString)
       }
+
+      Log.allAsync(2).map { logs =>
+        Ok(logs.toString)
+      }
     }
   }
 

@@ -1,12 +1,15 @@
-package utils
+package utils.reactivemongo
 
 import org.jboss.netty.buffer.ChannelBuffer
 import reactivemongo.bson._
+//import reactivemongo.bson.handlers.
+import reactivemongo.api.{ SortOrder, FlattenedCursor, Collection, QueryOpts }
 import reactivemongo.bson.handlers._
-import reactivemongo.api.SortOrder
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.modules.reactivemongo.PlayBsonImplicits._
+import reactivemongo.bson.handlers.DefaultBSONHandlers._
+import reactivemongo.bson.handlers._
 
 case class QueryBuilder(
   queryDoc: Option[JsObject] = None,
@@ -38,16 +41,16 @@ case class QueryBuilder(
            explainFlagJson,
            snapshotFlagJson,
            commentStringJson).flatten
-                             .foldLeft(Json.obj())((q1, q2) => q1 ++ q2)
+      .foldLeft(Json.obj())((q1, q2) => q1 ++ q2)
     }
   }
 
   def makeMergedBuffer :ChannelBuffer = {
     projectionDoc.map { p =>
       JsObjectWriter.write(makeQueryDocument ++ p)
-    }.getOrElse {
-      JsObjectWriter.write(makeQueryDocument)
-    }
+                     }.getOrElse {
+                       JsObjectWriter.write(makeQueryDocument)
+                     }
   }
 
   /**
@@ -102,4 +105,18 @@ case class QueryBuilder(
 
   /** Adds a comment to this query, that may appear in the MongoDB logs. */
   def comment(message: String) :QueryBuilder = copy(commentString=Some(message))
+}
+
+object JsonQueryBuilderImplicits {
+  implicit object ChannelBufferWriter extends BSONWriter[ChannelBuffer] {
+    def write(buffer: ChannelBuffer): ChannelBuffer = buffer
+  }
+}
+
+object JsonQueryHelpers {
+  import JsonQueryBuilderImplicits._
+
+  def find(collection: Collection, query: QueryBuilder, opts: QueryOpts = QueryOpts()) :FlattenedCursor[JsValue] = {
+    collection.find(query.makeMergedBuffer, opts)(ChannelBufferWriter, DefaultBSONReaderHandler, JsValueReader)
+  }
 }

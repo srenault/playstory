@@ -13,6 +13,13 @@ import play.api.libs.iteratee.Enumerator
 import play.Logger
 import db.MongoDB
 import reactivemongo.bson.handlers.DefaultBSONHandlers._
+import reactivemongo.bson.handlers._
+import utils.reactivemongo._
+import utils.reactivemongo.{ QueryBuilder => JsonQueryBuilder }
+import MongoHelpers.{ ObjectId, RegEx }
+import reactivemongo.api.QueryBuilder
+import reactivemongo.api.SortOrder.{ Ascending, Descending }
+import reactivemongo.api.QueryOpts
 
 case class Log(
   _id: ObjectId,
@@ -49,7 +56,12 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   }
 
   def allAsync(max: Int= 50): Future[List[JsValue]] = {
-    collectAsync.find(Json.obj())(JsValueWriter, DefaultBSONReaderHandler, JsValueReader).toList
+    val limit = QueryOpts(batchSizeN = 2)
+    val byEnd = "date" -> Descending
+    val jsonQuery = JsonQueryBuilder().sort(byEnd)
+    val query = QueryBuilder().sort(byEnd)
+    JsonQueryHelpers.find(collectAsync, jsonQuery, limit).toList
+    //collectAsync.find[JsValue](query, limit)(DefaultBSONReaderHandler, JsValueReader).toList
   }
 
   def byId(id: ObjectId): Option[Log] = {
@@ -58,18 +70,9 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   }
 
   def byIdAsync(id: ObjectId): Future[Option[JsValue]] = {
-    import utils.QueryBuilder
-    import MongoHelpers.ObjectId
-    import reactivemongo.api.SortOrder.{ Ascending, Descending }
-
     val byId = Json.obj("_id" -> ObjectId(id.toString))
-    println("! here !")
-    val query = QueryBuilder(
-      Some(byId)
-    ).sort("date" -> Descending).makeQueryDocument
-    println(query)
-    println("! here !")
-    collectAsync.find[JsValue, JsValue](byId)(JsValueWriter, DefaultBSONReaderHandler, JsValueReader).headOption
+    val jsonQuery = JsonQueryBuilder(Some(byId))
+    JsonQueryHelpers.find(collectAsync, jsonQuery).headOption
   }
 
   def byIds(ids: Seq[ObjectId], max: Int = 50): List[Log] = {
@@ -79,6 +82,16 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
                                   .toList.reverse
   }
 
+  def byIdsAsync(ids: Seq[ObjectId], max: Int = 50): Future[List[JsValue]] = {
+    val limit = QueryOpts(batchSizeN = max)
+    val byEnd = "date" -> Descending
+    val $in = Json.obj(
+      "_id" -> Json.obj("$in" -> JsArray(ids.map(id => ObjectId(id.toString))))
+    )
+    val jsonQuery = JsonQueryBuilder(Some($in)).sort(byEnd)
+    JsonQueryHelpers.find(collectAsync, jsonQuery, limit).toList
+  }
+
   def search(project: String, fields: List[Regex], max: Int = 50): List[Log] = {
     val byProject = MongoDBObject("project" -> project)
     collection.find(byKeywords(fields) ++ byProject)
@@ -86,6 +99,17 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
               .limit(max)
               .flatMap(fromMongoDBObject(_))
               .toList.reverse
+  }
+
+  def searchAsync(project: String, fields: List[Regex], max: Int = 50): Future[List[JsValue]] = {
+    val byProject = Json.obj("project" -> project)
+    val limit = QueryOpts(batchSizeN = max)
+    val byEnd = "date" -> Descending
+    val $all = Json.obj(
+      "keywords" -> Json.obj("$all" -> JsArray(fields.map(f => RegEx(f.toString))))
+    )
+    val jsonQuery = JsonQueryBuilder(Some($all)).sort(byEnd)
+    JsonQueryHelpers.find(collectAsync, jsonQuery, limit).toList
   }
 
   def byProject(project: String, max: Int = 50): List[Log] = {
@@ -184,11 +208,11 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   }
 
   def createAsync(stream: Enumerator[JsValue]) {
-    collectAsync.insert[JsValue](stream, 1)(JsValueWriter)
+    collectAsync.insert[JsValue](stream, 1)
   }
 
   def createAsync(log: JsValue) {
-    collectAsync.insert[JsValue](log)(JsValueWriter)
+    collectAsync.insert[JsValue](log)
   }
 
   def addComment(id: ObjectId, comment: Comment) = {
