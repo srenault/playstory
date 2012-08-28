@@ -40,7 +40,7 @@ class StoryActor extends Actor {
     case IsAlive() => projects.foreach {
         case (project, channels) => {
           channels.foreach(channel => {
-            //Logger.debug("[Actor] Project %s alive".format(project))
+            Logger.debug("[Actor] Project %s alive".format(project))
             channel.push(Input.Empty)
           })
         }

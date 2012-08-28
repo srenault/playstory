@@ -139,15 +139,15 @@ object User extends MongoDB("users") {
       (json \ "bookmarkIds").as[Seq[String]].map(new ObjectId(_))
     )
 
-    def writes(user: User) = JsObject(Seq(
-      "id" -> JsString(user._id.toString),
-      "lastname" -> JsString(user.lastname),
-      "firstname" -> JsString(user.firstname),
-      "email" -> JsString(user.email),
-      "language" -> JsString(user.language),
-      "avatar" -> toJson(user.avatar),
-      "projects" -> toJson(user.projectNames),
+    def writes(user: User) = Json.obj(
+      "id" -> user._id.toString,
+      "lastname" -> user.lastname,
+      "firstname" -> user.firstname,
+      "email" -> user.email,
+      "language" -> user.language,
+      "avatar" -> user.avatar,
+      "projects" -> user.projectNames,
       "bookmarkIds" -> toJson(user.bookmarkIds.map(l => JsString(l.toString)))
-    ))
+    )
   }
 }

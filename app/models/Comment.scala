@@ -31,18 +31,18 @@ object Comment {
       (json \ "message").as[String]
     )
 
-    def writes(comment: Comment) = JsObject(Seq(
-      "id" -> JsString(comment._id.toString),
-      "author" -> User.byId(comment.author).map(toJson(_)).getOrElse(JsNull),
-      "message" -> JsString(comment.message)
-    ))
+    def writes(comment: Comment) = Json.obj(
+      "id"      -> comment._id.toString,
+      "author"  -> toJson(User.byId(comment.author)),
+      "message" -> comment.message
+    )
   }
 
   def fromMongoDBObject(comment: MongoDBObject): Option[Comment] = {
     for {
-      _id   <- comment.getAs[ObjectId]("_id")
-      author   <- comment.getAs[ObjectId]("author")
-      message  <- comment.getAs[String]("message")
+      _id     <- comment.getAs[ObjectId]("_id")
+      author  <- comment.getAs[ObjectId]("author")
+      message <- comment.getAs[String]("message")
     } yield {
       Comment(_id, author, message)
     }

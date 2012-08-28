@@ -64,10 +64,10 @@ object Project extends MongoDB("projects") {
       (json \ "avatar").as[Option[String]]
     )
 
-    def writes(p: Project): JsValue = JsObject(Seq(
-      "name" -> JsString(p.name),
-      "realName" -> JsString(p.realName),
-      "avatar" -> p.avatar.map(JsString(_)).getOrElse(JsNull)
-    ))
+    def writes(p: Project): JsValue = Json.obj(
+      "name"     -> p.name,
+      "realName" -> p.realName,
+      "avatar"   -> toJson(p.avatar)
+    )
   }
 }

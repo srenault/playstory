@@ -32,6 +32,14 @@ import actors.StoryActor._
 
 object Story extends Controller with Secured with Pulling {
 
+  def test = Action { implicit request =>
+    Async {
+      Log.byIdAsync(new ObjectId("503bee581a88f8c35d7a3245")).map { log =>
+        Ok(log.toString)
+      }
+    }
+  }
+
   def home = Authenticated { implicit request =>
     Logger.info("[Story] Welcome : " + request.user)
 
@@ -50,7 +58,7 @@ object Story extends Controller with Secured with Pulling {
     AsyncResult {
       implicit val timeout = Timeout(5 second)
       (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
-        Log.create(chunks.map(toJson(_)))
+        Log.createAsync(chunks.map(toJson(_)))
         implicit val LogComet = Comet.CometMessage[Log](log => wrappedLog(log).toString)
         playPulling(chunks).getOrElse(BadRequest)
       }
