@@ -1,5 +1,7 @@
 package models
 
+import scala.concurrent.Future
+import play.api.libs.concurrent._
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
 import scalaz.OptionW
@@ -8,6 +10,12 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.Logger
 import db.MongoDB
+
+import play.modules.reactivemongo.PlayBsonImplicits.{ JsValueWriter, JsValueReader }
+import reactivemongo.core.commands.LastError
+import utils.reactivemongo._
+import utils.reactivemongo.{ QueryBuilder => JsonQueryBuilder }
+import reactivemongo.api.SortOrder.{ Ascending, Descending }
 
 case class Project(name: String, realName: String, avatar: Option[String] = None) {
 
@@ -31,10 +39,21 @@ object Project extends MongoDB("projects") {
     }
   }
 
+  def createAsync(project: JsValue): Future[LastError] = {
+    collectAsync.insert[JsValue](project)
+  }
+
   def createIfNot(project: Project) = {
     val byName = MongoDBObject("name" -> project.name)
     collection.findOne(byName).ifNone {
       collection += (assignAvatar(project).asMongoDBObject)
+    }
+  }
+
+  def createIfNotAsync(project: JsValue): Future[Option[LastError]] = {
+    val projectName: String = (project \ "name").as[String]
+    byNameAsync(projectName).flatMap { projectOpt =>
+      projectOpt.map(_ => Promise.pure(None)) getOrElse createAsync(project).map(Some(_))
     }
   }
 
@@ -43,11 +62,35 @@ object Project extends MongoDB("projects") {
     collection.findOne(byName).flatMap(fromMongoDBObject(_))
   }
 
+  def byNameAsync(name: String): Future[Option[JsValue]] = {
+    println(name)
+    val byName = Json.obj("name" -> name)
+    val jsonQuery = JsonQueryBuilder().query(byName)
+    JsonQueryHelpers.find(collectAsync, jsonQuery).headOption
+  }
+
+  def byNamesAsync(names: String*): Future[List[JsValue]] = {
+    val matchProjects = Json.obj(
+      "name" -> Json.obj(
+        "$in" -> JsArray(names.map(JsString(_)))
+      )
+    )
+    val jsonQuery = JsonQueryBuilder().query(matchProjects).sort("name" -> Ascending)
+    JsonQueryHelpers.find(collectAsync, jsonQuery).toList
+  }
+
   def all(max: Int = 50): List[Project] = {
     collection.find().limit(max).toList.flatMap(fromMongoDBObject(_))
   }
 
+  def allAsync(max: Int= 50): Future[List[JsValue]] = {
+    val jsonQuery = JsonQueryBuilder().sort("name" -> Ascending)
+    JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
+  }
+
   def exist(name : String): Boolean = byName(name).isDefined
+
+  def existAsync(name : String): Promise[Boolean] = byNameAsync(name).map(_.isDefined)
 
   def fromMongoDBObject(project: MongoDBObject): Option[Project] = {
     for {

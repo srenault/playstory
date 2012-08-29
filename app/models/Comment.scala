@@ -32,7 +32,7 @@ object Comment {
     )
 
     def writes(comment: Comment) = Json.obj(
-      "id"      -> comment._id.toString,
+      "id"      -> Json.obj("$oid" -> comment._id.toString),
       "author"  -> toJson(User.byId(comment.author)),
       "message" -> comment.message
     )

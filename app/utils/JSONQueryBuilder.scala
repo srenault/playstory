@@ -1,15 +1,13 @@
 package utils.reactivemongo
 
 import org.jboss.netty.buffer.ChannelBuffer
-import reactivemongo.bson._
-//import reactivemongo.bson.handlers.
-import reactivemongo.api.{ SortOrder, FlattenedCursor, Collection, QueryOpts }
-import reactivemongo.bson.handlers._
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.modules.reactivemongo.PlayBsonImplicits._
-import reactivemongo.bson.handlers.DefaultBSONHandlers._
+import reactivemongo.api.{ SortOrder, FlattenedCursor, Collection, QueryOpts }
+import reactivemongo.bson._
 import reactivemongo.bson.handlers._
+import reactivemongo.bson.handlers.DefaultBSONHandlers._
 
 case class QueryBuilder(
   queryDoc: Option[JsObject] = None,
@@ -25,23 +23,22 @@ case class QueryBuilder(
     if(!sortDoc.isDefined && !hintDoc.isDefined && !explainFlag && !snapshotFlag && !commentString.isDefined)
       queryDoc.getOrElse(Json.obj())
     else {
-      val explainFlagJson = if(explainFlag) {
-        Some(Json.obj("$explain" -> true))
-      } else None
+      val queryDocJson: Option[JsObject] = Some(Json.obj("$query" -> queryDoc.getOrElse[JsObject](Json.obj())))
+      val sortDocJson: Option[JsObject] = sortDoc.map(sd => Json.obj("$orderby" -> sd))
+      val hintDocJson: Option[JsObject] = hintDoc.map(hd => Json.obj("$hint" -> hd))
+      val explainFlagJson: Option[JsObject] = if(explainFlag) Some(Json.obj("$explain" -> true)) else None
+      val snapshotFlagJson: Option[JsObject] = if(snapshotFlag) Some(Json.obj("$snapshotFlag" -> true)) else None
+      val commentStringJson: Option[JsObject] = commentString.map(cmt => Json.obj("$comment" -> cmt))
 
-      val snapshotFlagJson = if(snapshotFlag) {
-        Some(Json.obj("$snapshotFlag" -> true))
-      } else None
-
-      val commentStringJson = commentString.map(cmt => Json.obj("$comment" -> cmt))
-
-      List(queryDoc,
-           sortDoc,
-           hintDoc,
+      val json = List(queryDocJson,
+           sortDocJson,
+           hintDocJson,
            explainFlagJson,
            snapshotFlagJson,
            commentStringJson).flatten
       .foldLeft(Json.obj())((q1, q2) => q1 ++ q2)
+      println(json)
+      json
     }
   }
 
@@ -75,8 +72,8 @@ case class QueryBuilder(
     else {
       val json = sorters.foldLeft(Json.obj()) { (s1, s2) =>
         s2 match {
-          case (field, SortOrder.Ascending) => s1 ++ Json.obj(field -> 1)
-          case (field, SortOrder.Descending) => s1 ++ Json.obj(field -> -1)
+          case (field, SortOrder.Ascending) => s1 ++ Json.obj(field -> Json.obj("$int" -> 1))
+          case (field, SortOrder.Descending) => { s1 ++ Json.obj(field -> Json.obj("$int" -> -1)) }
         }
       }
       Some(json)

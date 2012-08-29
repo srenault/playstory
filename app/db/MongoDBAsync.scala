@@ -23,3 +23,7 @@ class MongoDBAsync(collectName: String, indexes: Seq[String] = Nil) {
   lazy val collectAsync = ReactiveMongoPlugin.collection(collectName)
   //indexes.foreach(index => collection.ensureIndex(index))
 }
+
+case class InsertException(message: String) extends Exception {
+  override def getMessage() = "Failed inserting the following document in the database: \n" + message
+}
