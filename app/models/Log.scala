@@ -44,6 +44,8 @@ case class Log(
 
 object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "project")) with Searchable {
 
+  def date(log: JsValue): Option[Date] = (log \ "date").asOpt[Long].map(new Date(_))
+
   val byEnd = MongoDBObject("date" -> -1)
 
   def all(max: Int = 50): List[Log] = {

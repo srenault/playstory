@@ -1,5 +1,7 @@
 package controllers
 
+import scalaz.OptionW
+import scalaz.Scalaz._
 import scala.concurrent.Future
 import java.util.Date
 import scalaz.OptionW
@@ -59,20 +61,21 @@ object Story extends Controller with Secured with Pulling {
   def search(project: String, keywords: List[String]) = Authenticated { implicit request =>
     Logger.info("[Story] Searching logs for project " + project)
     AsyncResult {
-      Log.searchAsync(project, Searchable.asRegex(keywords)).flatMap { foundLogs =>
-        wrappedLog(JsArray(foundLogs))
-      }.map(Ok(_))
+      Log.searchAsync(project, Searchable.asRegex(keywords)).map { foundLogs =>
+        Ok(JsArray(
+          foundLogs.map(wrappedLog)
+        ))
+      }
     }
   }
 
+  //TODO map reduce
   def inbox(project: String) = Authenticated { implicit request =>
     Logger.info("[Story] Getting inbox data of %s...".format(project))
-
     val countersOpt = project match {
       case Project.ALL => Some(Log.countByLevel())
       case projectName => Project.byName(project).map(_ => Log.countByLevel(project))
     }
-
     countersOpt.map { counters =>
       Ok(wrappedInbox(counters))
     }.getOrElse(BadRequest)
@@ -80,38 +83,32 @@ object Story extends Controller with Secured with Pulling {
 
   def comment(project: String, id: String) = Authenticated { implicit request =>
     Logger.info("[Story] Comment log #%s from project %s".format(id, project))
-
-    val objId = new ObjectId(id)
+    val logId = new ObjectId(id)
     request.body.asJson.map { comment =>
       Async {
-        Log.byIdAsync(objId).flatMap { logOpt =>
+        Log.byIdAsync(logId).flatMap { logOpt =>
           logOpt.map { log => 
             log.as[Log].addCommentAsync(comment).map {
-              case LastError(true, _, _, _, _) => {
-                Ok("Comment inserted")
-              }
-              case LastError(false, Some(errMsg), code, errorMsg, doc) => {
-                InternalServerError(errMsg)
-              }
+              case LastError(true, _, _, _, _) => Ok
+              case LastError(false, Some(errMsg), code, errorMsg, doc) => InternalServerError(errMsg)
             }
           } getOrElse Promise.pure(
-            NotFound("Failed to comment log. It was not found")
+            BadRequest("Failed to comment log. The follow log was not found: " + id)
           )
         }
       }
-    } getOrElse BadRequest("Malformated JSON comment")
+    } getOrElse BadRequest("Malformated JSON comment: " + request.body)
   }
 
   def bookmark(project: String, id: String) = Authenticated { implicit request =>
     Logger.info("[Story] Bookmark log #%s from project %s".format(id, project))
     val logId = new ObjectId(id)
-
     if(request.user.hasBookmark(logId)) {
       Async {
         Log.byIdAsync(logId).flatMap {
-          case Some(foundLog) => request.user.bookmarkAsync(logId).map(_ => Ok("Bookmarked"))
+          case Some(foundLog) => request.user.bookmarkAsync(logId).map(_ => Ok)
           case _ => Promise.pure(
-            NotFound("Failed to bookmark a log. It was not found")
+            BadRequest("Failed to bookmark a log. It was not found")
           )
         }
       }
@@ -120,58 +117,109 @@ object Story extends Controller with Secured with Pulling {
 
   def bookmarks() = Authenticated { implicit request =>
     Logger.info("[Story] Getting all bookmarks ")
-    Ok(toJson(request.user.bookmarks.map(wrappedLog(_))))
+    Async {
+      request.user.bookmarksAsync.map { bookmarkedLogs =>
+        Ok(JsArray(
+          bookmarkedLogs.map(wrappedLog)
+        ))
+      }
+    }
   }
 
   def byLevel(project: String, level: String) = Action { implicit request =>
     Logger.info("[Story] Getting logs by level for %s".format(project))
-    val logs = project match {
-      case Project.ALL => Log.byLevel(level).map(wrappedLog(_))
-      case _ => Log.byLevel(level, Some(project)).map(wrappedLog(_))
+    Async {
+      val specificProject = if (project == Project.ALL) None else Some(project)
+      Log.byLevelAsync(level, specificProject).map { logs =>
+        Ok(JsArray(
+          logs.map(wrappedLog)
+        ))
+      }
     }
-    Ok(toJson(logs))
   }
 
   def more(project: String, id: String, limit: Int, level: Option[String]) = Action { implicit request =>
     Logger.info("[Story] Getting more logs from project %s and log %s.".format(project, id))
-    Log.byId(new ObjectId(id)).map { log =>
-      val logs = Log.byProjectAfter(project, log.date, limit, level)
-      Ok(toJson(logs.map(wrappedLog(_))))
-    }.getOrElse(BadRequest)
+    val logRefId = new ObjectId(id)
+    Async {
+      Log.byIdAsync(logRefId).flatMap { logRefOpt =>
+        (for {
+          logRef <- logRefOpt
+          date   <- Log.date(logRef)
+        } yield {
+          Log.byProjectAfterAsync(project, date, level, limit).map { logsAfter =>
+            Ok(JsArray(
+              logsAfter.map(wrappedLog)
+            ))
+          }
+        }) getOrElse Promise.pure(
+            BadRequest("Failed to comment log. The following log was not found: " + id)
+        )
+      }
+    }
   }
 
   def withContext(project: String, id: String, limit: Int) = Action { implicit request =>
     Logger.info("[Story] Getting on log %s with its context for project %s.".format(project, id))
     val limitBefore, limitAfter = scala.math.round(limit/2)
-    val logsOpt: Option[List[Log]] = Log.byId(new ObjectId(id)).map { log =>
-      val beforeLogs = Log.byProjectBefore(project, log.date, limitBefore)
-      val afterLogs = Log.byProjectAfter(project, log.date, limitAfter)
-      beforeLogs ::: (log :: afterLogs)
+    val logId = new ObjectId(id)
+    Async {
+      Log.byIdAsync(logId).flatMap { logOpt =>
+        (for {
+          log <- logOpt
+          date   <- Log.date(log)
+        } yield {
+          val beforeLogs = Log.byProjectBeforeAsync(project, date, None, limitBefore)
+          val afterLogs = Log.byProjectAfterAsync(project, date, None, limitAfter)
+          Promise.sequence(List(beforeLogs, afterLogs)).map {
+            case List(before, after) => {
+              val foundLogs = before ::: (log :: after)
+              Ok(JsArray(
+                foundLogs.map(wrappedLog)
+              ))
+            }
+          }
+        }) getOrElse Promise.pure(
+          BadRequest("Failed to getting one log with his context: The following log wans not found: " + id)
+        )
+      }
     }
-    logsOpt.map { logs =>
-      Ok(toJson(logs.map(wrappedLog(_))))
-    }.getOrElse(BadRequest)
   }
 
   def lastFrom(project: String, from: Long) = Action { implicit request =>
     Logger.info("[Story] Getting history of %s from %".format(project, from))
-    val logs = project match {
-      case Project.ALL => Log.all().map(wrappedLog(_))
-      case _ => Log.byProjectAfter(project, new Date(from)).map(wrappedLog(_))
+    Async {
+      project match {
+        case Project.ALL => Log.allAsync().map { logs =>
+          Ok(JsArray(
+            logs.map(wrappedLog)
+          ))
+        }
+        case _ => Log.byProjectAfterAsync(project, new Date(from)).map { logs =>
+          Ok(JsArray(
+            logs.map(wrappedLog)
+          ))
+        }
+      }
     }
-
-    Ok(toJson(logs))
   }
 
   def last(project: String) = Action { implicit request =>
     Logger.info("[Story] Getting history of %s".format(project))
-
-    val logs = project match {
-      case Project.ALL => Log.all().map(wrappedLog(_))
-      case _ => Log.byProject(project).map(wrappedLog(_))
+    Async {
+      project match {
+        case Project.ALL => Log.allAsync().map { logs =>
+          Ok(JsArray(
+            logs.map(wrappedLog)
+          ))
+        }
+        case _ => Log.byProjectAsync(project).map { logs =>
+          Ok(JsArray(
+            logs.map(wrappedLog)
+          ))
+        }
+      }
     }
-
-    Ok(toJson(logs))
   }
 
   def eval() = Action { implicit request =>
@@ -193,15 +241,11 @@ object Story extends Controller with Secured with Pulling {
     ))
   }
 
-  private def wrappedLog(log: JsValue)(implicit request: RequestHeader): Future[JsValue] = {
-    val projectName = (log \ "project").as[String]
-    Project.byNameAsync(projectName).map { projectOpt: Option[JsValue] =>
-      Json.obj(
-        "log" -> log,
-        "project" -> projectOpt,
-        "src" -> request.uri
-      )
-    }
+  private def wrappedLog(log: JsValue)(implicit request: RequestHeader): JsValue = {
+    Json.obj(
+      "log" -> log,
+      "src" -> request.uri
+    )
   }
 
   private def wrappedInbox(counters: List[(String, Double)])(implicit request: RequestHeader) = {

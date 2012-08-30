@@ -1,4 +1,4 @@
-.ensime-lucene/*
+.ensime_lucene
 logs
 *.DS_Store
 project/project
