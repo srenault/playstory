@@ -1,5 +1,6 @@
 package controllers
 
+import scala.concurrent.Future
 import java.util.Date
 
 import play.api._
@@ -36,106 +37,17 @@ import actors.StoryActor._
 
 object Story extends Controller with Secured with Pulling {
 
-  def test = Action { implicit request =>
-    Async {
-      Log.allAsync().map { logs =>
-        Ok(logs.toString)
-      }
-
-      Log.byIdAsync(new ObjectId("503e3bde1a8800322e0103fd")).map { log =>
-        Ok(log.toString)
-      }
-
-      val ids = List("503e3bde1a8800322e0103fd",
-                     "503e3bde1a8800322e0103fe",
-                     "503e3bdf1a8800322e010405",
-                     "503e3bde1a8800322e0103f9").map(new ObjectId(_))
-
-      Log.byIdsAsync(ids).map { logs =>
-        Ok(logs.toString)
-      }
-
-      val keywords = Searchable.asRegex(List("version", "plugin"))
-      Log.searchAsync("onconnect", keywords).map { logs =>
-        Ok(logs.toString)
-      }
-
-      Log.byProjectAsync("onconnect").map { logs =>
-        Ok(logs.toString)
-      }
-
-      Log.byLevelAsync("WARN", Some("onconnect")).map { logs =>
-        Ok(logs.toString)
-      }
-
-      Log.byProjectBeforeAsync("onconnect", new Date).map { logs =>
-        Ok(logs.toString)
-      }
-
-      Log.byProjectAfterAsync("onconnect", new Date).map { logs =>
-        Ok(logs.toString)
-      }
-
-      val jsonLog = toJson(Log(new ObjectId,
-                          "project",
-                          "logger",
-                          "className",
-                          new Date,
-                          "file",
-                          "location",
-                          0,
-                          "message",
-                          "method",
-                          "level",
-                          "thread",
-                          Nil))
-
-      Log.createAsync(jsonLog).map {
-        case LastError(true, _, _, _, _) => {
-          Ok("Insert succeed")
-        }
-        case LastError(false, Some(errMsg), code, errorMsg, doc) => {
-          InternalServerError(errMsg)
-        }
-      }
-
-      Project.byNameAsync("onconnect").map { project =>
-        Ok(project.toString)
-      }
-
-      val project = toJson(Project("name", "realName"))
-      Project.createIfNotAsync(project).map {
-        case Some(LastError(true, _, _, _, _)) => {
-          Ok("Insert succeed")
-        }
-        case Some(LastError(false, Some(errMsg), code, errorMsg, doc)) => {
-          InternalServerError(errMsg)
-        }
-        case None => NotFound("Project already exist")
-      }
-
-      Project.allAsync().map { projects =>
-        Ok(projects.toString)
-      }
-
-      Project.existAsync("name").map { isDefined =>
-        Ok(isDefined.toString)
-      }
-
-      Project.byNamesAsync("name", "nname").map { projects =>
-        Ok(projects.toString)
-      }
-    }
-  }
-
   def home = Authenticated { implicit request =>
     Logger.info("[Story] Welcome : " + request.user)
 
-    Project.byName("onconnect").foreach { project =>
-      request.user.follow(project)
+    Project.byNameAsync("onconnect").onComplete {
+      case Right(None) => request.user.followAsync("onconnect")
+      case _ =>
     }
-    Project.byName("scanup").foreach { project =>
-      request.user.follow(project)
+
+    Project.byNameAsync("scanup").onComplete {
+      case Right(None) => request.user.followAsync("scanup")
+      case _ =>
     }
 
     Ok(views.html.home.index(request.user))
@@ -155,8 +67,11 @@ object Story extends Controller with Secured with Pulling {
 
   def search(project: String, keywords: List[String]) = Authenticated { implicit request =>
     Logger.info("[Story] Searching logs for project " + project)
-    val logs = Log.search(project, Searchable.asRegex(keywords))
-    Ok(toJson(logs.map(wrappedLog(_))))
+    AsyncResult {
+      Log.searchAsync(project, Searchable.asRegex(keywords)).flatMap { foundLogs =>
+        wrappedLog(JsArray(foundLogs))
+      }.map(Ok(_))
+    }
   }
 
   def inbox(project: String) = Authenticated { implicit request =>
@@ -172,35 +87,44 @@ object Story extends Controller with Secured with Pulling {
     }.getOrElse(BadRequest)
   }
 
-  val commentForm = Form(
-    mapping(
-      "author"  -> nonEmptyText,
-      "message" -> nonEmptyText
-    )((author, message) => Comment(new ObjectId(author), message))
-     ((comment: Comment) => Some((comment.author.toString, comment.message)))
-  )
-
   def comment(project: String, id: String) = Authenticated { implicit request =>
     Logger.info("[Story] Comment log #%s from project %s".format(id, project))
-    commentForm.bindFromRequest.fold(
-      error => BadRequest,
-      newComment => Log.byId(new ObjectId(id)).map { l =>
-        l.addComment(newComment)
-        Ok
-      }.getOrElse(BadRequest)
-    )
+
+    val objId = new ObjectId(id)
+    request.body.asJson.map { comment =>
+      Async {
+        Log.byIdAsync(objId).flatMap { logOpt =>
+          logOpt.map { log => 
+            log.as[Log].addCommentAsync(comment).map {
+              case LastError(true, _, _, _, _) => {
+                Ok("Comment inserted")
+              }
+              case LastError(false, Some(errMsg), code, errorMsg, doc) => {
+                InternalServerError(errMsg)
+              }
+            }
+          } getOrElse Promise.pure(
+            NotFound("Failed to comment log. It was not found")
+          )
+        }
+      }
+    } getOrElse BadRequest("Malformated JSON comment")
   }
 
   def bookmark(project: String, id: String) = Authenticated { implicit request =>
     Logger.info("[Story] Bookmark log #%s from project %s".format(id, project))
     val logId = new ObjectId(id)
-    (request.user.hasBookmark(logId), Log.byId(logId)) match {
-      case (false, Some(_)) => {
-        request.user.bookmark(logId)
-        Ok
+
+    if(request.user.hasBookmark(logId)) {
+      Async {
+        Log.byIdAsync(logId).flatMap {
+          case Some(foundLog) => request.user.bookmarkAsync(logId).map(_ => Ok("Bookmarked"))
+          case _ => Promise.pure(
+            NotFound("Failed to bookmark a log. It was not found")
+          )
+        }
       }
-      case _ => BadRequest
-    }
+    } else BadRequest("Failed to bookmark a log. It is already bookmarked")
   }
 
   def bookmarks() = Authenticated { implicit request =>
@@ -276,6 +200,17 @@ object Story extends Controller with Secured with Pulling {
       "project" -> toJson(Project.byName(log.project)),
       "src" -> JsString(request.uri)
     ))
+  }
+
+  private def wrappedLog(log: JsValue)(implicit request: RequestHeader): Future[JsValue] = {
+    val projectName = (log \ "project").as[String]
+    Project.byNameAsync(projectName).map { projectOpt: Option[JsValue] =>
+      Json.obj(
+        "log" -> log,
+        "project" -> projectOpt,
+        "src" -> request.uri
+      )
+    }
   }
 
   private def wrappedInbox(counters: List[(String, Double)])(implicit request: RequestHeader) = {

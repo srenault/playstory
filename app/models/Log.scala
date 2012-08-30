@@ -42,6 +42,8 @@ case class Log(
 
   def addComment(comment: Comment) = Log.addComment(_id, comment)
 
+  def addCommentAsync(comment: JsValue) = Log.addCommentAsync(_id, comment)
+
   def countByLevel(): List[(String, Double)] = Log.countByLevel(project)
 
   def asMongoDBObject: MongoDBObject = Log.asMongoDBObject(this)
@@ -250,6 +252,12 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   def addComment(id: ObjectId, comment: Comment) = {
     Logger.debug("[Log] Adding log for %s".format(id))
     collection.update(MongoDBObject("_id" -> id), $push("comments" -> comment.asMongoDBObject))
+  }
+
+  def addCommentAsync(id: ObjectId, comment: JsValue) = {
+    val byId = Json.obj("_id" -> Json.obj("$oid" -> id.toString))
+    val toComments = Json.obj("$push" -> Json.obj("comments" -> comment))
+    collectAsync.update[JsValue, JsValue](byId, toComments)
   }
 
   def fromJsObject(json: JsObject) = fromJson[Log](json)(LogFormat)

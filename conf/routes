@@ -27,4 +27,4 @@ POST    /story/eval                                controllers.Story.eval()
 GET     /assets/*file                              controllers.Assets.at(path="/public", file)
 
 
-GET     /test                                      controllers.Story.test()
+GET     /test                                      controllers.Tests.test()

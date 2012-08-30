@@ -8,7 +8,7 @@ import models.{ User, PlayStoryConfig }
 
 trait Secured {
 
-  def Authenticated(securedAction: AuthenticatedRequest => Result) = Security.Authenticated(
+  def Authenticated[R <: Result](securedAction: AuthenticatedRequest => R) = Security.Authenticated(
     requestHeader => if(PlayStoryConfig.isOffline) Some("anonymous") else requestHeader.session.get("user"),
     requestHeader => askSignIn)(email => Action { request =>
       if(!PlayStoryConfig.isOffline) {

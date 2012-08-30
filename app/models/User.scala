@@ -47,8 +47,7 @@ case class User(
                 .ifNone(User.follow(_id, project.name))
   }
 
-  def followAsync(project: JsValue)= {
-    val projectName = (project \ "name").as[String]
+  def followAsync(projectName: String)= {
     val followedProjects = projectNames.find(_ == projectName)
     User.followAsync(_id, projectName)
   }
@@ -163,7 +162,7 @@ object User extends MongoDB("users") {
     collection.update(MongoDBObject("_id" -> id), $push("bookmarkIds" -> logID))
   }
 
-  def bookmarkAsync(id: ObjectId, keptLog: ObjectId) {
+  def bookmarkAsync(id: ObjectId, keptLog: ObjectId): Future[LastError] = {
     val byId = Json.obj("_id" -> Json.obj("$oid" -> id.toString))
     val keptLogId = Json.obj("$push" -> Json.obj("bookmarkIds" -> keptLog.toString))
     collectAsync.update[JsValue, JsValue](byId, keptLogId)
