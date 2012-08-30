@@ -3,26 +3,19 @@ package models
 import java.util.Date
 import scala.concurrent.Future
 import scala.util.matching.Regex
-import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.MongoConnection
-import play.modules.reactivemongo.PlayBsonImplicits.{ JsValueWriter, JsValueReader }
-import play.modules.reactivemongo.MongoHelpers
+import play.Logger
+import play.api.libs.iteratee.Enumerator
 import play.api.libs.json._
 import play.api.libs.json.Json._
-import play.api.libs.iteratee.Enumerator
-import play.Logger
-import db.MongoDB
+import play.modules.reactivemongo.MongoHelpers.{ObjectId, RegEx}
+import play.modules.reactivemongo.PlayBsonImplicits.JsValueWriter
+import reactivemongo.api.{QueryBuilder, QueryOpts}
+import reactivemongo.api.SortOrder.Descending
 import reactivemongo.bson.handlers.DefaultBSONHandlers._
-import reactivemongo.bson.handlers._
-import utils.reactivemongo._
-import utils.reactivemongo.{ QueryBuilder => JsonQueryBuilder }
-import MongoHelpers.{ ObjectId, RegEx }
-import reactivemongo.api.QueryBuilder
-import reactivemongo.api.SortOrder.{ Ascending, Descending }
-import reactivemongo.api.QueryOpts
 import reactivemongo.core.commands.LastError
-import reactivemongo.bson._
-import play.modules.reactivemongo.PlayBsonImplicits.JsObjectReader
+import com.mongodb.casbah.Imports._
+import utils.reactivemongo.{QueryBuilder => JsonQueryBuilder, _}
+import db.MongoDB
 
 case class Log(
   _id: ObjectId,

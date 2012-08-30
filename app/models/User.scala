@@ -1,23 +1,21 @@
 package models
 
 import scala.concurrent.Future
-import play.api.libs.concurrent._
 import scalaz.OptionW
 import scalaz.Scalaz._
-import com.mongodb.casbah.Imports._
-import com.mongodb.casbah.MongoConnection
+import play.Logger
+import play.api.libs.concurrent._
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.mvc.{ Request, AnyContent }
-import play.Logger
-import db.MongoDB
-
 import play.modules.reactivemongo.PlayBsonImplicits.{ JsValueWriter, JsValueReader }
+import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.MongoConnection
 import reactivemongo.core.commands.LastError
+import reactivemongo.api.SortOrder.{ Ascending, Descending }
 import utils.reactivemongo._
 import utils.reactivemongo.{ QueryBuilder => JsonQueryBuilder }
-import reactivemongo.api.SortOrder.{ Ascending, Descending }
-
+import db.MongoDB
 
 case class User(
   _id: ObjectId,

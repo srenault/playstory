@@ -1,15 +1,15 @@
 package controllers
 
-import scala.concurrent.Future
-import java.util.Date
-import play.api._
-import play.api.mvc._
-import models.{ Log, User, Project, Comment, Searchable }
-import reactivemongo.core.commands.LastError
-import play.api.libs.concurrent.execution.defaultContext
 import com.mongodb.casbah.Imports._
+import java.util.Date
+import models.{Log, Project, Searchable}
+import play.api._
+import play.api.libs.concurrent.execution.defaultContext
 import play.api.libs.json._
 import play.api.libs.json.Json._
+import play.api.mvc._
+import reactivemongo.core.commands.LastError
+import scala.concurrent.Future
 
 object Tests extends Controller {
 

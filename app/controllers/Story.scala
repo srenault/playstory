@@ -2,13 +2,10 @@ package controllers
 
 import scala.concurrent.Future
 import java.util.Date
-
+import scalaz.OptionW
+import scalaz.Scalaz._
 import play.api._
 import play.api.mvc._
-import play.api.data._
-import play.api.data.Forms._
-import validation.Constraints._
-
 import play.api.libs.iteratee._
 import play.api.libs.concurrent._
 import play.api.libs.Comet
@@ -18,22 +15,16 @@ import play.api.libs.json.Json._
 import play.api.templates._
 import play.api.libs.concurrent.execution.defaultContext
 import play.api.Play.current
-
 import reactivemongo.core.commands.LastError
-
-import akka.pattern.ask
-import akka.util.duration._
-import akka.util.Timeout
-
 import com.mongodb.casbah.commons.MongoDBObject
 import com.mongodb.casbah.Imports._
-
-import scalaz.OptionW
-import scalaz.Scalaz._
-
-import models.{ Log, User, Project, Comment, Searchable }
 import actors.StoryActor
 import actors.StoryActor._
+import akka.pattern.ask
+import akka.util.Timeout
+import akka.util.duration._
+
+import models.{ Log, User, Project, Comment, Searchable }
 
 object Story extends Controller with Secured with Pulling {
 
