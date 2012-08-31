@@ -1,5 +1,22 @@
 @()
 
+<script id="feeds_past_tmpl" type="text/html">
+  <div class="feeds past">
+    <div class="more-feeds">
+      <a href="#"><span class="counter"></span> more logs...</a>
+    </div>
+    <ul class="feeds"></ul>
+  </div>
+</script>
+
+<script id="feeds_present_tmpl" type="text/html">
+  <div class="feeds present">
+    <div class="waiting-feeds">Waiting feeds ...</div>
+    <ul>
+    </ul>
+  </div>
+</script>
+
 <script id="feed_tmpl" type="text/html">
   <li id="<%= feed.id %>" data-project="<%= feed.project.name %>" class="feed <%= feed.level %>">
     <div class="avatar">
@@ -7,7 +24,7 @@
     </div>
     <div class="log">
       <div class="header">
-        <a class="project" href="#past/<%= feed.project.name %>"><%= feed.realName %></a>
+        <a class="project" href="#dashboard/past/<%= feed.project.name %>"><%= feed.realName %></a>
         <span class="time"><%=feed.time %></span>
       </div>
       <div class="content">
@@ -42,5 +59,39 @@
         <span class="level"><%= feed.level %></span>
         <span class="message"><%= feed.message %></span>
       </div>
+  </li>
+</script>
+
+
+<!-- Comments -->
+
+<script id="new_comment_tmpl" type="text/html">
+  <li class="new comment">
+    <div class="avatar">
+      <img src="<%= author.avatar %>" width="40px" height="40px" alt="play story"/>
+    </div>
+    <div class="body">
+      <div class="header">
+        <a href="#" class="author"><%= author.firstname %> <%= author.lastname %></a>
+      </div>
+      <div class="message">
+        <textarea placeholder="Write a comment..."></textarea>
+        <button class="save">Comment</button>
+      </div>
+    </div>
+  </li>
+</script>
+
+<script id="comment_tmpl" type="text/html">
+  <li class="comment">
+    <div class="avatar">
+      <img src="<%= author.avatar %>" width="40px" height="40px" alt="play story"/>
+    </div>
+    <div class="body">
+      <div class="header">
+        <a href="#" class="author"><%= author.firstname %> <%= author.lastname %></a>
+      </div>
+      <div class="message"><%= message %></div>
+    </div>
   </li>
 </script>

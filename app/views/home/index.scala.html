@@ -1,96 +1,65 @@
-@(user: models.User)
+@(user: models.User)(implicit request: RequestHeader)
 
 @import play.api.libs.json._
 @import play.api.libs.json.Json._
+@import helper.javascriptRouter
 
 @main("Play Story > Home", user) {
 
-<section class="column-left">
-  <div class="inbox">
-    <h3>INBOX</h3>
-    <ul class="mainstream">
-      <li><a href="#bookmarks">STARRED <span> (@user.bookmarkIds.size)</span></a></li>
-    </ul>
-    <ul class="levels">
-      <li><hr/></li>
-      <li class="all"><a href="#all">ALL</a></li>
-      <li class="debug"><a href="#past/debug">DEBUG<span></span></a></li>
-      <li class="error"><a href="#past/error">ERROR<span></span></a></li>
-      <li class="fatal"><a href="#past/fatal">FATAL<span></span></a></li>
-      <li class="info"><a href="#past/info">INFO<span></span></a></li>
-      <li class="trace"><a href="#past/trace">TRACE<span></span></a></li>
-      <li class="warn"><a href="#past/warn">WARN<span></span></a></li>
-    </ul>
-  </div>
-</section>
-
-<section class="column-middle">
-  <ul class="tabs">
-    <li class="past on"><a href="#past/all">PAST</a></li>
-    <li class="present"><a href="#present/all">PRESENT</a></li>
-  </ul>
-  <div class="feeds present">
-    <div class="waiting-feeds">Waiting feeds ...</div>
-    <ul>
-    </ul>
-  </div>
-  <div class="feeds past">
-    <div class="more-feeds">
-      <a href="#"><span class="counter"></span> more logs...</a>
-    </div>
-    <ul>
-    </ul>
-</section>
-
-<section class="column-right">
-  <div class="apps">
-    <h3>APPS</h3>
-    <ul>
-      <li><a href="#">CREATE</a></li>
-      <li><a href="#">DISCOVER</a></li>
-      <li><hr/></li>
-      <li class="project"><a href="#past/all">ALL</a></li>
-      @user.projects.map { project =>
-      <li class="project"><a href="#past/@project.name">@project.realName</a></li>
-      }
-    </ul>
-  </div>
-</section>
-
 }{
 <!-- Home CSS imports -->
-<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/story/home.css")">
+<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/story/dashboard.css")">
 }{
 <!-- Home javascript templates -->
-@feeds()
-@comment()
-<!-- Home javascript imports -->
+@dashboard.layout()
+@dashboard.search()
+@dashboard.feeds()
+@dashboard.tabs()
+@dashboard.apps()
+@dashboard.inbox()
+
+<!-- Play Javascript routers -->
+@javascriptRouter("PlayRoutes")(
+  routes.javascript.Dashboard.listen,
+  routes.javascript.Dashboard.last,
+  routes.javascript.Dashboard.byLevel,
+  routes.javascript.Dashboard.bookmarks,
+  routes.javascript.Dashboard.bookmark,
+  routes.javascript.Dashboard.withContext,
+  routes.javascript.Dashboard.comment,
+  routes.javascript.Dashboard.more,
+  routes.javascript.Dashboard.inbox
+)
+
 <script type="text/javascript" src="@routes.Assets.at("javascripts/utils.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/namespace.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/Router.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/ModelsDef.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/Bucket.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/Server.js")"></script>
 
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/search/searchDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/inbox/inboxDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/apps/appsDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPresentDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsPastDOM.js")"></script>
+<!-- Dashboard -->
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/Server.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/search/searchDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/tabs/TabsDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/inbox/inboxDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/apps/appsDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/feeds/feedsPresentDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/feeds/feedsPastDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/search/searchView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/tabs/TabsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/inbox/inboxView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/apps/appsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/feeds/feedsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/layoutDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/dashboard.js")"></script>
 
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/search/searchView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/tabs/TabsView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/inbox/inboxView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/apps/appsView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/feeds/feedsView.js")"></script>
+<!-- Home -->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/home.js")"></script>
 
 <!-- Init Home page -->
 <script type="text/javascript">
 $(document).ready(function() {
-    var user = @Html(toJson(user).toString);
-    PlayStory.Server.fromTemplate('user', user);
+    PlayStory.Home.Dashboard.Server.fromTemplate('user', @Html(toJson(user).toString));
 });
 </script>
 }

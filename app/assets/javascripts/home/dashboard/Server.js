@@ -2,10 +2,22 @@
  * Server.js
  */
 
-(function(PlayStory, Feeds) {
+(function(Dashboard, Feeds) {
 
-    PlayStory.Server = new(function() {
+    Dashboard.Server = function() {
         console.log("[Server] Init Server");
+
+        this.urls = {
+            listen:      PlayRoutes.controllers.Dashboard.listen(':project').url,
+            last:        PlayRoutes.controllers.Dashboard.last(':project').url,
+            byLevel:     PlayRoutes.controllers.Dashboard.byLevel(':project', ':level').url,
+            bookmarks:   PlayRoutes.controllers.Dashboard.bookmarks().url,
+            more:        PlayRoutes.controllers.Dashboard.more(':project', ':id', ':level', ':limit').url,
+            withContext: PlayRoutes.controllers.Dashboard.withContext(':project', ':id', ':limit').url,
+            inbox:       PlayRoutes.controllers.Dashboard.inbox(':project').url,
+            bookmark:    PlayRoutes.controllers.Dashboard.bookmark(':project', ':id').url,
+            comment:     PlayRoutes.controllers.Dashboard.comment(':project', ':id').url
+        };
 
         var self = this,
             bucket = PlayStory.Bucket,
@@ -106,7 +118,7 @@
             });
         };
 
-        this.streamFeeds = this.stream('/story/:project/listen', function(uriPattern, params) {
+        this.streamFeeds = this.stream(this.urls.listen, function(uriPattern, params) {
             return uriPattern.replace(':project', params[0]);
         }),
 
@@ -140,29 +152,30 @@
             });
         };
 
-        this.fetchInbox = this.fetch('/story/:project/inbox', function(uriPattern, params) {
+        this.fetchInbox = this.fetch(this.urls.inbox, function(uriPattern, params) {
             return uriPattern.replace(':project', params[0]);
         });
 
-        this.fetchFeedWithContext = this.fetch('/story/:project/log/:id/:limit', function(uriPattern, params) {
+        this.fetchFeedWithContext = this.fetch(this.urls.withContext, function(uriPattern, params) {
             return uriPattern.replace(':project', params[0])
                              .replace(':id', params[1])
                              .replace(':limit', params[2]);
         });
 
-        this.fetchFeedsByLevel = this.fetch('/story/:project/level/:level', function(uriPattern, params) {
+        this.fetchFeedsByLevel = this.fetch(this.urls.byLevel, function(uriPattern, params) {
             return uriPattern.replace(':project', params[0])
                              .replace(':level', params[1]);
         });
 
-        this.fetchLastFeeds = this.fetch('/story/:project/last', function(uriPatten, params) {
+        this.fetchLastFeeds = this.fetch(this.urls.last, function(uriPatten, params) {
             return uriPatten.replace(':project', params[0]);
         });
 
-        this.fetchMoreFeeds = this.fetch('/story/:project/log/:id/more/6', function(uriPattern, source) {
+        this.fetchMoreFeeds = this.fetch(this.urls.more, function(uriPattern, source) {
             var lastFeed = bucket.collections('feeds').last();
             var uri = uriPattern.replace(':project', source.params[0])
-                                .replace(':id', lastFeed.id);
+                                .replace(':id', lastFeed.id)
+                                .replace(':limit', 6);
 
             if(source.route == 'past/:project/level/:level') {
                 uri += '?level=' + source.params[1];
@@ -170,16 +183,14 @@
             return uri;
         });
 
-        this.searchFeeds = this.fetch('/story/:project/search?:keywords', function(uriPattern, params) {
+        this.searchFeeds = this.fetch('/dashboard/:project/search?:keywords', function(uriPattern, params) {
             return uriPattern.replace(':project', params[0])
                              .replace(':keywords', params[1]);
         });
 
         this.bookmark = Action(function(bookmark, next) {
-            var uri = '/story/:project/log/:id/bookmark'.replace(':id', bookmark.feed)
-                                                        .replace(':project', bookmark.project);
             $.ajax({
-                url: uri,
+                url: PlayRoutes.controllers.Dashboard.bookmark(bookmark.project, bookmark.feed).url,
                 type: 'POST',
                 dataType: 'json',
                 success: function() {
@@ -193,8 +204,7 @@
             var authorId = bucket.models('user').get().id;
 
             $.ajax({
-                url: '/story/:project/log/:id'.replace(':id', comment.id)
-                                              .replace(':project', comment.project),
+                url: PlayRoutes.controllers.Dashboard.comment(comment.project, comment.id).url,
                 type: 'POST',
                 data: JSON.stringify({ author: authorId, message: comment.msg}),
                 dataType: 'json',
@@ -204,6 +214,6 @@
                 }
             });
         });
-    })();
-})(window.PlayStory,
+    };
+})(window.PlayStory.Init.Home.Dashboard,
    window.PlayStory.Init.Home.Feeds);

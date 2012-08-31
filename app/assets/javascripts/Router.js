@@ -75,9 +75,9 @@
                  }
              };
 
-             this.go = function(route, tigger) {
+             this.go = function(route, trigger) {
                  history.pushState({}, route, "#" + route);
-                 if(tigger) loadURL();
+                 if(trigger) loadURL();
              };
 
              this.goAsAction = function(uriPattern, buildURI, trigger) {

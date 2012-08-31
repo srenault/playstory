@@ -4,15 +4,17 @@
 
 window.PlayStory = {
     Init: {
-        Home: {
-            Tabs: {},
-            Feeds: {
-                FeedsPast: {},
-                FeedsPresent: {}
-            },
-            Inbox: {},
-            Search: {},
-            Apps: {}
+        Home: { 
+            Dashboard: {
+                Tabs: {},
+                Feeds: {},
+                Inbox: {},
+                Search: {},
+                Apps: {}
+            }
         }
+    },
+    Home: {
+        Dashboard: {}
     }
 };

@@ -6,6 +6,7 @@
 
      Feeds.FeedsPresentDOM = function() {
          console.log("[FeedsPresent.DOM] Init feeds present DOM");
+         var self = this;
 
          //Subscriptions
          var subscriptions = [];
@@ -15,17 +16,38 @@
          };
 
          //DOM elements
-         var elts = new (function() {
-             this.$feedsContainer = $('.feeds.present');
-             this.$waitingFeeds = this.$feedsContainer.find('.waiting-feeds');
-             this.$feedsList = $('.feeds.present ul');
-         })();
+         var elts = {
+             $middleColumn : function() { return $('.column-middle'); },
+             $feedsContainer : function() { return $('.feeds.present'); },
+             $waitingFeeds : function() { return $('.feeds.present .waiting-feeds'); },
+             $feedsList : function() { return  $('.feeds.present ul'); }
+         };
 
-         var feedTmpl = _.template($("#feed_tmpl").html()),
+         var tmpl = _.template($("#feeds_present_tmpl").html()),
+             feedTmpl = _.template($("#feed_tmpl").html()),
              commentTmpl = _.template($("#comment_tmpl").html());
 
+         this.render = function() {
+             elts.$middleColumn().append(tmpl({
+             }));
+         };
+
+         this.renderAsAction = Action(function(any, next) {
+             self.render();
+             next(any);
+         });
+
+         this.destroy = function() {
+            elts.$feedsContainer().remove();
+         };
+
+         this.destroyAsAction = Action(function(any, next) {
+             self.destroy();
+             next(any);
+         });
+
          this.onFeedClick = function(next) {
-             elts.$feedsList.on('click', 'li.feed', next);
+             elts.$feedsList().on('click', 'li.feed', next);
          };
 
          this.clickedFeed = function(evt) {
@@ -36,7 +58,7 @@
 
          this.displayNewFeed = function(limit) {
              return Action(function(feed, next) {
-                 elts.$feedsList.prepend(feedTmpl({
+                 elts.$feedsList().prepend(feedTmpl({
                      feed: feed,
                      commentView: function(comment) {
                          return commentTmpl({
@@ -47,27 +69,27 @@
                  }));
 
                  if(limit) {
-                     var currentFeedsSize = elts.$feedsList.find('li').length;
-                     if(currentFeedsSize > limit) elts.$feedsList.find('li:last').remove();
+                     var currentFeedsSize = elts.$feedsList().find('li').length;
+                     if(currentFeedsSize > limit) elts.$feedsList().find('li:last').remove();
                  }
                  next(feed);
              });
          };
 
          this.clearFeeds = Action(function(evt, next) {
-             elts.$feedsList.empty();
+             elts.$feedsList().empty();
              next(evt);
          });
 
          this.displayFeedsPannel = Action(function(evt, next) {
-             elts.$feedsContainer.show();
+             elts.$feedsContainer().show();
              next(evt);
          });
 
          this.hideFeedsPannel = Action(function(evt, next) {
-             elts.$feedsContainer.hide();
+             elts.$feedsContainer().hide();
              next(evt);
          });
      };
 
- })(window.PlayStory.Init.Home.Feeds);
+ })(window.PlayStory.Init.Home.Dashboard.Feeds);
