@@ -24,8 +24,12 @@
            .and(this.feedsView.pastDOM.renderAsAction)
            .and(this.feedsView.presentDOM.renderAsAction)
            .and(this.appsView.dom.renderAsAction)
-        ).then(this.tabsView.lazyInitAsAction);
+        );
 
+        //render dashboard
+        renderDashboard._do();
+
+        //bind events
         this.tabsView.lazyInit();
         this.inboxView.lazyInit();
         this.appsView.lazyInit();
@@ -41,7 +45,6 @@
         );
 
         //Router.when('dashboard/*any', renderDashboard);
-        renderDashboard._do();
         return this;
     };
 

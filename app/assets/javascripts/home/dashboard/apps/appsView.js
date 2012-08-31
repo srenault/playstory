@@ -12,7 +12,6 @@
         this.dom = new Apps.AppsDOM();
 
         this.lazyInit = function() {
-
             Router.when('dashboard/past/:project', this.dom.refreshNavigation('past'));
             Router.when('dashboard/present/:project', this.dom.refreshNavigation('present'));
             Router.when('dashboard/past/:project/level/:level',this.dom.refreshNavigation('past'));

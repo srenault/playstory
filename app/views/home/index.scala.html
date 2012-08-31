@@ -1,10 +1,10 @@
-@(user: models.User)(implicit request: RequestHeader)
+@(initData: play.api.libs.json.JsValue)(implicit request: RequestHeader)
 
 @import play.api.libs.json._
 @import play.api.libs.json.Json._
 @import helper.javascriptRouter
 
-@main("Play Story > Home", user) {
+@main("Play Story > Home") {
 
 }{
 <!-- Home CSS imports -->
@@ -34,8 +34,8 @@
 <script type="text/javascript" src="@routes.Assets.at("javascripts/utils.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/namespace.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/Router.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/ModelsDef.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/Bucket.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/ModelsDef.js")"></script>
 
 <!-- Dashboard -->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/Server.js")"></script>
@@ -59,7 +59,9 @@
 <!-- Init Home page -->
 <script type="text/javascript">
 $(document).ready(function() {
-    PlayStory.Home.Dashboard.Server.fromTemplate('user', @Html(toJson(user).toString));
+    var server = PlayStory.Home.Dashboard.Server;
+    server.fromTemplate('user', @Html((initData \ "user").toString));
+    server.fromTemplate('projects', @Html((initData \ "projects").toString));
 });
 </script>
 }

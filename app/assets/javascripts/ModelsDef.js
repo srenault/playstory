@@ -5,17 +5,29 @@
 (function(PlayStory) {
 
     PlayStory.ModelsDef = new (function() {
-        var self = this;
+        var self = this,
+            bucket = PlayStory.Bucket;
 
         this.asFeed = function(data) {
+            var projects = bucket.collections("projects").get(),
+                project= projects.filter(function(project) {
+                    return project.name == data.log.project;
+                })[0];
+
+            if(!project) {
+                project.name = 'n/a';
+                project.realName = 'n/a';
+                project.avatar = 'n/a';
+            }
+
             var feed = {
-                id: data.log._id,
-                realName: data.project.realName,
+                id: data.log._id.$oid,
+                realName: project.realName,
                 project: {
-                    name: data.project.name
+                    name: project.name
                 },
-                avatar: data.project.avatar,
-                time: new Date(data.log.date),
+                avatar: project.avatar,
+                time: new Date(data.log.date.$date),
                 level: data.log.method,
                 message: data.log.message,
                 comments: data.log.comments

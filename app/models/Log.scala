@@ -318,10 +318,10 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
       (json \ "project").as[String],
       (json \ "logger").as[String],
       (json \ "className").as[String],
-      asDate((json \ "date").as[String]),
+      asDate((json \ "date" \ "$date").asOpt[String].getOrElse(new Date().getTime.toString)), //TODO Doesn't work !
       (json \ "file").as[String],
       (json \ "location").as[String],
-      (json \ "line").as[String].toLong,
+      (json \ "line").asOpt[String].getOrElse("1").toLong, //TODO Idem !
       (json \ "message").as[String],
       (json \ "method").as[String],
       (json \ "level").as[String],

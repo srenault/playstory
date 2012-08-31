@@ -14,22 +14,23 @@
         this.pastDOM    =  new Dashboard.Feeds.FeedsPastDOM();
         this.presentDOM =  new Dashboard.Feeds.FeedsPresentDOM();
 
+        //TODO In another file to ensure the loading
         server.onReceiveFromTemplate('user')
-            .await(bucket.models('user').putAsAction)
+            .await(bucket.models('user').setAsAction)
             .subscribe();
 
+        server.onReceiveFromTemplate('projects')
+            .await(bucket.collections('projects').setAsAction)
+            .subscribe();
 
         this.lazyInit = function() {
-
             server.onReceive(server.urls.listen)
                 .map(modelsDef.asFeed)
                 .await(
                     bucket.collections('feeds').putAsAction
-                        .and(
-                            this.presentDOM.displayNewFeed()
-                                .then(this.pastDOM.updateCounter)
-                        )
-                ).subscribe();
+                        .and(this.presentDOM.displayNewFeed()
+                        .then(this.pastDOM.updateCounter))
+            ).subscribe();
 
             server.onReceive(server.urls.last)
                 .map(modelsDef.asFeed)
@@ -140,7 +141,7 @@
 
             When(this.pastDOM.onBookmarkClick)
                 .map(this.pastDOM.newBookmark)
-                .await(server.bookmark.then(inboxView.dom.updateStarred))
+                .await(server.bookmark.then(inboxView.dom.summupStarred))
                 .subscribe();
             
             When(this.pastDOM.onSubmitCommentClick)

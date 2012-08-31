@@ -162,8 +162,9 @@ object User extends MongoDB("users") {
 
   def bookmarkAsync(id: ObjectId, keptLog: ObjectId): Future[LastError] = {
     val byId = Json.obj("_id" -> Json.obj("$oid" -> id.toString))
-    val keptLogId = Json.obj("$push" -> Json.obj("bookmarkIds" -> keptLog.toString))
-    collectAsync.update[JsValue, JsValue](byId, keptLogId)
+    val keptLogId = Json.obj("$oid" -> id.toString)
+    val newBookmark = Json.obj("$push" -> Json.obj("bookmarkIds" -> keptLogId))
+    collectAsync.update[JsValue, JsValue](byId, newBookmark)
   }
 
   def fromMongoDBObject(user: MongoDBObject): Option[User] = {
@@ -205,7 +206,7 @@ object User extends MongoDB("users") {
       "language" -> user.language,
       "avatar" -> user.avatar,
       "projects" -> user.projectNames,
-      "bookmarkIds" -> toJson(user.bookmarkIds.map(l => JsString(l.toString)))
+      "bookmarkIds" -> JsArray(user.bookmarkIds.map(l => Json.obj("$oid" -> l.toString)))
     )
   }
 }

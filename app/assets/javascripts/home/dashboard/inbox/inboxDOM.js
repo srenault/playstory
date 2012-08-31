@@ -6,7 +6,8 @@
 
      Inbox.InboxDOM = function() {
          console.log("[Inbox.DOM] Init Inbox DOM");
-         var self = this;
+         var self = this,
+             bucket = PlayStory.Bucket;
 
          //DOM elements
          var elts = {
@@ -46,14 +47,15 @@
 
          var summup = function($counter) {
              var currentCounter = $counter.text().replace(' (','')
-                     .replace(')','');
-             var newCounter = parseInt(currentCounter) + 1;
+                                                 .replace(')','');
+             var newCounter = (parseInt(currentCounter) || 0) + 1;
              $counter.text(' (' + newCounter + ')');
          };
 
          this.initLevels = Action(function(data, next) {
              elts.$inbox().find('li.' + data.counter.level.toLowerCase() + ' a span')
              .text(' ('+ data.counter.count + ')');
+             next(data);
          });
 
          this.updateLevels = Action(function(feed, next) {
@@ -73,10 +75,19 @@
              default: console.log("[Inbox.DOM] unknown level " + feed.level);
                  break;
              }
+             next(feed);
          });
 
-         this.updateStarred = Action(function(feed, next) {
+         this.summupStarred = Action(function(any, next) {
              summup(elts.$starred().find('span'));
+             next(any);
+         });
+
+         this.updateStarred = Action(function(any, next) {
+             var user = bucket.models('user').get();
+             var label = '(:counter)'.replace(':counter', user.bookmarkIds.length);
+             elts.$starred().find('span').text(label);
+             next(any);
          });
 
          this.refreshNavigation = Action(function(params, next) {

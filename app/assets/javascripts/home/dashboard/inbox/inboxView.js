@@ -13,7 +13,6 @@
         this.dom = new Inbox.InboxDOM();
 
         this.lazyInit = function() {
-
             server.onReceive(server.urls.listen)
                 .map(modelsDef.asFeed)
                 .await(this.dom.updateLevels)
@@ -25,7 +24,8 @@
 
             Router.when('dashboard/past/:project').chain(
                 server.fetchInbox,
-                this.dom.refreshNavigation
+                this.dom.refreshNavigation,
+                this.dom.updateStarred
             );
 
             Router.when('dashboard/present/:project', this.dom.refreshNavigation);

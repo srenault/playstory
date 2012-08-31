@@ -43,7 +43,15 @@ object Dashboard extends Controller with Secured with Pulling {
       case _ =>
     }
 
-    Ok(views.html.home.index(request.user))
+    Async {
+      Project.allAsync().map { projects =>
+        val initData = Json.obj(
+          "user"     -> toJson(request.user),
+          "projects" -> JsArray(projects)
+        )
+        Ok(views.html.home.index(initData))
+      }
+    }
   }
 
   def listen(project: String) = Authenticated { implicit request =>
@@ -69,7 +77,6 @@ object Dashboard extends Controller with Secured with Pulling {
     }
   }
 
-  //TODO map reduce
   def inbox(project: String) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Getting inbox data of %s...".format(project))
     val countersOpt = project match {
@@ -87,8 +94,8 @@ object Dashboard extends Controller with Secured with Pulling {
     request.body.asJson.map { comment =>
       Async {
         Log.byIdAsync(logId).flatMap { logOpt =>
-          logOpt.map { log => 
-            log.as[Log].addCommentAsync(comment).map {
+          logOpt.map { _ => 
+            Log.addCommentAsync(logId, comment).map {
               case LastError(true, _, _, _, _) => Ok
               case LastError(false, Some(errMsg), code, errorMsg, doc) => InternalServerError(errMsg)
             }
@@ -103,7 +110,7 @@ object Dashboard extends Controller with Secured with Pulling {
   def bookmark(project: String, id: String) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Bookmark log #%s from project %s".format(id, project))
     val logId = new ObjectId(id)
-    if(request.user.hasBookmark(logId)) {
+    if(!request.user.hasBookmark(logId)) {
       Async {
         Log.byIdAsync(logId).flatMap {
           case Some(foundLog) => request.user.bookmarkAsync(logId).map(_ => Ok)
@@ -178,7 +185,7 @@ object Dashboard extends Controller with Secured with Pulling {
               ))
           }
         }) getOrElse Promise.pure(
-          BadRequest("[Dashboard] Failed to getting one log with his context: The following log wans not found: " + id)
+          BadRequest("[Dashboard] Failed to getting one log with his context: The following log was not found: " + id)
         )
       }
     }

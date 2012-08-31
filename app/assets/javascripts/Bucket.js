@@ -68,6 +68,11 @@
                     next(model);
                 });
 
+                this.setAsAction = Action(function(model, next) {
+                    self.set(model);
+                    next(model);
+                });
+
                 this.destroyAsAction = Action(function(any, next) {
                     this.destroy(name);
                     next(any);
@@ -94,7 +99,7 @@
             return new (function() {
                 var self = this;
 
-                this.put = function(model) {
+                this.set = function(model) {
                     _models[name] = model;
                 };
 
@@ -102,8 +107,8 @@
                     return _models[name];
                 };
 
-                this.putAsAction = Action(function(model, next) {
-                    self.put(model);
+                this.setAsAction = Action(function(model, next) {
+                    self.set(model);
                     next(model);
                 });
             });
