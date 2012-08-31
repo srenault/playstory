@@ -23,14 +23,16 @@ object Application extends Controller with GoogleOpenID {
   }
 
   def signin = Action { implicit request =>
-    signinWithGoogle(
-      routes.Application.signinCallback.absoluteURL(),
-      url => Redirect(url),
-      error => {
-        Logger.error("[OpenID] Failed to sign in with Google")
-        Redirect(routes.Application.index)
-      }
-    )
+    Async {
+      signinWithGoogle(
+        routes.Application.signinCallback.absoluteURL(),
+        url => Redirect(url),
+        error => {
+          Logger.error("[OpenID] Failed to sign in with Google")
+          Redirect(routes.Application.index)
+        }
+      )
+    }
   }
 
   def signinCallback = Action { implicit request =>
