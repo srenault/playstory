@@ -71,7 +71,7 @@ object Dashboard extends Controller with Secured with Pulling {
     AsyncResult {
       Log.searchAsync(project, Searchable.asRegex(keywords)).map { foundLogs =>
         Ok(JsArray(
-          foundLogs.map(wrappedLog)
+          foundLogs.reverse.map(wrappedLog)
         ))
       }
     }
@@ -100,11 +100,11 @@ object Dashboard extends Controller with Secured with Pulling {
               case LastError(false, Some(errMsg), code, errorMsg, doc) => InternalServerError(errMsg)
             }
           } getOrElse Promise.pure(
-            BadRequest("[Dashboard] Failed to comment log. The follow log was not found: " + id)
+            BadRequest("Failed to comment log. The follow log was not found: " + id)
           )
         }
       }
-    } getOrElse BadRequest("[Dashboard] Malformated JSON comment: " + request.body)
+    } getOrElse BadRequest("Malformated JSON comment: " + request.body)
   }
 
   def bookmark(project: String, id: String) = Authenticated { implicit request =>
@@ -115,11 +115,11 @@ object Dashboard extends Controller with Secured with Pulling {
         Log.byIdAsync(logId).flatMap {
           case Some(foundLog) => request.user.bookmarkAsync(logId).map(_ => Ok)
           case _ => Promise.pure(
-            BadRequest("[Dashboard] Failed to bookmark a log. It was not found")
+            BadRequest("Failed to bookmark a log. It was not found")
           )
         }
       }
-    } else BadRequest("[Dashboard] Failed to bookmark a log. It is already bookmarked")
+    } else BadRequest("Failed to bookmark a log. It is already bookmarked")
   }
 
   def bookmarks() = Authenticated { implicit request =>
@@ -127,7 +127,7 @@ object Dashboard extends Controller with Secured with Pulling {
     Async {
       request.user.bookmarksAsync.map { bookmarkedLogs =>
         Ok(JsArray(
-          bookmarkedLogs.map(wrappedLog)
+          bookmarkedLogs.reverse.map(wrappedLog)
         ))
       }
     }
@@ -139,7 +139,7 @@ object Dashboard extends Controller with Secured with Pulling {
       val specificProject = if (project == Project.ALL) None else Some(project)
       Log.byLevelAsync(level, specificProject).map { logs =>
         Ok(JsArray(
-          logs.map(wrappedLog)
+          logs.reverse.map(wrappedLog)
         ))
       }
     }
@@ -156,11 +156,11 @@ object Dashboard extends Controller with Secured with Pulling {
         } yield {
           Log.byProjectAfterAsync(project, date, level, limit).map { logsAfter =>
             Ok(JsArray(
-              logsAfter.map(wrappedLog)
+              logsAfter.reverse.map(wrappedLog)
             ))
           }
         }) getOrElse Promise.pure(
-            BadRequest("[Dashboard] Failed to comment log. The following log was not found: " + id)
+            BadRequest("Failed to comment log. The following log was not found: " + id)
         )
       }
     }
@@ -173,15 +173,15 @@ object Dashboard extends Controller with Secured with Pulling {
     Async {
       Log.byIdAsync(logId).flatMap { logOpt =>
         (for {
-          log <- logOpt
-          date   <- Log.date(log)
+          log  <- logOpt
+          date <- Log.date(log)
         } yield {
           val beforeLogs = Log.byProjectBeforeAsync(project, date, None, limitBefore)
           val afterLogs = Log.byProjectAfterAsync(project, date, None, limitAfter)
           Promise.sequence(List(beforeLogs, afterLogs)).map { beforeAfter =>
             val foundLogs = beforeAfter.reduceLeft((before, after) => before ::: (log :: after))
               Ok(JsArray(
-                foundLogs.map(wrappedLog)
+                foundLogs.reverse.map(wrappedLog)
               ))
           }
         }) getOrElse Promise.pure(
@@ -197,12 +197,12 @@ object Dashboard extends Controller with Secured with Pulling {
       project match {
         case Project.ALL => Log.allAsync().map { logs =>
           Ok(JsArray(
-            logs.map(wrappedLog)
+            logs.reverse.map(wrappedLog)
           ))
         }
         case _ => Log.byProjectAfterAsync(project, new Date(from)).map { logs =>
           Ok(JsArray(
-            logs.map(wrappedLog)
+            logs.reverse.map(wrappedLog)
           ))
         }
       }
@@ -215,12 +215,12 @@ object Dashboard extends Controller with Secured with Pulling {
       project match {
         case Project.ALL => Log.allAsync().map { logs =>
           Ok(JsArray(
-            logs.map(wrappedLog)
+            logs.reverse.map(wrappedLog)
           ))
         }
         case _ => Log.byProjectAsync(project).map { logs =>
           Ok(JsArray(
-            logs.map(wrappedLog)
+            logs.reverse.map(wrappedLog)
           ))
         }
       }

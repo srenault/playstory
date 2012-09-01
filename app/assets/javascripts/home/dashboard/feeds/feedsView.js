@@ -14,54 +14,45 @@
         this.pastDOM    =  new Dashboard.Feeds.FeedsPastDOM();
         this.presentDOM =  new Dashboard.Feeds.FeedsPresentDOM();
 
-        //TODO In another file to ensure the loading
-        server.onReceiveFromTemplate('user')
-            .await(bucket.models('user').setAsAction)
-            .subscribe();
-
-        server.onReceiveFromTemplate('projects')
-            .await(bucket.collections('projects').setAsAction)
-            .subscribe();
-
         this.lazyInit = function() {
             server.onReceive(server.urls.listen)
                 .map(modelsDef.asFeed)
                 .await(
-                    bucket.collections('feeds').putAsAction
-                        .and(this.presentDOM.displayNewFeed()
-                        .then(this.pastDOM.updateCounter))
+                 bucket.collections('feeds').putAsAction
+                   .and(this.presentDOM.displayNewFeed()
+                   .then(this.pastDOM.updateCounter))
             ).subscribe();
 
             server.onReceive(server.urls.last)
                 .map(modelsDef.asFeed)
                 .await(
                     bucket.collections('feeds').asFifo(limit)
-                        .and(this.pastDOM.displayNewFeed(limit))
+                   .and(this.pastDOM.displayNewFeed(limit))
             ).subscribe();
 
             server.onReceive(server.urls.byLevel)
                 .map(modelsDef.asFeed)
                 .await(
                     bucket.collections('feeds').asFifo(limit)
-                        .and(self.pastDOM.displayNewFeed(limit))
+                   .and(self.pastDOM.displayNewFeed(limit))
             ).subscribe();
 
             server.onReceive(server.urls.bookmarks)
                 .map(modelsDef.asFeed)
                 .await(
                     bucket.collections('feeds').asFifo(limit)
-                        .and(self.pastDOM.displayNewFeed(limit))
+                   .and(self.pastDOM.displayNewFeed(limit))
                 ).subscribe();
 
             server.onReceive(server.urls.more)
                 .map(modelsDef.asFeed)
                 .await(
                     bucket.collections('feeds').putAsAction
-                        .and(self.pastDOM.displayNewFeed())
+                   .and(self.pastDOM.displayNewFeed())
             ).subscribe();
 
             var isWishedFeed = function(feed) {
-                var params = Router.matchCurrentRoute('past/:project/feed/:id/:limit');
+                var params = Router.matchCurrentRoute('dashboard/past/:project/feed/:id/:limit');
                 return feed.id == params[1];
             };
 
@@ -70,8 +61,8 @@
                 .filter(isWishedFeed)
                 .await(
                     bucket.collections('feeds').asFifo(limit)
-                        .and(this.pastDOM.displayNewFeed(limit)
-                             .then(this.pastDOM.highlightFeed))
+                       .and(this.pastDOM.displayNewFeed(limit)
+                       .then(this.pastDOM.highlightFeed))
                 ).subscribe();
 
             server.onReceive(server.urls.withContext)
@@ -79,13 +70,13 @@
                 .filter(function(feed) { return !isWishedFeed(feed); })
                 .await(
                     bucket.collections('feeds').asFifo(limit)
-                        .and(self.pastDOM.displayNewFeed(limit))
+                   .and(self.pastDOM.displayNewFeed(limit))
             ).subscribe();
 
             server.onReceive('/dashboard/:project/search?*keywords')
-                .map(modelsDef.asFeed)
-                .await(this.pastDOM.displayNewFeed())
-                .subscribe();
+                  .map(modelsDef.asFeed)
+                  .await(this.pastDOM.displayNewFeed())
+                  .subscribe();
 
             Router.when('dashboard/past/:project/search/*keywords').chain(
                 this.pastDOM.clearFeeds,
@@ -93,19 +84,18 @@
                 server.searchFeeds,
                 server.streamFeeds
             );
-            
+
             Router.when('dashboard/past/:project').chain(
                 searchView.dom.clearSearch,
                 bucket.collections('feeds').resetAsAction,
                 this.pastDOM.clearFeeds,
-                server.closeStream('/story/:project/listen'),
+                server.closeStream(server.urls.listen),
                 server.streamFeeds
-            )
-                .and(server.fetchLastFeeds);
+            ).and(server.fetchLastFeeds);
 
             Router.when('dashboard/present/:project').chain(
                 searchView.dom.clearSearch,
-                server.closeStream('/story/:project/listen'),
+                server.closeStream(server.urls.listen),
                 server.streamFeeds
             );
 
@@ -113,7 +103,7 @@
                 searchView.dom.clearSearch,
                 bucket.collections('feeds').resetAsAction,
                 this.pastDOM.clearFeeds,
-                server.closeStream('/story/:project/listen'),
+                server.closeStream(server.urls.listen),
                 server.streamFeeds,
                 server.fetchFeedsByLevel
             );
@@ -122,16 +112,14 @@
                 searchView.dom.clearSearch,
                 bucket.collections('feeds').resetAsAction,
                 this.pastDOM.clearFeeds,
-                server.closeStream('/story/:project/listen'),
-                server.streamFeeds,
-                server.fetch('/story/all/bookmarks')
+                server.fetch(server.urls.bookmarks)
             );
 
             Router.when('dashboard/past/:project/feed/:id/:limit').chain(
                 searchView.dom.clearSearch,
                 bucket.collections('feeds').resetAsAction,
                 this.pastDOM.clearFeeds,
-                server.closeStream('/story/:project/listen'),
+                server.closeStream(server.urls.listen),
                 server.streamFeeds
             ).and(server.fetchFeedWithContext);
 

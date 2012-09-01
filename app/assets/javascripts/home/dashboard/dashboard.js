@@ -10,12 +10,21 @@
         this.tabsView   = new Init.Home.Dashboard.Tabs.TabsView();
         this.inboxView  = new Init.Home.Dashboard.Inbox.InboxView(this.Server);
         this.searchView = new Init.Home.Dashboard.Search.SearchView();
-        this.appsView   = new Init.Home.Dashboard.Apps.AppsView();
+        this.appsView   = new Init.Home.Dashboard.Apps.AppsView(this.Server);
         this.feedsView  = new Init.Home.Dashboard.Feeds.FeedsView(
             this.Server,
             this.searchView,
             this.inboxView
         );
+
+        //TODO In another file to ensure the loading
+        this.Server.onReceiveFromTemplate('user')
+            .await(PlayStory.Bucket.models('user').setAsAction)
+            .subscribe();
+
+        this.Server.onReceiveFromTemplate('projects')
+            .await(PlayStory.Bucket.collections('projects').setAsAction)
+            .subscribe();
 
         var renderDashboard = this.layoutDOM.renderAsAction.then(
             this.searchView.dom.renderAsAction

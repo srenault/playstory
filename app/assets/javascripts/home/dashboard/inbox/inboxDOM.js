@@ -46,8 +46,9 @@
          });
 
          var summup = function($counter) {
-             var currentCounter = $counter.text().replace(' (','')
+             var currentCounter = $counter.text().replace('(','')
                                                  .replace(')','');
+
              var newCounter = (parseInt(currentCounter) || 0) + 1;
              $counter.text(' (' + newCounter + ')');
          };
@@ -93,11 +94,9 @@
          this.refreshNavigation = Action(function(params, next) {
              var noFilterURL = '#dashboard/past/:project'.replace(':project', params[0]);
              elts.$all().attr('href', noFilterURL);
-
              elts.$levels().each(function(index, l) {
                  var $level = $(l),
                      level = $level.attr('class');
-
                  if(level) {
                      var uri = ('#dashboard/past/:project/level/' + level).replace(':project', params[0]);
                      $level.find('a').attr('href', uri);

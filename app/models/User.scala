@@ -162,7 +162,7 @@ object User extends MongoDB("users") {
 
   def bookmarkAsync(id: ObjectId, keptLog: ObjectId): Future[LastError] = {
     val byId = Json.obj("_id" -> Json.obj("$oid" -> id.toString))
-    val keptLogId = Json.obj("$oid" -> id.toString)
+    val keptLogId = Json.obj("$oid" -> keptLog.toString)
     val newBookmark = Json.obj("$push" -> Json.obj("bookmarkIds" -> keptLogId))
     collectAsync.update[JsValue, JsValue](byId, newBookmark)
   }
