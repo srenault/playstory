@@ -1,10 +1,10 @@
-@(initData: play.api.libs.json.JsValue)(implicit request: RequestHeader)
+@(user: User, dashboardData: DashboardData)(implicit request: RequestHeader)
 
 @import play.api.libs.json._
 @import play.api.libs.json.Json._
 @import helper.javascriptRouter
 
-@main("Play Story > Home") {
+@main("Play Story > Home", user) {
 
 }{
 <!-- Home CSS imports -->
@@ -60,8 +60,8 @@
 <script type="text/javascript">
 $(document).ready(function() {
     var server = PlayStory.Home.Dashboard.Server;
-    server.fromTemplate('user', @Html((initData \ "user").toString));
-    server.fromTemplate('projects', @Html((initData \ "projects").toString));
+    server.fromTemplate('user', @Html(dashboardData.userJson));
+    server.fromTemplate('projects', @Html(dashboardData.projectsJson));
 });
 </script>
 }

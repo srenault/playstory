@@ -26,7 +26,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import akka.util.duration._
 
-import models.{ Log, User, Project, Comment, Searchable }
+import models.{ Log, User, Project, Comment, Searchable, DashboardData }
 
 object Dashboard extends Controller with Secured with Pulling {
 
@@ -45,11 +45,10 @@ object Dashboard extends Controller with Secured with Pulling {
 
     Async {
       Project.all().map { projects =>
-        val initData = Json.obj(
-          "user"     -> toJson(request.user),
-          "projects" -> JsArray(projects)
-        )
-        Ok(views.html.home.index(initData))
+        Ok(views.html.home.index(
+          request.user,
+          DashboardData(request.user, projects)
+        ))
       }
     }
   }

@@ -38,6 +38,7 @@ object Application extends Controller with GoogleOpenID {
 
   def signinCallback = Action { implicit request =>
     Logger.info("[OpenID] Receiving user info...")
+
     Async {
       OpenID.verifiedId.flatMap { userInfo =>
         (for {
@@ -53,15 +54,17 @@ object Application extends Controller with GoogleOpenID {
               Redirect(routes.Dashboard.home).withSession("user" -> email)
             }
             case Some(LastError(true, _, _, _, _)) => {
-              Logger.info("[OpenID] Authentication successful but some required fields missed")
+              Logger.info("[OpenID] Authentication successful - user created")
+              Redirect(routes.Dashboard.home).withSession("user" -> email)
+            }
+            case _ => {
+              Logger.info("[OpenID] Authentication failed")
               Redirect(routes.Application.index)
             }
           }
         }) getOrElse {
           Logger.info("[OpenID] Authentication failed")
-          Promise.pure(
-            Redirect(routes.Application.index)
-          )
+          Promise.pure(Redirect(routes.Application.index))
         }
       }
     }
