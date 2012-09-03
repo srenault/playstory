@@ -39,6 +39,11 @@
                 server.fetchInbox,
                 this.dom.refreshNavigation
             );
+
+            Router.when('dashboard/past/:project/feed/:id/:limit').chain(
+                server.fetchInbox,
+                this.dom.refreshNavigation
+            );
         };
     };
 

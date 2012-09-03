@@ -28,19 +28,20 @@ case class User(
   bookmarkIds: List[ObjectId]
 ) {
 
-  def fullName = firstname + " " + lastname
+  lazy val fullName = firstname + " " + lastname
+
+  lazy val bookmarks: Future[List[JsValue]] = Log.byIds(bookmarkIds)
 
   def hasBookmark(logId: ObjectId): Boolean = bookmarkIds.find(_ == logId).isDefined
 
   def isFollowProject(project: String): Boolean = projectNames.find(_ == project).isDefined
 
-  lazy val bookmarks: Future[List[JsValue]] = Log.byIds(bookmarkIds)
-
   def projects: Future[List[JsValue]] = Project.byNames(projectNames:_*)
 
-  def follow(projectName: String): Option[Future[LastError]] =
+  def follow(projectName: String): Option[Future[LastError]] = {
     if(!projectNames.find(_ == projectName).isDefined) None
     else Some(User.follow(_id, projectName))
+  }
 
   def bookmark(keptLog: ObjectId) = User.bookmark(_id, keptLog)
 }

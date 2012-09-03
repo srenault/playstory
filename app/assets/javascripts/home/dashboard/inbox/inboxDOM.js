@@ -9,19 +9,25 @@
          var self = this,
              bucket = PlayStory.Bucket;
 
+         var $el = function(selector) {
+             return function() {
+                 return $(selector);
+             };
+         };
+
          //DOM elements
          var elts = {
-             $leftColumn : function() { return $('.column-left'); },
-             $inbox : function() { return $('.inbox'); },
-             $levels : function() { return $('.inbox ul.levels li:not(.all)'); },
-             $info : function() { return $('.inbox li.info'); },
-             $debug : function() { return $('.inbox li.debug'); },
-             $error : function() { return $('.inbox li.error'); },
-             $fatal : function() { return $('.inbox li.fatal'); },
-             $trace : function() { return $('.inbox li.trace'); },
-             $warn : function() { return $('.inbox li.warn'); },
-             $all : function() { return $(".inbox ul li.all a"); },
-             $starred : function() { return $(".inbox ul.mainstream li a"); }
+             $leftColumn : $el('.column-left'),
+             $inbox : $el('.inbox'),
+             $levels : $el('.inbox ul.levels li:not(.all)'),
+             $info : $el('.inbox li.info'),
+             $debug : $el('.inbox li.debug'),
+             $error : $el('.inbox li.error'),
+             $fatal : $el('.inbox li.fatal'),
+             $trace : $el('.inbox li.trace'),
+             $warn : $el('.inbox li.warn'),
+             $all : $el(".inbox ul li.all a"),
+             $starred : $el(".inbox ul.mainstream li a")
          };
 
          var tmpl = _.template($("#inbox_tmpl").html());

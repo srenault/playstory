@@ -38,6 +38,8 @@
         //render dashboard
         renderDashboard._do();
 
+        if(Router.currentRoute() == '') Router.go('dashboard/past/all');
+
         //bind events
         this.tabsView.lazyInit();
         this.inboxView.lazyInit();
