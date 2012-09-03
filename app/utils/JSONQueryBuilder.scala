@@ -105,7 +105,7 @@ case class QueryBuilder(
 }
 
 object JsonQueryBuilderImplicits {
-  implicit object ChannelBufferWriter extends BSONWriter[ChannelBuffer] {
+  implicit object ChannelBufferWriter extends RawBSONWriter[ChannelBuffer] {
     def write(buffer: ChannelBuffer): ChannelBuffer = buffer
   }
 }
