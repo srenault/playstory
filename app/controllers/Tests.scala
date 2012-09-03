@@ -15,11 +15,11 @@ object Tests extends Controller {
 
   def test = Action { implicit request =>
     Async {
-      Log.allAsync().map { logs =>
+      Log.all().map { logs =>
         Ok(logs.toString)
       }
 
-      Log.byIdAsync(new ObjectId("503e3bde1a8800322e0103fd")).map { log =>
+      Log.byId(new ObjectId("503e3bde1a8800322e0103fd")).map { log =>
         Ok(log.toString)
       }
 
@@ -28,28 +28,28 @@ object Tests extends Controller {
                      "503e3bdf1a8800322e010405",
                      "503e3bde1a8800322e0103f9").map(new ObjectId(_))
 
-      Log.byIdsAsync(ids).map { logs =>
+      Log.byIds(ids).map { logs =>
         Ok(logs.toString)
       }
 
       val keywords = Searchable.asRegex(List("version", "plugin"))
-      Log.searchAsync("onconnect", keywords).map { logs =>
+      Log.search("onconnect", keywords).map { logs =>
         Ok(logs.toString)
       }
 
-      Log.byProjectAsync("onconnect").map { logs =>
+      Log.byProject("onconnect").map { logs =>
         Ok(logs.toString)
       }
 
-      Log.byLevelAsync("WARN", Some("onconnect")).map { logs =>
+      Log.byLevel("WARN", Some("onconnect")).map { logs =>
         Ok(logs.toString)
       }
 
-      Log.byProjectBeforeAsync("onconnect", new Date).map { logs =>
+      Log.byProjectBefore("onconnect", new Date).map { logs =>
         Ok(logs.toString)
       }
 
-      Log.byProjectAfterAsync("onconnect", new Date).map { logs =>
+      Log.byProjectAfter("onconnect", new Date).map { logs =>
         Ok(logs.toString)
       }
 
@@ -67,7 +67,7 @@ object Tests extends Controller {
                           "thread",
                           Nil))
 
-      Log.createAsync(jsonLog).map {
+      Log.create(jsonLog).map {
         case LastError(true, _, _, _, _) => {
           Ok("Insert succeed")
         }
@@ -81,7 +81,7 @@ object Tests extends Controller {
       }
 
       val project = toJson(Project("name", "realName"))
-      Project.createIfNotAsync(project).map {
+      Project.createIfNot(project).map {
         case Some(LastError(true, _, _, _, _)) => {
           Ok("Insert succeed")
         }
@@ -91,15 +91,15 @@ object Tests extends Controller {
         case None => NotFound("Project already exist")
       }
 
-      Project.allAsync().map { projects =>
+      Project.all().map { projects =>
         Ok(projects.toString)
       }
 
-      Project.existAsync("name").map { isDefined =>
+      Project.exist("name").map { isDefined =>
         Ok(isDefined.toString)
       }
 
-      Project.byNamesAsync("name", "nname").map { projects =>
+      Project.byNames("name", "nname").map { projects =>
         Ok(projects.toString)
       }
     }

@@ -5,6 +5,8 @@ import play.api.libs.iteratee._
 import play.api.libs.concurrent._
 import play.api.libs.iteratee.Concurrent._
 import play.api.Play.current
+import play.api.libs.json._
+import play.api.libs.json.Json._
 import akka.actor._
 import akka.actor.Actor._
 import scalaz.OptionW
@@ -52,7 +54,8 @@ class StoryActor extends Actor {
     }
 
     case NewLog(log: Log) => {
-      Project.createIfNot(Project(log.project, log.project))
+      val project = Project(log.project, log.project)
+      Project.createIfNot(toJson(project))
       pushToChannel(log.project, log)
     }
   }

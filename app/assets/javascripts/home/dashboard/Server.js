@@ -177,7 +177,9 @@
                                 .replace(':id', lastFeed.id)
                                 .replace(':limit', 6);
 
-            if(source.route == 'past/:project/level/:level') {
+            console.log(uri);
+
+            if(source.route == 'dashboard/past/:project/level/:level') {
                 uri += '?level=' + source.params[1];
             }
             return uri;

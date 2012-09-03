@@ -12,6 +12,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.libs.iteratee._
+import reactivemongo.core.commands.LastError
 
 import models.User
 
@@ -38,28 +39,30 @@ object Application extends Controller with GoogleOpenID {
   def signinCallback = Action { implicit request =>
     Logger.info("[OpenID] Receiving user info...")
     Async {
-      OpenID.verifiedId.orTimeout("Failed authenticating to google openid", 1000).map { maybeUserInfo =>
-        maybeUserInfo.fold(
-          userInfo => {
-            (for {
-              lastname  <- userInfo.attributes.get("lastname")
-              firstname <- userInfo.attributes.get("firstname")
-              email     <- userInfo.attributes.get("email")
-              language  <- userInfo.attributes.get("language")
-            } yield {
-              User.createIfNot(User(lastname, firstname, email, language))
-              Logger.info("[OpenID] Authentication successful")
+      OpenID.verifiedId.flatMap { userInfo =>
+        (for {
+          lastname  <- userInfo.attributes.get("lastname")
+          firstname <- userInfo.attributes.get("firstname")
+          email     <- userInfo.attributes.get("email")
+          language  <- userInfo.attributes.get("language")
+        } yield {
+          val user = Json.obj("lastname" -> lastname, "firstname" -> firstname, "email" -> email, "language" -> language)
+          User.createIfNot(user).map {
+            case None => {
+              Logger.info("[OpenID] Authentication successful: " + email)
               Redirect(routes.Dashboard.home).withSession("user" -> email)
-            }) getOrElse {
-              Logger.info("[OpenID] Authentication successful but some required fields miss")
+            }
+            case Some(LastError(true, _, _, _, _)) => {
+              Logger.info("[OpenID] Authentication successful but some required fields missed")
               Redirect(routes.Application.index)
             }
-          },
-          error => {
-            Logger.info("[OpenID] Authentication failed")
-            Redirect(routes.Application.index)
           }
-        )
+        }) getOrElse {
+          Logger.info("[OpenID] Authentication failed")
+          Promise.pure(
+            Redirect(routes.Application.index)
+          )
+        }
       }
     }
   }

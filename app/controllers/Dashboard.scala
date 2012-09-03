@@ -34,17 +34,17 @@ object Dashboard extends Controller with Secured with Pulling {
     Logger.info("[Dashboard] Welcome : " + request.user)
 
     Project.byNameAsync("onconnect").onComplete {
-      case Right(None) => request.user.followAsync("onconnect")
+      case Right(None) => request.user.follow("onconnect")
       case _ =>
     }
 
     Project.byNameAsync("scanup").onComplete {
-      case Right(None) => request.user.followAsync("scanup")
+      case Right(None) => request.user.follow("scanup")
       case _ =>
     }
 
     Async {
-      Project.allAsync().map { projects =>
+      Project.all().map { projects =>
         val initData = Json.obj(
           "user"     -> toJson(request.user),
           "projects" -> JsArray(projects)
@@ -59,7 +59,7 @@ object Dashboard extends Controller with Secured with Pulling {
     AsyncResult {
       implicit val timeout = Timeout(5 second)
       (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
-        Log.createAsync(chunks.map(toJson(_)))
+        Log.create(chunks.map(toJson(_)))
         implicit val LogComet = Comet.CometMessage[Log](log => wrappedLog(log).toString)
         playPulling(chunks).getOrElse(BadRequest)
       }
@@ -69,7 +69,7 @@ object Dashboard extends Controller with Secured with Pulling {
   def search(project: String, keywords: List[String]) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Searching logs for project " + project)
     AsyncResult {
-      Log.searchAsync(project, Searchable.asRegex(keywords)).map { foundLogs =>
+      Log.search(project, Searchable.asRegex(keywords)).map { foundLogs =>
         Ok(JsArray(
           foundLogs.reverse.map(wrappedLog)
         ))
@@ -93,9 +93,9 @@ object Dashboard extends Controller with Secured with Pulling {
     val logId = new ObjectId(id)
     request.body.asJson.map { comment =>
       Async {
-        Log.byIdAsync(logId).flatMap { logOpt =>
+        Log.byId(logId).flatMap { logOpt =>
           logOpt.map { _ => 
-            Log.addCommentAsync(logId, comment).map {
+            Log.comment(logId, comment).map {
               case LastError(true, _, _, _, _) => Ok
               case LastError(false, Some(errMsg), code, errorMsg, doc) => InternalServerError(errMsg)
             }
@@ -112,8 +112,8 @@ object Dashboard extends Controller with Secured with Pulling {
     val logId = new ObjectId(id)
     if(!request.user.hasBookmark(logId)) {
       Async {
-        Log.byIdAsync(logId).flatMap {
-          case Some(foundLog) => request.user.bookmarkAsync(logId).map(_ => Ok)
+        Log.byId(logId).flatMap {
+          case Some(foundLog) => request.user.bookmark(logId).map(_ => Ok)
           case _ => Promise.pure(
             BadRequest("Failed to bookmark a log. It was not found")
           )
@@ -125,7 +125,7 @@ object Dashboard extends Controller with Secured with Pulling {
   def bookmarks() = Authenticated { implicit request =>
     Logger.info("[Dashboard] Getting all bookmarks ")
     Async {
-      request.user.bookmarksAsync.map { bookmarkedLogs =>
+      request.user.bookmarks.map { bookmarkedLogs =>
         Ok(JsArray(
           bookmarkedLogs.reverse.map(wrappedLog)
         ))
@@ -137,7 +137,7 @@ object Dashboard extends Controller with Secured with Pulling {
     Logger.info("[Dashboard] Getting logs by level for %s".format(project))
     Async {
       val specificProject = if (project == Project.ALL) None else Some(project)
-      Log.byLevelAsync(level, specificProject).map { logs =>
+      Log.byLevel(level, specificProject).map { logs =>
         Ok(JsArray(
           logs.reverse.map(wrappedLog)
         ))
@@ -149,12 +149,12 @@ object Dashboard extends Controller with Secured with Pulling {
     Logger.info("[Dashboard] Getting more logs from project %s and log %s.".format(project, id))
     val logRefId = new ObjectId(id)
     Async {
-      Log.byIdAsync(logRefId).flatMap { logRefOpt =>
+      Log.byId(logRefId).flatMap { logRefOpt =>
         (for {
           logRef <- logRefOpt
           date   <- Log.date(logRef)
         } yield {
-          Log.byProjectAfterAsync(project, date, level, limit).map { logsAfter =>
+          Log.byProjectAfter(project, date, level, limit).map { logsAfter =>
             Ok(JsArray(
               logsAfter.reverse.map(wrappedLog)
             ))
@@ -171,13 +171,13 @@ object Dashboard extends Controller with Secured with Pulling {
     val limitBefore, limitAfter = scala.math.round(limit/2)
     val logId = new ObjectId(id)
     Async {
-      Log.byIdAsync(logId).flatMap { logOpt =>
+      Log.byId(logId).flatMap { logOpt =>
         (for {
           log  <- logOpt
           date <- Log.date(log)
         } yield {
-          val beforeLogs = Log.byProjectBeforeAsync(project, date, None, limitBefore)
-          val afterLogs = Log.byProjectAfterAsync(project, date, None, limitAfter)
+          val beforeLogs = Log.byProjectBefore(project, date, None, limitBefore)
+          val afterLogs = Log.byProjectAfter(project, date, None, limitAfter)
           Promise.sequence(List(beforeLogs, afterLogs)).map { beforeAfter =>
             val foundLogs = beforeAfter.reduceLeft((before, after) => before ::: (log :: after))
               Ok(JsArray(
@@ -195,12 +195,12 @@ object Dashboard extends Controller with Secured with Pulling {
     Logger.info("[Dashboard] Getting history of %s from %".format(project, from))
     Async {
       project match {
-        case Project.ALL => Log.allAsync().map { logs =>
+        case Project.ALL => Log.all().map { logs =>
           Ok(JsArray(
             logs.reverse.map(wrappedLog)
           ))
         }
-        case _ => Log.byProjectAfterAsync(project, new Date(from)).map { logs =>
+        case _ => Log.byProjectAfter(project, new Date(from)).map { logs =>
           Ok(JsArray(
             logs.reverse.map(wrappedLog)
           ))
@@ -213,12 +213,12 @@ object Dashboard extends Controller with Secured with Pulling {
     Logger.info("[Dashboard] Getting history of %s".format(project))
     Async {
       project match {
-        case Project.ALL => Log.allAsync().map { logs =>
+        case Project.ALL => Log.all().map { logs =>
           Ok(JsArray(
             logs.reverse.map(wrappedLog)
           ))
         }
-        case _ => Log.byProjectAsync(project).map { logs =>
+        case _ => Log.byProject(project).map { logs =>
           Ok(JsArray(
             logs.reverse.map(wrappedLog)
           ))
@@ -241,7 +241,6 @@ object Dashboard extends Controller with Secured with Pulling {
   private def wrappedLog(log: Log)(implicit request: RequestHeader) = {
     JsObject(Seq(
       "log" -> toJson(log),
-      "project" -> toJson(Project.byName(log.project)),
       "src" -> JsString(request.uri)
     ))
   }
