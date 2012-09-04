@@ -227,14 +227,13 @@ object Dashboard extends Controller with Secured with Pulling {
   }
 
   def eval() = Action { implicit request =>
-    request.body.asJson.get match {
-      case log: JsObject => {
-        StoryActor.ref ! NewLog(Log.fromJsObject(log))
-        Ok
-      }
-      case log: JsValue => BadRequest("[Dashboard] Not a json object")
-      case _ => BadRequest("[Dashboard] Invalid Log format: " + request.body)
-    }
+    (for {
+      json <- request.body.asJson
+      log  <- json.asOpt[Log] //Validation
+    } yield {
+      StoryActor.ref ! NewLog(log)
+      Ok
+    }) getOrElse BadRequest
   }
 
   private def wrappedLog(log: Log)(implicit request: RequestHeader) = {

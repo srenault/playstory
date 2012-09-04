@@ -42,9 +42,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
 
   def date(log: JsValue): Option[Date] = (log \ "date" \ "$date").asOpt[Long].map(new Date(_))
 
-  val byEnd = MongoDBObject("date" -> -1)
-
-  def all(max: Int= 50): Future[List[JsValue]] = {
+  def all(max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
     val jsonQuery = JsonQueryBuilder().sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
@@ -55,7 +53,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     JsonQueryHelpers.find(collectAsync, jsonQuery).headOption
   }
 
-  def byIds(ids: List[ObjectId], max: Int = 50): Future[List[JsValue]] = {
+  def byIds(ids: List[ObjectId], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
     val byEnd = "date" -> Descending
     val matchIds = Json.obj(
       "_id" -> Json.obj(
@@ -66,7 +64,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList
   }
 
-  def search(project: String, fields: List[Regex], max: Int = 50): Future[List[JsValue]] = {
+  def search(project: String, fields: List[Regex], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
     val byProject = Json.obj("project" -> project)
     val $all = Json.obj(
       "keywords" -> Json.obj(
@@ -77,13 +75,13 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
-  def byProject(project: String, max: Int = 50): Future[List[JsValue]] = {
+  def byProject(project: String, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
     val byProject = Json.obj("project" -> project)
     val jsonQuery = JsonQueryBuilder().query(byProject).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
-  def byLevel(level: String, projectOpt: Option[String] = None, max: Int = 50): Future[List[JsValue]] = {
+  def byLevel(level: String, projectOpt: Option[String] = None, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
     val byLevel = Json.obj("level" -> level.toUpperCase)
     val byProject = projectOpt.map { project =>
       Json.obj("project" -> project)
@@ -93,7 +91,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
-  def byProjectBefore(project: String, before: Date, levelOpt: Option[String] = None, max: Int = 50): Future[List[JsValue]] = {
+  def byProjectBefore(project: String, before: Date, levelOpt: Option[String] = None, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
     val byProject = Json.obj("project" -> project)
     val byBefore = Json.obj("date" -> Json.obj("$lt" -> Json.obj("$date" -> before.getTime)))
     val byLevel = levelOpt.map { level =>
@@ -104,7 +102,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
-  def byProjectAfter(project: String, before: Date, levelOpt: Option[String] = None, max: Int = 50): Future[List[JsValue]] = {
+  def byProjectAfter(project: String, before: Date, levelOpt: Option[String] = None, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
     val byProject = Json.obj("project" -> project)
     val byAfter = Json.obj("date" -> Json.obj("$gt" -> Json.obj("$date" -> before.getTime)))
     val byLevel = levelOpt.map { level =>

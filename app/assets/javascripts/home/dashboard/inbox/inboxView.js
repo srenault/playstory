@@ -28,7 +28,10 @@
                 this.dom.updateStarred
             );
 
-            Router.when('dashboard/present/:project', this.dom.refreshNavigation);
+            Router.when('dashboard/present/:project').chain(
+                server.fetchInbox,
+                this.dom.refreshNavigation
+            );
 
             Router.when('dashboard/past/:project/level/:level').chain(
                 server.fetchInbox,

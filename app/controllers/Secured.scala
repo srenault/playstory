@@ -6,14 +6,14 @@ import play.api.mvc.Results._
 import play.api.mvc._
 import play.Logger
 
-import models.{ User, PlayStoryConfig }
+import models.{ User, Config }
 
 trait Secured {
 
   def Authenticated[R <: Result](securedAction: AuthenticatedRequest => R) = Security.Authenticated(
-    requestHeader => if(PlayStoryConfig.isOffline) Some("anonymous") else requestHeader.session.get("user"),
+    requestHeader => if(Config.isOffline) Some("anonymous") else requestHeader.session.get("user"),
     requestHeader => askSignIn)(email => Action { request =>
-      if(!PlayStoryConfig.isOffline) {
+      if(!Config.isOffline) {
         Logger.info("You aren't in an offline mode.")
         User.byEmail(email).map { maybeUser =>
           for {
