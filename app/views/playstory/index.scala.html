@@ -7,16 +7,22 @@
 @main("Play Story > Home", user) {
 
 }{
-<!-- Home CSS imports -->
-<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/story/dashboard.css")">
+<!-- CSS imports -->
+<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/home/home.css")">
+<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/dashboard/dashboard.css")">
 }{
-<!-- Home javascript templates -->
+<!-- Javascript templates -->
 @dashboard.layout()
 @dashboard.search()
 @dashboard.feeds()
 @dashboard.tabs()
 @dashboard.apps()
 @dashboard.inbox()
+
+@home.layout()
+@home.menu()
+@home.overview()
+@home.discover()
 
 <!-- Play Javascript routers -->
 @javascriptRouter("PlayRoutes")(
@@ -37,6 +43,16 @@
 <script type="text/javascript" src="@routes.Assets.at("javascripts/Bucket.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/ModelsDef.js")"></script>
 
+<!-- Home -->
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/home.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/layout.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/menu/menuDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/menu/menuView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/discover/discoverDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/discover/discoverView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/overview/overviewDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/overview/overviewView.js")"></script>
+
 <!-- Dashboard -->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/Server.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/search/searchDOM.js")"></script>
@@ -50,13 +66,12 @@
 <script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/inbox/inboxView.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/apps/appsView.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/feeds/feedsView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/layoutDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/layout.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/dashboard.js")"></script>
 
 <!-- App -->
 <script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/playstory.js")"></script>
 
-<!-- Init Home page -->
 <script type="text/javascript">
 $(document).ready(function() {
 var server = PlayStory.Dashboard.Server;

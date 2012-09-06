@@ -5,9 +5,7 @@
 $(document).ready(function() {
     (function(PlayStory) {
         console.log("[PlayStory] Init PlayStory app");
-
-        console.log("hihihihi");
-        PlayStory.Dashboard = PlayStory.Init.Dashboard.init();
-
+        PlayStory.Home      = PlayStory.Init.Home.init();
+        //PlayStory.Dashboard = PlayStory.Init.Dashboard.init();
     })(window.PlayStory);
 });

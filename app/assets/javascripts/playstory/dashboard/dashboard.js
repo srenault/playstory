@@ -6,7 +6,7 @@
 
     Init.Dashboard.init = function() {
         var server     = new Init.Dashboard.Server();
-        var layoutDOM  = new Init.Dashboard.LayoutDOM();
+        var layout     = new Init.Dashboard.Layout();
         var tabsView   = new Init.Dashboard.Tabs.TabsView();
         var inboxView  = new Init.Dashboard.Inbox.InboxView(server);
         var searchView = new Init.Dashboard.Search.SearchView();
@@ -26,13 +26,13 @@
             .await(PlayStory.Bucket.collections('projects').setAsAction)
             .subscribe();
 
-        var renderDashboard = layoutDOM.renderAsAction.then(
+        var renderDashboard = layout.renderAsAction.then(
             searchView.dom.renderAsAction
-                .and(tabsView.dom.renderAsAction)
-                .and(inboxView.dom.renderAsAction)
-                .and(feedsView.pastDOM.renderAsAction)
-                .and(feedsView.presentDOM.renderAsAction)
-                .and(appsView.dom.renderAsAction)
+           .and(tabsView.dom.renderAsAction)
+           .and(inboxView.dom.renderAsAction)
+           .and(feedsView.pastDOM.renderAsAction)
+           .and(feedsView.presentDOM.renderAsAction)
+           .and(appsView.dom.renderAsAction)
         );
 
         //render dashboard
@@ -47,17 +47,17 @@
         searchView.lazyInit();
         feedsView.lazyInit();
 
-        var destroyDashboard = layoutDOM.renderAsAction.then(
+        var destroyDashboard = layout.destroyAsAction.then(
             tabsView.dom.destroyAsAction
-                .and(inboxView.dom.destroyAsAction)
-                .and(feedsView.pastDOM.destroyAsAction)
-                .and(feedsView.presentDOM.destroyAsAction)
-                .and(appsView.dom.destroyAsAction)
+           .and(inboxView.dom.destroyAsAction)
+           .and(feedsView.pastDOM.destroyAsAction)
+           .and(feedsView.presentDOM.destroyAsAction)
+           .and(appsView.dom.destroyAsAction)
         );
 
         return {
             Server     : server,
-            LayoutDOM  : layoutDOM,
+            Layout     : layout,
             TabsView   : tabsView,
             InboxView  : inboxView,
             SearchView : searchView,
@@ -69,4 +69,4 @@
 })(window.PlayStory,
    window.PlayStory.Init,
    window.PlayStory.Router
-  );
+);

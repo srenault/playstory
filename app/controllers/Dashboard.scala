@@ -45,7 +45,7 @@ object Dashboard extends Controller with Secured with Pulling {
 
     Async {
       Project.all().map { projects =>
-        Ok(views.html.home.index(
+        Ok(views.html.playstory.index(
           request.user,
           DashboardData(request.user, projects)
         ))

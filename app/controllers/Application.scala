@@ -23,6 +23,10 @@ object Application extends Controller with GoogleOpenID {
     Ok(views.html.signin())
   }
 
+  def home = Action { implicit request =>
+    Ok(views.html.playstory.home.index())
+  }
+
   def signin = Action { implicit request =>
     Async {
       signinWithGoogle(
@@ -74,6 +78,4 @@ object Application extends Controller with GoogleOpenID {
     Logger.info("Bye bye !")
     Redirect(routes.Application.index) withNewSession
   }
-
-  def home = TODO
 }

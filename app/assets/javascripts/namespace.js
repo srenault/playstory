@@ -4,6 +4,11 @@
 
 window.PlayStory = {
     Init: {
+        Home: {
+            Menu: {},
+            Discover: {},
+            Overview: {}
+        },
         Dashboard: {
             Tabs: {},
             Feeds: {},
