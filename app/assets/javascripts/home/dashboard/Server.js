@@ -40,7 +40,6 @@
 
         var _streamChunks = function(chunk) {
             var subscribers = [];
-            console.log(chunk);
             if(chunk.src) {
                 for(var uri in subscriptions) {
                     if(RouterUtils.routeAsRegex(uri).test(chunk.src)) {

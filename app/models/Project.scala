@@ -52,7 +52,6 @@ object Project extends MongoDB("projects") {
   }
 
   def byNameAsync(name: String): Future[Option[JsValue]] = {
-    println(name)
     val byName = Json.obj("name" -> name)
     val jsonQuery = JsonQueryBuilder().query(byName)
     JsonQueryHelpers.find(collectAsync, jsonQuery).headOption
@@ -77,11 +76,11 @@ object Project extends MongoDB("projects") {
 
   implicit object ProjectFormat extends Format[Project] {
 
-    def reads(json: JsValue): Project = Project(
+    def reads(json: JsValue): JsResult[Project] = JsSuccess(Project(
       (json \ "name").as[String],
       (json \ "realName").as[String],
       (json \ "avatar").as[Option[String]]
-    )
+    ))
 
     def writes(p: Project): JsValue = Json.obj(
       "name"     -> p.name,

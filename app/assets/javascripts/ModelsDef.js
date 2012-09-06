@@ -21,7 +21,7 @@
             }
 
             var feed = {
-                id: data.log._id.$oid,
+                id: data.log._id.$oid ? data.log._id.$oid : data.log._id,
                 realName: project.realName,
                 project: {
                     name: project.name
@@ -30,7 +30,7 @@
                 time: new Date(data.log.date.$date),
                 level: data.log.method,
                 message: data.log.message,
-                comments: data.log.comments
+                comments: data.log.comments || []
             };
             return feed;
         };

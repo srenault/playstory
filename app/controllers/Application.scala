@@ -5,7 +5,7 @@ import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 import validation.Constraints._
-import play.api.libs.openid.OpenID
+import play.api.libs.openid.{ OpenID, OpenIDError }
 import play.api.libs.concurrent._
 import play.api.libs.concurrent.execution.defaultContext
 import play.api.Play.current
@@ -29,8 +29,8 @@ object Application extends Controller with GoogleOpenID {
         routes.Application.signinCallback.absoluteURL(),
         url => Redirect(url),
         error => {
-          Logger.error("[OpenID] Failed to sign in with Google")
-          Redirect(routes.Application.index)
+            Logger.error("[OpenID] Failed to sign in with Google: " + error)
+            Redirect(routes.Application.index)
         }
       )
     }

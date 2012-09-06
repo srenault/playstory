@@ -34,13 +34,15 @@ case class User(
 
   def hasBookmark(logId: ObjectId): Boolean = bookmarkIds.find(_ == logId).isDefined
 
-  def isFollowProject(project: String): Boolean = projectNames.find(_ == project).isDefined
+  def isFollowedProject(project: String): Boolean = projectNames.find(_ == project).isDefined
 
   def projects: Future[List[JsValue]] = Project.byNames(projectNames:_*)
 
   def follow(projectName: String): Option[Future[LastError]] = {
-    if(!projectNames.find(_ == projectName).isDefined) None
-    else Some(User.follow(_id, projectName))
+    if(!isFollowedProject(projectName)) {
+      Some(User.follow(_id, projectName))
+    }
+    else None
   }
 
   def bookmark(keptLog: ObjectId) = User.bookmark(_id, keptLog)
@@ -109,19 +111,21 @@ object User extends MongoDB("users") {
   }
 
   implicit object UserFormat extends Format[User] {
-    def reads(json: JsValue) = User(
-      (json \ "id").asOpt[String].map(id => new ObjectId(id)).getOrElse(new ObjectId),
+    def reads(json: JsValue): JsResult[User] = JsSuccess(User(
+      (json \ "_id" \ "$oid").asOpt[String].map(id => new ObjectId(id)).getOrElse(new ObjectId),
       (json \ "lastname").as[String],
       (json \ "firstname").as[String],
       (json \ "email").as[String],
       (json \ "language").as[String],
       (json \ "avatar").asOpt[String],
-      Nil,//(json \ "projects").as[List[String]],
-      Nil
-    )
+      (json \ "projects").asOpt[List[String]].getOrElse(Nil),
+      (json \ "bookmarkIds").asOpt[List[String]].map { bids =>
+        bids.map(new ObjectId(_))
+      }.getOrElse(Nil)
+    ))
 
     def writes(user: User) = Json.obj(
-      "id" -> user._id.toString,
+       "_id"       -> Json.obj("$oid" -> user._id.toString),
       "lastname" -> user.lastname,
       "firstname" -> user.firstname,
       "email" -> user.email,

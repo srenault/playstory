@@ -18,12 +18,12 @@ class StoryActor extends Actor {
 
   import StoryActor._
 
-  private var projects: Map[String, Set[Channel[Log]]] = Map.empty
+  private var projects: Map[String, Set[Channel[JsValue]]] = Map.empty
 
   def receive = {
 
     case Listen(project: String) => {
-      lazy val channel: Enumerator[Log] = Concurrent.unicast(
+      lazy val channel: Enumerator[JsValue] = Concurrent.unicast(
         channel => self ! Init(project, channel),
         onComplete = self ! Stop(project),
         onError = { case(error, _) =>
@@ -35,14 +35,14 @@ class StoryActor extends Actor {
 
     case Init(project, channel) => {
       Logger.info("[Actor] Stream project " + project)
-      val channels: Set[Channel[Log]] = findChannels(project)
+      val channels: Set[Channel[JsValue]] = findChannels(project)
       projects += (project -> (channels + channel))
     }
 
     case IsAlive() => projects.foreach {
         case (project, channels) => {
           channels.foreach(channel => {
-            Logger.debug("[Actor] Project %s alive".format(project))
+            //Logger.debug("[Actor] Project %s alive".format(project))
             channel.push(Input.Empty)
           })
         }
@@ -53,25 +53,29 @@ class StoryActor extends Actor {
       projects = projects.filter(p => p._1 != project)
     }
 
-    case NewLog(log: Log) => {
-      val project = Project(log.project, log.project)
-      Project.createIfNot(toJson(project))
-      pushToChannel(log.project, log)
+    case NewLog(log: JsValue) => {
+      Log.json.project(log).map { projectName =>
+        val project = Project(projectName, projectName)
+        Project.createIfNot(toJson(project))
+        pushToChannel(projectName, log)
+      }
     }
   }
 
-  private def findChannels(projectName: String): Set[Channel[Log]] = {
+  private def findChannels(projectName: String): Set[Channel[JsValue]] = {
     projects.find(_._1 == projectName).map(_._2).getOrElse(Set.empty)
   }
 
-  private def pushToChannel(project: String, log: Log) = {
+  private def pushToChannel(project: String, log: JsValue) = {
     findChannels(Project.ALL).foreach { channel =>
       channel.push(log)
     }
 
     if(project != Project.ALL) {
-      findChannels(log.project).foreach { channel =>
-        channel.push(log)
+      Log.json.project(log).map { project =>
+        findChannels(project).foreach { channel =>
+          channel.push(log)
+        }
       }
     }
   }
@@ -84,8 +88,8 @@ object StoryActor {
   sealed trait Event
   case class Listen(project: String) extends Event
   case class Stop(project: String) extends Event
-  case class NewLog(log: Log)
-  case class Init(project: String, p: Channel[Log])
+  case class NewLog(log: JsValue)
+  case class Init(project: String, p: Channel[JsValue])
   case class IsAlive()
 
   lazy val system = ActorSystem("storyroom")

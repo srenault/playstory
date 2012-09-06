@@ -7,6 +7,7 @@ import play.Logger
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.json._
 import play.api.libs.json.Json._
+import play.api.libs.json.util._
 import play.modules.reactivemongo.MongoHelpers.{ObjectId, RegEx}
 import play.modules.reactivemongo.PlayBsonImplicits.JsValueWriter
 import reactivemongo.api.{QueryBuilder, QueryOpts}
@@ -30,17 +31,18 @@ case class Log(
   method: String,
   level: String,
   thread: String,
-  comments: Seq[Comment]
+  comments: Seq[Comment] = Nil
 ) {
-
   def comment(comment: JsValue) = Log.comment(_id, comment)
-
   def countByLevel(): List[(String, Double)] = Log.countByLevel(project)
 }
 
 object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "project")) with Searchable {
 
-  def date(log: JsValue): Option[Date] = (log \ "date" \ "$date").asOpt[Long].map(new Date(_))
+  object json {
+    def date(log: JsValue): Option[Date] = (log \ "date" \ "$date").asOpt[Long].map(new Date(_))
+    def project(log: JsValue): Option[String] = (log \ "project").asOpt[String]
+  }
 
   def all(max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
     val jsonQuery = JsonQueryBuilder().sort("date" -> Descending)
@@ -66,12 +68,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
 
   def search(project: String, fields: List[Regex], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
     val byProject = Json.obj("project" -> project)
-    val $all = Json.obj(
-      "keywords" -> Json.obj(
-        "$all" -> JsArray(fields.map(f => Json.obj("$regex" -> f.toString)))
-      )
-    )
-    val jsonQuery = JsonQueryBuilder().query($all).sort("date" -> Descending)
+    val jsonQuery = JsonQueryBuilder().query(byKeywords(fields)).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
@@ -157,8 +154,12 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     collectAsync.insert[JsValue](stream, 1)
   }
 
-  def create(log: JsValue): Future[LastError] = {
-    collectAsync.insert[JsValue](log)
+  def create(log: JsObject): Future[LastError] = {
+    val message = (log \ "message").as[String]
+    val keywords = asKeywords(asWords(message))
+    val fullLog = log ++ keywords
+    println(fullLog)
+    collectAsync.insert[JsValue](fullLog)
   }
 
   def comment(id: ObjectId, comment: JsValue) = {
@@ -167,44 +168,47 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     collectAsync.update[JsValue, JsValue](byId, toComments)
   }
 
-  def fromJsObject(json: JsObject) = fromJson[Log](json)(LogFormat)
+  implicit val LogDef: Reads[(String, String, String)] = {
+    (
+      (__ \ 'project).read[String] and
+      (__ \ 'logger).read[String] and
+      (__ \ 'className).read[String]
+    ) tupled
+
+    // (__ \ 'date).read[Date]
+    // (__ \ 'file).read[String]
+    // (__ \ "location").read[String] and
+    // (__ \ "line").read[Long] and
+    // (__ \ "message").read[String] and
+    // (__ \ "method").read[String] and
+    // (__ \ "level").read[String] and
+    // (__ \ "thread").read[String](Log, unlift(Log.unapply))
+  }
 
   implicit object LogFormat extends Format[Log] {
-
-    private def asDate(timestamp: String) = new Date(timestamp.toLong)
-
-    def counterByLevelJSON(counterByLevel: (String, Double)): JsValue = {
-      counterByLevel match {
-        case (project, count) => JsObject(Seq(
-          "level" -> JsString(project),
-          "count" -> JsNumber(count)
-        ))
-      }
-    }
-
-    def reads(json: JsValue): Log = Log(
-      (json \ "_id").asOpt[String].map(new ObjectId(_)).getOrElse(new ObjectId),
+    def reads(json: JsValue): JsResult[Log] = JsSuccess(Log(
+      (json \ "_id").asOpt[String].map(new ObjectId(_)) getOrElse new ObjectId,
       (json \ "project").as[String],
       (json \ "logger").as[String],
       (json \ "className").as[String],
-      asDate((json \ "date" \ "$date").asOpt[String].getOrElse(new Date().getTime.toString)), //TODO Doesn't work !
+      (json \ "date").as[Date],
       (json \ "file").as[String],
       (json \ "location").as[String],
-      (json \ "line").asOpt[String].getOrElse("1").toLong, //TODO Idem !
+      (json \ "line").as[Long],
       (json \ "message").as[String],
       (json \ "method").as[String],
       (json \ "level").as[String],
       (json \ "thread").as[String],
-      (json \ "comments").asOpt[Seq[Comment]].getOrElse(Nil)
-    )
+      (json \ "comments").asOpt[Seq[Comment]] getOrElse Nil
+    ))
 
     def writes(l: Log): JsValue = {
       Json.obj(
-        "_id"       -> Json.obj("$oid" -> l._id.toString),
+        "_id"       -> l._id.toString,
         "project"   -> l.project,
         "logger"    -> l.logger,
         "className" -> l.className,
-        "date"      -> Json.obj("$date" -> l.date.getTime),
+        "date"      -> l.date.getTime,
         "file"      -> l.file,
         "location"  -> l.location,
         "line"      -> l.line,

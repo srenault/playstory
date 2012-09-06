@@ -13,9 +13,14 @@ import models.{Project, Log}
 trait Pulling {
   self: Controller =>
 
-  protected def playPulling(chunks: Enumerator[Log])(implicit request: AuthenticatedRequest, cometMessage: Comet.CometMessage[Log]) = {
+  protected def playPulling(chunks: Enumerator[JsValue])(implicit request: AuthenticatedRequest, cometMessage: Comet.CometMessage[JsValue]) = {
     val comet = Comet(callback = "window.parent.PlayStory.Home.FeedsPresent.server.fromPulling")
-    val filterByUser = Enumeratee.filter[Log](l => request.user.isFollowProject(l.project))
+    val filterByUser = Enumeratee.filter[JsValue] { l =>
+      Log.json.project(l).map { project =>
+         request.user.isFollowedProject(project)
+      } getOrElse false
+    }
+
     request.headers.get("ACCEPT").map( _ match {
       case "text/event-stream" => {
         Logger.debug("[Story] Pushing data using Server Sent Event");

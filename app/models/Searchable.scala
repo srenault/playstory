@@ -1,15 +1,16 @@
 package models
 
 import scala.util.matching.Regex
-import com.mongodb.casbah.Imports._
-import db.MongoDB
+import play.api.libs.json._
 
 trait Searchable {
   def asWords(sentence: String): List[String] = sentence.split(" ").toList
-  def asKeywords(fields: List[String]): MongoDBObject = {
-    MongoDBObject("keywords" -> fields)
+  def asKeywords(fields: List[String]): JsObject = Json.obj("keywords" -> fields.map(JsString(_)))
+  def byKeywords(fields: List[Regex]): JsObject = {
+    Json.obj("keywords" -> Json.obj("$all" -> fields.map { k => 
+      Json.obj("$regex" -> k.toString)
+    }))
   }
-  def byKeywords(fields: List[Regex]): MongoDBObject = ("keywords" $all fields)
 }
 
 object Searchable {

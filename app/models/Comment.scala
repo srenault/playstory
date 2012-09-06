@@ -15,11 +15,11 @@ object Comment {
   }
 
   implicit object CommentFormat extends Format[Comment] {
-    def reads(json: JsValue) = Comment(
+    def reads(json: JsValue): JsResult[Comment] = JsSuccess(Comment(
       (json \ "id").asOpt[String].map(id => new ObjectId(id)).getOrElse(new ObjectId),
       new ObjectId((json \ "author").as[String]),
       (json \ "message").as[String]
-    )
+    ))
 
     def writes(comment: Comment) = Json.obj(
       "id"      -> Json.obj("$oid" -> comment._id.toString),

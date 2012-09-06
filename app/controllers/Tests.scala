@@ -53,28 +53,28 @@ object Tests extends Controller {
         Ok(logs.toString)
       }
 
-      val jsonLog = toJson(Log(new ObjectId,
-                          "project",
-                          "logger",
-                          "className",
-                          new Date,
-                          "file",
-                          "location",
-                          0,
-                          "message",
-                          "method",
-                          "level",
-                          "thread",
-                          Nil))
+//      val jsonLog: JsObject = toJson(Log(new ObjectId,
+                          // "project",
+                          // "logger",
+                          // "className",
+                          // new Date,
+                          // "file",
+                          // "location",
+                          // 0,
+                          // "message",
+                          // "method",
+                          // "level",
+                          // "thread",
+                          // Nil))
 
-      Log.create(jsonLog).map {
-        case LastError(true, _, _, _, _) => {
-          Ok("Insert succeed")
-        }
-        case LastError(false, Some(errMsg), code, errorMsg, doc) => {
-          InternalServerError(errMsg)
-        }
-      }
+      // Log.create(jsonLog).map {
+      //   case LastError(true, _, _, _, _) => {
+      //     Ok("Insert succeed")
+      //   }
+      //   case LastError(false, Some(errMsg), code, errorMsg, doc) => {
+      //     InternalServerError(errMsg)
+      //   }
+      // }
 
       Project.byNameAsync("onconnect").map { project =>
         Ok(project.toString)

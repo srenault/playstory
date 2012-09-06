@@ -34,12 +34,12 @@ object Dashboard extends Controller with Secured with Pulling {
     Logger.info("[Dashboard] Welcome : " + request.user)
 
     Project.byNameAsync("onconnect").onComplete {
-      case Right(None) => request.user.follow("onconnect")
+      case Right(Some(p)) => request.user.follow("onconnect")
       case _ =>
     }
 
     Project.byNameAsync("scanup").onComplete {
-      case Right(None) => request.user.follow("scanup")
+      case Right(Some(p)) => request.user.follow("scanup")
       case _ =>
     }
 
@@ -57,9 +57,9 @@ object Dashboard extends Controller with Secured with Pulling {
     Logger.info("[Dashboard] Waitings logs...")
     AsyncResult {
       implicit val timeout = Timeout(5 second)
-      (StoryActor.ref ? Listen(project)).mapTo[Enumerator[Log]].asPromise.map { chunks =>
+      (StoryActor.ref ? Listen(project)).mapTo[Enumerator[JsValue]].asPromise.map { chunks =>
         Log.create(chunks.map(toJson(_)))
-        implicit val LogComet = Comet.CometMessage[Log](log => wrappedLog(log).toString)
+        implicit val LogComet = Comet.CometMessage[JsValue](log => wrappedLog(log).toString)
         playPulling(chunks).getOrElse(BadRequest)
       }
     }
@@ -151,7 +151,7 @@ object Dashboard extends Controller with Secured with Pulling {
       Log.byId(logRefId).flatMap { logRefOpt =>
         (for {
           logRef <- logRefOpt
-          date   <- Log.date(logRef)
+          date   <- Log.json.date(logRef)
         } yield {
           Log.byProjectAfter(project, date, level, limit).map { logsAfter =>
             Ok(JsArray(
@@ -173,7 +173,7 @@ object Dashboard extends Controller with Secured with Pulling {
       Log.byId(logId).flatMap { logOpt =>
         (for {
           log  <- logOpt
-          date <- Log.date(log)
+          date <- Log.json.date(log)
         } yield {
           val beforeLogs = Log.byProjectBefore(project, date, None, limitBefore)
           val afterLogs = Log.byProjectAfter(project, date, None, limitAfter)
@@ -231,7 +231,7 @@ object Dashboard extends Controller with Secured with Pulling {
       json <- request.body.asJson
       log  <- json.asOpt[Log] //Validation
     } yield {
-      StoryActor.ref ! NewLog(log)
+      StoryActor.ref ! NewLog(json)
       Ok
     }) getOrElse BadRequest
   }
@@ -251,12 +251,11 @@ object Dashboard extends Controller with Secured with Pulling {
   }
 
   private def wrappedInbox(counters: List[(String, Double)])(implicit request: RequestHeader) = {
-    JsArray(
-      counters.map { counter =>
-        JsObject(Seq(
-          "counter" -> Log.LogFormat.counterByLevelJSON(counter),
+    JsArray(counters.map { case(level, count) =>
+        Json.obj(
+          "counter" -> Json.obj("level" -> level, "count" -> count),
           "src" -> JsString(request.uri)
-        ))
+        )
     })
   }
 }

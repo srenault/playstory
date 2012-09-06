@@ -30,15 +30,13 @@ case class QueryBuilder(
       val snapshotFlagJson: Option[JsObject] = if(snapshotFlag) Some(Json.obj("$snapshotFlag" -> true)) else None
       val commentStringJson: Option[JsObject] = commentString.map(cmt => Json.obj("$comment" -> cmt))
 
-      val json = List(queryDocJson,
+      List(queryDocJson,
            sortDocJson,
            hintDocJson,
            explainFlagJson,
            snapshotFlagJson,
            commentStringJson).flatten
       .foldLeft(Json.obj())((q1, q2) => q1 ++ q2)
-      println(json)
-      json
     }
   }
 
