@@ -112,4 +112,4 @@
          });
      };
 
- })(window.PlayStory.Init.Home.Dashboard.Inbox);
+ })(window.PlayStory.Init.Dashboard.Inbox);

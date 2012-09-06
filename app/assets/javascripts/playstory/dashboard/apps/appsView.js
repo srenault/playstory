@@ -22,5 +22,5 @@
         };
     };
 
-})(window.PlayStory.Init.Home.Dashboard.Apps,
+})(window.PlayStory.Init.Dashboard.Apps,
    window.PlayStory.Router);

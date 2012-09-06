@@ -2,7 +2,7 @@
  * Server.js
  */
 
-(function(Dashboard, Feeds) {
+(function(Dashboard) {
 
     Dashboard.Server = function() {
         console.log("[Server] Init Server");
@@ -216,5 +216,4 @@
             });
         });
     };
-})(window.PlayStory.Init.Home.Dashboard,
-   window.PlayStory.Init.Home.Feeds);
+})(window.PlayStory.Init.Dashboard);

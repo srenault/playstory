@@ -35,4 +35,4 @@
          });
      };
 
- })(window.PlayStory.Init.Home.Dashboard);
+ })(window.PlayStory.Init.Dashboard);

@@ -51,5 +51,5 @@
     };
 
 })(window.PlayStory,
-   window.PlayStory.Init.Home.Dashboard.Inbox,
+   window.PlayStory.Init.Dashboard.Inbox,
    window.PlayStory.Router);

@@ -47,5 +47,5 @@
         });
     };
 
-})(window.PlayStory.Init.Home.Dashboard.Tabs,
+})(window.PlayStory.Init.Dashboard.Tabs,
    window.PlayStory.Router);

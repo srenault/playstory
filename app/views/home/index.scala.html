@@ -38,28 +38,28 @@
 <script type="text/javascript" src="@routes.Assets.at("javascripts/ModelsDef.js")"></script>
 
 <!-- Dashboard -->
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/Server.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/search/searchDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/tabs/TabsDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/inbox/inboxDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/apps/appsDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/feeds/feedsPresentDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/feeds/feedsPastDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/search/searchView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/tabs/TabsView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/inbox/inboxView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/apps/appsView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/feeds/feedsView.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/layoutDOM.js")"></script>
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/dashboard/dashboard.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/Server.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/search/searchDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/tabs/TabsDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/inbox/inboxDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/apps/appsDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/feeds/feedsPresentDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/feeds/feedsPastDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/search/searchView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/tabs/TabsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/inbox/inboxView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/apps/appsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/feeds/feedsView.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/layoutDOM.js")"></script>
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/dashboard/dashboard.js")"></script>
 
-<!-- Home -->
-<script type="text/javascript" src="@routes.Assets.at("javascripts/home/home.js")"></script>
+<!-- App -->
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/playstory.js")"></script>
 
 <!-- Init Home page -->
 <script type="text/javascript">
 $(document).ready(function() {
-    var server = PlayStory.Home.Dashboard.Server;
+var server = PlayStory.Dashboard.Server;
     server.fromTemplate('user', @Html(dashboardData.userJson));
     server.fromTemplate('projects', @Html(dashboardData.projectsJson));
 });
