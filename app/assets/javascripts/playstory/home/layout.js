@@ -17,6 +17,7 @@
          this.render = function() {
              elts.$content().append(tmpl({
              }));
+             elts.$content().addClass("home");
          };
 
          this.renderAsAction = Action(function(any, next) {
@@ -26,6 +27,7 @@
 
          this.destroy = function() {
             elts.$content().empty();
+            elts.$content().removeClass("home");
          };
 
          this.destroyAsAction = Action(function(any, next) {

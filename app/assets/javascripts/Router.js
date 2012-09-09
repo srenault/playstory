@@ -28,11 +28,15 @@
              window.addEventListener('hashchange', next);
          };
 
+         var newRouter = function() {
+             return When(onRouteChange)
+                 .map(function(evt) {
+                     return evt.newURL.split('#')[1];
+                 });
+         };
+
          //Interactions
-         var router = When(onRouteChange)
-         .map(function(evt) {
-             return evt.newURL.split('#')[1];
-         });
+         var router = newRouter();
 
          //Actions
          var matchParams = function(routeAsRegex) {
@@ -75,8 +79,19 @@
                  }
              };
 
+             /**
+              * TODO
+              */
+             this.from = function(prev) {
+                 var R = newRouter();
+                 R.filter(function(uri) {
+                     return history.state.prev == prev;
+                 });
+                 //return function(
+             };
+
              this.go = function(route, trigger) {
-                 history.pushState({}, route, "#" + route);
+                 history.pushState({ prev: currentRoute() }, route, "#" + route);
                  if(trigger) loadURL();
              };
 

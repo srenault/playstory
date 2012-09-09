@@ -17,15 +17,6 @@
             inboxView
         );
 
-        //TODO In another file to ensure the loading
-        server.onReceiveFromTemplate('user')
-            .await(PlayStory.Bucket.models('user').setAsAction)
-            .subscribe();
-
-        server.onReceiveFromTemplate('projects')
-            .await(PlayStory.Bucket.collections('projects').setAsAction)
-            .subscribe();
-
         var renderDashboard = layout.renderAsAction.then(
             searchView.dom.renderAsAction
            .and(tabsView.dom.renderAsAction)
@@ -34,11 +25,6 @@
            .and(feedsView.presentDOM.renderAsAction)
            .and(appsView.dom.renderAsAction)
         );
-
-        //render dashboard
-        renderDashboard._do();
-
-        if(Router.currentRoute() == '') Router.go('dashboard/past/all');
 
         //bind events
         tabsView.lazyInit();
@@ -55,7 +41,14 @@
            .and(appsView.dom.destroyAsAction)
         );
 
+        //render dashboard
+        Router.when('dashboard').chain(
+            PlayStory.Home.destroy.and(renderDashboard)
+        );
+
         return {
+            render     : renderDashboard,
+            destroy    : destroyDashboard,
             Server     : server,
             Layout     : layout,
             TabsView   : tabsView,

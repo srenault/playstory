@@ -44,6 +44,7 @@
 <script type="text/javascript" src="@routes.Assets.at("javascripts/ModelsDef.js")"></script>
 
 <!-- Home -->
+<script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/Server.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/home.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/layout.js")"></script>
 <script type="text/javascript" src="@routes.Assets.at("javascripts/playstory/home/menu/menuDOM.js")"></script>
@@ -74,7 +75,7 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-var server = PlayStory.Dashboard.Server;
+    var server = PlayStory.Home.Server;
     server.fromTemplate('user', @Html(dashboardData.userJson));
     server.fromTemplate('projects', @Html(dashboardData.projectsJson));
 });
