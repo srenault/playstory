@@ -42,11 +42,11 @@
         );
 
         //PlayStory.Home.destroy.and(renderDashboard)
-        Router.from('home').when('dashboard').chain( 
-            PlayStory.Home.destroy.then(renderDashboard)
+        Router.from('home').when('dashboard').chain(
+            PlayStory.Home.destroy.and(renderDashboard) //TODO why 'then' don't work ?
         );
 
-        Router.fromStart().when('dashboard', renderDashboard);
+        //Router.fromStart().when('dashboard', renderDashboard);
 
         return {
             render     : renderDashboard,

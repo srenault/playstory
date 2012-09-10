@@ -55,15 +55,14 @@
             router.match(r).subscribe();
 
             if(routeAsRegex.test(currentRoute())) {
-                var params = RouterUtils.matchParams(currentRoute(), routeAsRegex);
-                if(params) composedActions._do(params);
+                loadURL();
             }
         };
 
         var PureRouter = function(router) {
-            return function(specifiedRoute, action) {
+            return function(route, action) {
                 if(action) {
-                    subscribe(router, specifiedRoute, [action]);
+                    subscribe(router, route, [action]);
                     return null;
                 } else {
                     return {
@@ -72,17 +71,28 @@
                             for(var index = 0; index<arguments.length; index++) {
                                 actions.push(arguments[index]);
                             }
-                            subscribe(router, specifiedRoute, actions);
+                            subscribe(router, route, actions);
                             return {
                                 and: function() {
                                     var mergedActions = [];
                                     for(var index = 0; index<arguments.length; index++) {
                                         mergedActions.push(arguments[index]);
                                     }
-                                    subscribe(router, specifiedRoute, mergedActions);
+                                    subscribe(router, route, mergedActions);
                                     return this;
                                 }
                             };
+                        },
+                        lazy: function(futureActions) {
+                            console.log("hey");
+                            var A = Action(function(any, next) {
+                                var actions = futureActions().reduce(function(prevAction, currentAction) {
+                                    return prevAction.then(currentAction);
+                                });
+                                this.then(actions);
+                                next(any);
+                            });
+                            subscribe(router, route, [A]);
                         }
                     };
                 };
@@ -97,8 +107,12 @@
             this.when = PureRouter(defaultRouter);
 
             this.from = function(prev) {
-                var router = newRouter();
+                var router = When(onRouteChange)
+                             .map(function(evt) {
+                                 return evt.newURL.split('#')[1];
+                             });
                 router.filter(function() {
+                    alert('history');
                     return history.state ? (history.state.prev == prev) : false;
                 });
                 return {

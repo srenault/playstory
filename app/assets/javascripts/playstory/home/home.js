@@ -42,11 +42,11 @@
         /*
          * Lazy init
          */
-        // Router.from('dashboard').when('home').chain(
-        //     PlayStory.Dashboard.destroy.and(renderHome)
-        // );
+        Router.from('dashboard').when('home').lazy(function() {
+            return PlayStory.Dashboard.destroy.and(renderHome);
+        });
 
-        Router.fromStart().when('home', renderDashboard);
+        //Router.fromStart().when('home', renderHome);
 
         return {
             render       : renderHome,

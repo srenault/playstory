@@ -27,6 +27,7 @@
         });
 
         this.destroy = function() {
+            alert('destroy');
             elts.$overview().remove();
         };
 
