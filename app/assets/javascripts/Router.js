@@ -15,11 +15,7 @@
         };
 
         var loadURL = function() {
-            console.log("hey");
             subscribers.forEach(function(callback, index) {
-                if(index == 21) {
-                    console.log('here');
-                }
                 callback({
                     newURL: '#' + currentRoute()
                 });
