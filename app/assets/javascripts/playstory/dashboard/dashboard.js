@@ -42,10 +42,8 @@
         );
 
         //PlayStory.Home.destroy.and(renderDashboard)
-        Router.from('home').when('dashboard', Action(function(any, next) {
-            alert('OOOOOOOOoooooo');
-            return next(any);
-        }));
+        Router.from('home').when('dashboard', destroyDashboard.and(renderDashboard));
+        Router.fromStart().when('dashboard', renderDashboard);
 
         return {
             render     : renderDashboard,
