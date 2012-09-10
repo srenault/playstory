@@ -41,8 +41,7 @@
            .and(appsView.dom.destroyAsAction)
         );
 
-        //render dashboard
-        Router.when('dashboard').chain(
+        Router.from('home').when('dashboard').chain(
             PlayStory.Home.destroy.and(renderDashboard)
         );
 

@@ -4,138 +4,150 @@
 
 (function(PlayStory, RouterUtils) {
 
-     PlayStory.Router = (function() {
-         console.log("[PlayStory.Router] Init play story router");
+    PlayStory.Router = (function() {
+        console.log("[PlayStory.Router] Init play story router");
 
-         var self=this,
-             subscribers = [];
+        var self=this,
+            subscribers = [];
 
-         var currentRoute = function() {
-             return window.location.hash.substr(1,window.location.hash.length);
-         };
+        var currentRoute = function() {
+            return window.location.hash.substr(1,window.location.hash.length);
+        };
 
-         var loadURL = function() {
-             subscribers.forEach(function(callback) {
-                 callback({
-                     newURL: '#' + currentRoute()
-                 });
-             });
-         };
+        var loadURL = function() {
+            subscribers.forEach(function(callback) {
+                callback({
+                    newURL: '#' + currentRoute()
+                });
+            });
+        };
 
-         //Events
-         var onRouteChange = function(next) {
-             subscribers.push(next);
-             window.addEventListener('hashchange', next);
-         };
+        var onRouteChange = function(next) {
+            subscribers.push(next);
+            window.addEventListener('hashchange', next);
+        };
 
-         var newRouter = function() {
-             return When(onRouteChange)
-                 .map(function(evt) {
-                     return evt.newURL.split('#')[1];
-                 });
-         };
+        var newRouter =  function() {
+            return When(onRouteChange)
+                  .map(function(evt) {
+                      return evt.newURL.split('#')[1];
+                  });
+        };
 
-         //Interactions
-         var router = newRouter();
+        var defaultRouter = newRouter();
 
-         //Actions
-         var matchParams = function(routeAsRegex) {
-             return Action(function(route, next) {
-                 var params= RouterUtils.matchParams(currentRoute(), routeAsRegex);
-                 next(params);
-             });
-         };
+        var matchParams = function(routeAsRegex) {
+            return Action(function(route, next) {
+                var params= RouterUtils.matchParams(currentRoute(), routeAsRegex);
+                next(params);
+            });
+        };
 
-         var subscribe = function(route, actions) {
-             var routeAsRegex = RouterUtils.routeAsRegex(route);
+        var subscribe = function(router, route, actions) {
+            var routeAsRegex = RouterUtils.routeAsRegex(route);
 
-             actions.unshift(matchParams(routeAsRegex));
-             var composedActions = actions.reduce(function(prevAction, currentAction) {
-                 return prevAction.then(currentAction);
-             });
+            actions.unshift(matchParams(routeAsRegex));
+            var composedActions = actions.reduce(function(prevAction, currentAction) {
+                return prevAction.then(currentAction);
+            });
 
-             var r = Match.regex(routeAsRegex, matchParams(routeAsRegex).then(composedActions));
-             router.match(r).subscribe();
+            var r = Match.regex(routeAsRegex, matchParams(routeAsRegex).then(composedActions));
+            router.match(r).subscribe();
 
-             if(routeAsRegex.test(currentRoute())) {
-                 var params = RouterUtils.matchParams(currentRoute(), routeAsRegex);
-                 if(params) composedActions._do(params);
-             }
-         };
+            if(routeAsRegex.test(currentRoute())) {
+                var params = RouterUtils.matchParams(currentRoute(), routeAsRegex);
+                if(params) composedActions._do(params);
+            }
+        };
 
-         return new (function() {
-             var that = this,
-                 route = null;
+        var PureRouter = function(router) {
+            return function(specifiedRoute, action) {
+                var route = specifiedRoute;
 
-             this.currentRoute = currentRoute;
+                if(action) {
+                    subscribe(router, specifiedRoute, [action]);
+                    return null;
+                } else {
+                    return {
+                        chain: function() {
+                            var actions = [];
+                            for(var index = 0; index<arguments.length; index++) {
+                                actions.push(arguments[index]);
+                            }
+                            subscribe(router, route, actions);
 
-             this.when = function(specifiedRoute, action) {
-                 route = specifiedRoute;
-                 if(action) {
-                     subscribe(specifiedRoute, [action]);
-                     return null;
-                 } else {
-                     return that;
-                 }
-             };
+                            return {
+                                and: function() {
+                                    var mergedActions = [];
+                                    for(var index = 0; index<arguments.length; index++) {
+                                        mergedActions.push(arguments[index]);
+                                    }
+                                    subscribe(router, route, mergedActions);
+                                    return this;
+                                }
+                            };
+                        }
+                    };
+                };
+            };
+        };
 
-             /**
-              * TODO
-              */
-             this.from = function(prev) {
-                 var R = newRouter();
-                 R.filter(function(uri) {
-                     return history.state.prev == prev;
-                 });
-                 //return function(
-             };
+        return new (function() {
+            var that = this,
+                route = null;
 
-             this.go = function(route, trigger) {
-                 history.pushState({ prev: currentRoute() }, route, "#" + route);
-                 if(trigger) loadURL();
-             };
+            this.currentRoute = currentRoute;
 
-             this.goAsAction = function(uriPattern, buildURI, trigger) {
-                 return Action(function(any, next) {
-                     var uri = buildURI(uriPattern, any);
-                     that.go(uri, trigger);
-                     next(any);
-                 });
-             };
+            this.when = PureRouter(defaultRouter);
 
-             this.chain = function() {
-                 var actions = [];
-                 for(var index = 0; index<arguments.length; index++) {
-                     actions.push(arguments[index]);
-                 }
-                 subscribe(route, actions);
-                 route = route;
+            /**
+             * TODO
+             */
+            this.from = function(prev) {
+                var specializedRouter = newRouter();
+                specializedRouter.filter(function(any) {
+                    alert('from');
+                    return history.state.prev == prev;
+                });
+                return {
+                    when: PureRouter(specializedRouter)
+                };
+            };
 
-                 return {
-                     and: function() {
-                         var mergedActions = [];
-                         for(var index = 0; index<arguments.length; index++) {
-                             mergedActions.push(arguments[index]);
-                         }
-                         subscribe(route, mergedActions);
-                         return this;
-                      }
-                  };
-              };
+            this.go = function(route, trigger) {
+                history.pushState({ prev: currentRoute() }, route, "#" + route);
+                if(trigger) loadURL();
+            };
 
-             this.isMatchCurrentRoute = function() {
-                 for(var index = 0; index<arguments.length; index++) {
-                     var uriPattern = arguments[index];
-                     var routeAsRegex = RouterUtils.routeAsRegex(uriPattern);
-                     return routeAsRegex.test(currentRoute());
-                 }
-             };
+            this.forward = function() {
+                history.forward();
+            };
 
-             this.matchCurrentRoute = function(patternURI) {
-                 var routeAsRegex = RouterUtils.routeAsRegex(patternURI);
-                 return RouterUtils.matchParams(currentRoute(), routeAsRegex);
-             };
-         })();
-     })();
+            this.back = function() {
+                history.back();
+            };
 
- })(window.PlayStory || {}, window.RouterUtils || {});
+            this.goAsAction = function(uriPattern, buildURI, trigger) {
+                return Action(function(any, next) {
+                    var uri = buildURI(uriPattern, any);
+                    that.go(uri, trigger);
+                    next(any);
+                });
+            };
+
+            this.isMatchCurrentRoute = function() {
+                for(var index = 0; index<arguments.length; index++) {
+                    var uriPattern = arguments[index];
+                    var routeAsRegex = RouterUtils.routeAsRegex(uriPattern);
+                    return routeAsRegex.test(currentRoute());
+                }
+            };
+
+            this.matchCurrentRoute = function(patternURI) {
+                var routeAsRegex = RouterUtils.routeAsRegex(patternURI);
+                return RouterUtils.matchParams(currentRoute(), routeAsRegex);
+            };
+        })();
+    })();
+
+})(window.PlayStory || {}, window.RouterUtils || {});
