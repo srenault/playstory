@@ -39,9 +39,14 @@
         menuView.lazyInit();
         overviewView.lazyInit();
 
-        /*Router.when('home').chain(
-            PlayStory.Dashboard.destroy.and(renderHome)
-        );*/
+        /*
+         * Lazy init
+         */
+        // Router.from('dashboard').when('home').chain(
+        //     PlayStory.Dashboard.destroy.and(renderHome)
+        // );
+
+        Router.fromStart().when('home', renderDashboard);
 
         return {
             render       : renderHome,

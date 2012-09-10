@@ -28,6 +28,7 @@
              commentTmpl = _.template($("#comment_tmpl").html());
 
          this.render = function() {
+             alert('render');
              elts.$middleColumn().append(tmpl({
              }));
          };

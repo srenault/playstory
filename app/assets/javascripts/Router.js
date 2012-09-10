@@ -27,10 +27,14 @@
             window.addEventListener('hashchange', next);
         };
 
-        var defaultRouter = When(onRouteChange)
-                           .map(function(evt) {
-                               return evt.newURL.split('#')[1];
-                           });
+        var newRouter = function() {
+            return When(onRouteChange)
+                   .map(function(evt) {
+                       return evt.newURL.split('#')[1];
+                   });
+        };
+
+        var defaultRouter = newRouter();
 
         var matchParams = function(routeAsRegex) {
             return Action(function(route, next) {
@@ -93,14 +97,22 @@
             this.when = PureRouter(defaultRouter);
 
             this.from = function(prev) {
-                var specializedRouter = When(onRouteChange).map(function(evt) {
-                    return evt.newURL.split('#')[1];
-                }).filter(function() {
-                    return history.state.prev == prev;
+                var router = newRouter();
+                router.filter(function() {
+                    return history.state ? (history.state.prev == prev) : false;
                 });
-
                 return {
-                    when: PureRouter(specializedRouter)
+                    when: PureRouter(router)
+                };
+            };
+
+            this.fromStart = function() {
+                var router = newRouter();
+                router.filter(function() {
+                    return !history.state || !history.state.prev;
+                });
+                return {
+                    when: PureRouter(router)
                 };
             };
 
