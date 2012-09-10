@@ -25,6 +25,9 @@
 
         var onRouteChange = function(next) {
             subscribers.push(next);
+            window.addEventListener('hashchange', function(evt) {
+                previousRoute = evt.oldURL.split('#')[1];
+            });
             window.addEventListener('hashchange', next);
         };
 
@@ -84,14 +87,9 @@
                                 }
                             };
                         },
-                        lazy: function(futureActions) {
-                            console.log("hey");
+                        lazy: function(actions) {
                             var A = Action(function(any, next) {
-                                var actions = futureActions().reduce(function(prevAction, currentAction) {
-                                    return prevAction.then(currentAction);
-                                });
-                                this.then(actions);
-                                next(any);
+                                actions().onComplete(next)._do(any);
                             });
                             subscribe(router, route, [A]);
                         }

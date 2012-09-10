@@ -46,7 +46,7 @@
             return PlayStory.Dashboard.destroy.and(renderHome);
         });
 
-        //Router.fromStart().when('home', renderHome);
+        Router.fromStart().when('home', renderHome);
 
         return {
             render       : renderHome,
