@@ -5,11 +5,11 @@
 (function(PlayStory, Init, Router) {
 
     Init.Home.init = function() {
-        var server     = new Init.Home.Server();
-        var layout    = new Init.Home.Layout();
-        var menuView  = new Init.Home.Menu.MenuView();
-        var discoverView  = new Init.Home.Discover.DiscoverView();
-        var overviewView  = new Init.Home.Overview.OverviewView();
+        var server       = new Init.Home.Server();
+        var layout       = new Init.Home.Layout();
+        var menuView     = new Init.Home.Menu.MenuView();
+        var discoverView = new Init.Home.Discover.DiscoverView();
+        var overviewView = new Init.Home.Overview.OverviewView();
 
         //TODO In another file to ensure the loading
         server.onReceiveFromTemplate('user')
@@ -31,8 +31,10 @@
            .and(overviewView.dom.destroyAsAction)
         );
 
-        if(Router.currentRoute() == '') Router.go('home');
-        renderHome._do();
+        if(Router.currentRoute() == '') {
+            Router.go('home');
+            renderHome._do();
+        }
 
         menuView.lazyInit();
         overviewView.lazyInit();

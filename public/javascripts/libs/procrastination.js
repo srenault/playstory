@@ -69,9 +69,9 @@
 
 		M.fn.filter = function(predicate){
 			return this.flatmap(function(v){
-				if(predicate(v))
+				if(predicate(v)) 
 					return this.unit(v)
-				else
+				else 
 					return this.zero()
 			})
 		}

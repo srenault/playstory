@@ -41,9 +41,11 @@
            .and(appsView.dom.destroyAsAction)
         );
 
-        Router.from('home').when('dashboard').chain(
-            PlayStory.Home.destroy.and(renderDashboard)
-        );
+        //PlayStory.Home.destroy.and(renderDashboard)
+        Router.from('home').when('dashboard', Action(function(any, next) {
+            alert('OOOOOOOOoooooo');
+            return next(any);
+        }));
 
         return {
             render     : renderDashboard,

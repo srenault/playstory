@@ -15,7 +15,11 @@
         };
 
         var loadURL = function() {
-            subscribers.forEach(function(callback) {
+            console.log("hey");
+            subscribers.forEach(function(callback, index) {
+                if(index == 21) {
+                    console.log('here');
+                }
                 callback({
                     newURL: '#' + currentRoute()
                 });
@@ -27,14 +31,10 @@
             window.addEventListener('hashchange', next);
         };
 
-        var newRouter =  function() {
-            return When(onRouteChange)
-                  .map(function(evt) {
-                      return evt.newURL.split('#')[1];
-                  });
-        };
-
-        var defaultRouter = newRouter();
+        var defaultRouter = When(onRouteChange)
+                           .map(function(evt) {
+                               return evt.newURL.split('#')[1];
+                           });
 
         var matchParams = function(routeAsRegex) {
             return Action(function(route, next) {
@@ -62,8 +62,6 @@
 
         var PureRouter = function(router) {
             return function(specifiedRoute, action) {
-                var route = specifiedRoute;
-
                 if(action) {
                     subscribe(router, specifiedRoute, [action]);
                     return null;
@@ -74,15 +72,14 @@
                             for(var index = 0; index<arguments.length; index++) {
                                 actions.push(arguments[index]);
                             }
-                            subscribe(router, route, actions);
-
+                            subscribe(router, specifiedRoute, actions);
                             return {
                                 and: function() {
                                     var mergedActions = [];
                                     for(var index = 0; index<arguments.length; index++) {
                                         mergedActions.push(arguments[index]);
                                     }
-                                    subscribe(router, route, mergedActions);
+                                    subscribe(router, specifiedRoute, mergedActions);
                                     return this;
                                 }
                             };
@@ -93,22 +90,19 @@
         };
 
         return new (function() {
-            var that = this,
-                route = null;
+            var self = this;
 
             this.currentRoute = currentRoute;
 
             this.when = PureRouter(defaultRouter);
 
-            /**
-             * TODO
-             */
             this.from = function(prev) {
-                var specializedRouter = newRouter();
-                specializedRouter.filter(function(any) {
-                    alert('from');
+                var specializedRouter = When(onRouteChange).map(function(evt) {
+                    return evt.newURL.split('#')[1];
+                }).filter(function() {
                     return history.state.prev == prev;
                 });
+
                 return {
                     when: PureRouter(specializedRouter)
                 };
@@ -130,7 +124,7 @@
             this.goAsAction = function(uriPattern, buildURI, trigger) {
                 return Action(function(any, next) {
                     var uri = buildURI(uriPattern, any);
-                    that.go(uri, trigger);
+                    self.go(uri, trigger);
                     next(any);
                 });
             };
