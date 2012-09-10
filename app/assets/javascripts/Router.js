@@ -8,7 +8,8 @@
         console.log("[PlayStory.Router] Init play story router");
 
         var self=this,
-            subscribers = [];
+            subscribers = [],
+            previousRoute;
 
         var currentRoute = function() {
             return window.location.hash.substr(1,window.location.hash.length);
@@ -107,13 +108,10 @@
             this.when = PureRouter(defaultRouter);
 
             this.from = function(prev) {
-                var router = When(onRouteChange)
-                             .map(function(evt) {
-                                 return evt.newURL.split('#')[1];
-                             });
-                router.filter(function() {
-                    alert('history');
-                    return history.state ? (history.state.prev == prev) : false;
+                var router = When(onRouteChange).map(function(evt) {
+                    return evt.newURL.split('#')[1];
+                }).filter(function() {
+                    return previousRoute == prev;
                 });
                 return {
                     when: PureRouter(router)
@@ -121,9 +119,10 @@
             };
 
             this.fromStart = function() {
-                var router = newRouter();
-                router.filter(function() {
-                    return !history.state || !history.state.prev;
+                var router = When(onRouteChange).map(function(evt) {
+                    return evt.newURL.split('#')[1];
+                }).filter(function() {
+                    return !previousRoute;
                 });
                 return {
                     when: PureRouter(router)
@@ -131,7 +130,8 @@
             };
 
             this.go = function(route, trigger) {
-                history.pushState({ prev: currentRoute() }, route, "#" + route);
+                previousRoute =  currentRoute();
+                history.pushState({ }, route, "#" + route);
                 if(trigger) loadURL();
             };
 
