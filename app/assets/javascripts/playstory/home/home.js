@@ -11,7 +11,6 @@
         var discoverView = new Init.Home.Discover.DiscoverView();
         var overviewView = new Init.Home.Overview.OverviewView();
 
-        //TODO In another file to ensure the loading
         server.onReceiveFromTemplate('user')
             .await(PlayStory.Bucket.models('user').setAsAction)
             .subscribe();
@@ -39,9 +38,6 @@
         menuView.lazyInit();
         overviewView.lazyInit();
 
-        /*
-         * Lazy init
-         */
         Router.from('dashboard').when('home').lazy(function() {
             return PlayStory.Dashboard.destroy.and(renderHome);
         });

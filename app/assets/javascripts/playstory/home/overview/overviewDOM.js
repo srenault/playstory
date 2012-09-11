@@ -35,10 +35,6 @@
             next(any);
         });
 
-        this.onDashboardClick = function(next) {
-            elts.$dashboard().click(next);
-        };
-
         return this;
     };
 

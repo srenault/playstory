@@ -42,8 +42,8 @@
         );
 
         //PlayStory.Home.destroy.and(renderDashboard)
-        Router.from('home').when('dashboard', PlayStory.Home.destroy.and(renderDashboard));
-        Router.fromStart().when('dashboard', renderDashboard);
+        Router.from('home').when('dashboard*paths', PlayStory.Home.destroy.and(renderDashboard));
+        Router.fromStart().when('dashboard*paths', renderDashboard);
 
         return {
             render     : renderDashboard,
