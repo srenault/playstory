@@ -4,12 +4,11 @@
 
 # Home page
 GET     /                                       controllers.Application.index()
-GET     /signin                                 controllers.Application.signin()
-GET     /signin/callback                        controllers.Application.signinCallback()
+GET     /openid                                 controllers.Application.openid()
+GET     /openid/callback                        controllers.Application.openidCallback()
 
 GET     /signout                                controllers.Application.signout()
 
-GET     /home                                   controllers.Dashboard.home()
 GET     /dashboard/all/bookmarks                controllers.Dashboard.bookmarks()
 GET     /dashboard/:project/search              controllers.Dashboard.search(project: String, keywords: List[String])
 GET     /dashboard/:project/inbox               controllers.Dashboard.inbox(project: String)
@@ -26,6 +25,3 @@ POST    /dashboard/eval                         controllers.Dashboard.eval()
 # Map static resources from the /public folder to the /assets URL path
 
 GET     /assets/*file                           controllers.Assets.at(path="/public", file)
-
-GET     /test                                   controllers.Tests.test()
-GET     /playstory/home                         controllers.Application.home()

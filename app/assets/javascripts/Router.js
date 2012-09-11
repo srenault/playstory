@@ -89,6 +89,7 @@
                         },
                         lazy: function(actions) {
                             var A = Action(function(any, next) {
+                                alert('lazy');
                                 actions().onComplete(next)._do(any);
                             });
                             subscribe(router, route, [A]);
@@ -106,10 +107,11 @@
             this.when = PureRouter(defaultRouter);
 
             this.from = function(prev) {
+                var prevRouteAsRegex = RouterUtils.routeAsRegex(prev);
                 var router = When(onRouteChange).map(function(evt) {
                     return evt.newURL.split('#')[1];
                 }).filter(function() {
-                    return previousRoute == prev;
+                    return prevRouteAsRegex.test(previousRoute);
                 });
                 return {
                     when: PureRouter(router)

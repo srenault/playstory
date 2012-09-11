@@ -14,23 +14,26 @@ import play.api.libs.json.Json._
 import play.api.libs.iteratee._
 import reactivemongo.core.commands.LastError
 
-import models.User
+import models.{ User, Project, DashboardData }
 
-object Application extends Controller with GoogleOpenID {
+object Application extends Controller with GoogleOpenID with Secured {
 
-  def index = Action { implicit request =>
-    Logger.info("Welcome unauthenticated user !")
-    Ok(views.html.signin())
+  def index = Authenticated { implicit request =>
+    Logger.info("Welcome authenticated user !")
+    Async {
+      Project.all().map { projects =>
+        Ok(views.html.playstory.index(
+          request.user,
+          DashboardData(request.user, projects)
+        ))
+      }
+    }
   }
 
-  def home = Action { implicit request =>
-    Ok(views.html.playstory.home.index())
-  }
-
-  def signin = Action { implicit request =>
+  def openid = Action { implicit request =>
     Async {
       signinWithGoogle(
-        routes.Application.signinCallback.absoluteURL(),
+        routes.Application.openidCallback.absoluteURL(),
         url => Redirect(url),
         error => {
             Logger.error("[OpenID] Failed to sign in with Google: " + error)
@@ -40,7 +43,7 @@ object Application extends Controller with GoogleOpenID {
     }
   }
 
-  def signinCallback = Action { implicit request =>
+  def openidCallback = Action { implicit request =>
     Logger.info("[OpenID] Receiving user info...")
 
     Async {
@@ -55,11 +58,11 @@ object Application extends Controller with GoogleOpenID {
           User.createIfNot(user).map {
             case None => {
               Logger.info("[OpenID] Authentication successful: " + email)
-              Redirect(routes.Dashboard.home).withSession("user" -> email)
+              Redirect(routes.Application.index).withSession("user" -> email)
             }
             case Some(LastError(true, _, _, _, _)) => {
               Logger.info("[OpenID] Authentication successful - user created")
-              Redirect(routes.Dashboard.home).withSession("user" -> email)
+              Redirect(routes.Application.index).withSession("user" -> email)
             }
             case _ => {
               Logger.info("[OpenID] Authentication failed")

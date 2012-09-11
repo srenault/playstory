@@ -168,21 +168,27 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     collectAsync.update[JsValue, JsValue](byId, toComments)
   }
 
-  implicit val LogDef: Reads[(String, String, String)] = {
+  implicit val readFromWeb = {
     (
       (__ \ 'project).read[String] and
       (__ \ 'logger).read[String] and
-      (__ \ 'className).read[String]
+      (__ \ 'className).read[String] and
+      (__ \ 'date).read[Date] and
+      (__ \ 'file).read[String] and
+      (__ \ 'location).read[String] and
+      (__ \ 'line).read[Long] and
+      (__ \ 'message).read[String] and
+      (__ \ 'method).read[String] and
+      (__ \ 'level).read[String] and
+      (__ \ 'thread).read[String]
     ) tupled
+  }
 
-    // (__ \ 'date).read[Date]
-    // (__ \ 'file).read[String]
-    // (__ \ "location").read[String] and
-    // (__ \ "line").read[Long] and
-    // (__ \ "message").read[String] and
-    // (__ \ "method").read[String] and
-    // (__ \ "level").read[String] and
-    // (__ \ "thread").read[String](Log, unlift(Log.unapply))
+  implicit val writeToMongo = {
+    (__ \ "_id").json.put(
+      (__ \ "_id").json.pick.transform { 
+        (json:JsValue) => Json.obj("$oid" -> (json \ "_id"))
+      })
   }
 
   implicit object LogFormat extends Format[Log] {

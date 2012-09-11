@@ -30,7 +30,7 @@ import models.{ Log, User, Project, Comment, Searchable, DashboardData }
 
 object Dashboard extends Controller with Secured with Pulling {
 
-  def home = Authenticated { implicit request =>
+  def index = Authenticated { implicit request =>
     Logger.info("[Dashboard] Welcome : " + request.user)
 
     Project.byNameAsync("onconnect").onComplete {
