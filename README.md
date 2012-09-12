@@ -77,6 +77,20 @@ Router.when('feeds/:id').lazy(function() {
  server.onReceive('feeds/:id/coments').await(actions).subscribe();
 `
 
+`
+ server.onReceiveFromTemplate(model)
+       .await(PlayStory.Bucket.models(model).setAsAction)
+       .subscribe();
+`
+
+#### DOM ####
+
+`
+ When(event)
+ .await(actions)
+ .subscribe();
+`
+
 #### Bucket ####
 
 ##### Collection #####
