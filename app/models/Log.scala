@@ -184,7 +184,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     ) tupled
   }
 
-  implicit val writeToMongo = {
+  implicit val writeForMongo = {
     (__ \ "_id").json.put(
       (__ \ "_id").json.pick.transform { 
         (json:JsValue) => Json.obj("$oid" -> (json \ "_id"))
