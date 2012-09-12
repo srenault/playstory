@@ -78,17 +78,15 @@ Router.when('feeds/:id').lazy(function() {
 `
 
 `
- server.onReceiveFromTemplate(model)
-       .await(PlayStory.Bucket.models(model).setAsAction)
+ server.onReceiveFromTemplate(model)    
+       .await(PlayStory.Bucket.models(model).setAsAction)    
        .subscribe();
 `
 
 #### DOM ####
 
 `
- When(event)
- .await(actions)
- .subscribe();
+ When(event).await(actions).subscribe();
 `
 
 #### Bucket ####
