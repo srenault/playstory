@@ -58,13 +58,13 @@ Router.when('uri/:param').lazy(function() {
 ```
 
 ```javascript
- Router.from("page_name")
+ Router.from('page')
        .when('uri/:param')
        .chain(action1, action2)
 ```
 
 ```javascript
- Router.go('page_name', true)
+ Router.go('page', true)
 ```
 
 ```javascript
