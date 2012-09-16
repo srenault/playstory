@@ -34,33 +34,37 @@ We usually do a lot to manage a view :
 My javascript Router have some interesting features:
 
 ```javascript
- Router.when('feeds/:id', action1.then(action2))
+ Router.when('uri/:param1', action1.then(action2))
 ```
 
 ```javascript
- Router.when('feeds/:id').chain(action1, action2)
+ Router.when('uri/:param1').chain(action1, action2)
 ```
 
 ```javascript
- Router.when('feeds/:id').par(action1, action2)
+ Router.when('uri/:param1').par(action1, action2)
 ```
 
 ```javascript
-Router.when('feeds/:id').lazy(function() {
+Router.when('uri/:param1').lazy(function() {
      return action1.then(action);
 });
 ```
 
 ```javascript
- Router.fromStart().when('feeds/:id').chain(action1, action2)
+ Router.fromStart()
+       .when('uri/param1')
+       .chain(action1, action2)
 ```
 
 ```javascript
- Router.from("home").when('feeds/:id').chain(action1, action2)
+ Router.from("page_name")
+       .when('uri/:param1')
+       .chain(action1, action2)
 ```
 
 ```javascript
- Router.go("dashboard, true)
+ Router.go('page_name', true)
 ```
 
 ```javascript
@@ -74,11 +78,15 @@ Router.when('feeds/:id').lazy(function() {
 #### Server ####
 
 ```javascript
- server.onReceive('feeds/:id/coments').await(actions).subscribe();
+ server.onReceive('uri/:param1')
+       .await(actions)
+       .subscribe();
 ```
 
 ```javascript
- server.onReceiveFromTemplate(model).await(PlayStory.Bucket.models(model).setAsAction).subscribe();
+ server.onReceiveFromTemplate(model)
+       .await(actions)
+       .subscribe();
 ```
 
 #### DOM ####
@@ -92,43 +100,43 @@ Router.when('feeds/:id').lazy(function() {
 ##### Collection #####
 
 ```javascript
-Bucket.collections(name).get()
+Bucket.collections('name').get()
 ```
 
 ```javascript
-Bucket.collections(name).first()
+Bucket.collections('name').first()
 ```
 
 ```javascript
-Bucket.collections(name).last()
+Bucket.collections('name').last()
 ```
 
 ```javascript
-Bucket.collections(name).size()
+Bucket.collections('name').size()
 ```
 
 ```javascript
-Bucket.collections(name).put(model)
+Bucket.collections('name').put(model)
 ```
 
 ```javascript
-Bucket.collections(name).set(collection)
+Bucket.collections('name').set(collection)
 ```
 
 ```javascript
-Bucket.collections(name).reset()
+Bucket.collections('name').reset()
 ```
 
 ```javascript
-Bucket.collections(name).destroy()
+Bucket.collections('name').destroy()
 ```
 
 ##### Model #####
 
 ```javascript
-Bucket.model(name).get()
+Bucket.model('name').get()
 ```
 
 ```javascript
-Bucket.model(name).set()
+Bucket.model('name').set(model)
 ```
