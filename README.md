@@ -34,32 +34,32 @@ We usually do a lot to manage a view :
 My javascript Router have some interesting features:
 
 ```javascript
- Router.when('uri/:param1', action1.then(action2))
+ Router.when('uri/:param', action1.then(action2))
 ```
 
 ```javascript
- Router.when('uri/:param1').chain(action1, action2)
+ Router.when('uri/:param').chain(action1, action2)
 ```
 
 ```javascript
- Router.when('uri/:param1').par(action1, action2)
+ Router.when('uri/:param').par(action1, action2)
 ```
 
 ```javascript
-Router.when('uri/:param1').lazy(function() {
+Router.when('uri/:param').lazy(function() {
      return action1.then(action2);
 });
 ```
 
 ```javascript
  Router.fromStart()
-       .when('uri/param1')
+       .when('uri/:param')
        .chain(action1, action2)
 ```
 
 ```javascript
  Router.from("page_name")
-       .when('uri/:param1')
+       .when('uri/:param')
        .chain(action1, action2)
 ```
 
@@ -78,7 +78,7 @@ Router.when('uri/:param1').lazy(function() {
 #### Server ####
 
 ```javascript
- server.onReceive('uri/:param1')
+ server.onReceive('uri/:param')
        .await(actions)
        .subscribe();
 ```
