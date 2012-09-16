@@ -47,7 +47,7 @@ My javascript Router have some interesting features:
 
 ```javascript
 Router.when('uri/:param1').lazy(function() {
-     return action1.then(action);
+     return action1.then(action2);
 });
 ```
 
