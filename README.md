@@ -84,7 +84,7 @@ Router.when('uri/:param').lazy(function() {
 ```
 
 ```javascript
- server.onReceiveFromTemplate(model)
+ server.onReceiveFromTemplate('model')
        .await(actions)
        .subscribe();
 ```
