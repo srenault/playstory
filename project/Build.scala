@@ -15,6 +15,7 @@ object ApplicationBuild extends Build {
   )
 
   val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
-    resolvers += "sgodbillon" at "https://bitbucket.org/sgodbillon/repository/raw/master/snapshots/"
+    resolvers += "sgodbillon" at "https://bitbucket.org/sgodbillon/repository/raw/master/snapshots/",
+    resolvers += "scala tools" at "https://oss.sonatype.org/content/repositories/releases/"
   )
 }

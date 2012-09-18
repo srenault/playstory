@@ -21,13 +21,13 @@
             }
 
             var feed = {
-                id: data.log._id.$oid ? data.log._id.$oid : data.log._id,
+                id: data.log._id,
                 realName: project.realName,
                 project: {
                     name: project.name
                 },
                 avatar: project.avatar,
-                time: new Date(data.log.date.$date),
+                time: new Date(data.log.date),
                 level: data.log.method,
                 message: data.log.message,
                 comments: data.log.comments || []

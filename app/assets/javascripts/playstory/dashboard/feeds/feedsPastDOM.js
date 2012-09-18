@@ -153,13 +153,12 @@
 
          this.displayNewFeed = function(limit) {
              return Action(function(feed, next) {
-                 console.log(feed);
                  elts.$feedsList().prepend(feedTmpl({
                      feed: feed,
                      commentView: function(comment) {
                          return commentTmpl({
-                             author: comment.author,
-                             message: comment.message
+                             author: comment.author || 'n/a',
+                             message: comment.message || 'n/a'
                          });
                      }
                  }));

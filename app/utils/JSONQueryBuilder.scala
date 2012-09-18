@@ -112,6 +112,8 @@ object JsonQueryHelpers {
   import JsonQueryBuilderImplicits._
 
   def find(collection: Collection, query: QueryBuilder, opts: QueryOpts = QueryOpts()) :FlattenedCursor[JsValue] = {
-    collection.find(query.makeMergedBuffer, opts)(ChannelBufferWriter, DefaultBSONReaderHandler, JsValueReader)
+    import scala.concurrent.ExecutionContext.Implicits.global
+    val ec = implicitly[scala.concurrent.ExecutionContext]
+    collection.find(query.makeMergedBuffer, opts)(ChannelBufferWriter, DefaultBSONReaderHandler, JsValueReader, ec)
   }
 }

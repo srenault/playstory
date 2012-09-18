@@ -227,25 +227,27 @@ object Dashboard extends Controller with Secured with Pulling {
   }
 
   def eval() = Action { implicit request =>
-    (for {
-      json <- request.body.asJson
-      log  <- json.asOpt[Log] //Validation
-    } yield {
-      StoryActor.ref ! NewLog(json)
-      Ok
-    }) getOrElse BadRequest
+      request.body.asJson.map { json =>
+        json.validate(Log.readFromWeb) match {
+          case s: JsSuccess[_] => {
+            StoryActor.ref ! NewLog(Log.writeForInit.writes(json));
+            Ok
+          }
+          case JsError(errors) => BadRequest("Failed to validate json")
+        }
+      } getOrElse BadRequest
   }
 
   private def wrappedLog(log: Log)(implicit request: RequestHeader) = {
-    JsObject(Seq(
+    Json.obj(
       "log" -> toJson(log),
       "src" -> JsString(request.uri)
-    ))
+    )
   }
 
   private def wrappedLog(log: JsValue)(implicit request: RequestHeader): JsValue = {
     Json.obj(
-      "log" -> log,
+      "log" -> Log.writeForWeb.writes(log),
       "src" -> request.uri
     )
   }
@@ -259,3 +261,22 @@ object Dashboard extends Controller with Secured with Pulling {
     })
   }
 }
+
+// val log = Json.obj(
+//   "_id" -> Json.obj("$oid" -> "5045247b1a88fd5a5d4486c2"),
+//   "project" -> "onconnect",
+//   "logger" -> "play",
+//   "className" -> "org.apache.log4j.Category",
+//   "date" -> Json.obj("$date" -> 1346708603820L),
+//   "file" -> "Logger.java",
+//   "location" -> "play.Logger.info(Logger.java:289)",
+//   "line" -> 289.0,
+//   "message" -> "Module geonaute is available (/Users/litig/Projects/hackDay/portailgeonaute/application/modules/geonaute)",
+//   "method" -> "info",
+//   "level" -> "INFO",
+//   "thread" -> "main",
+//   "comments" -> Json.arr(
+//     Json.obj("_id" -> 1234567),
+//     Json.obj("_id" -> 98766554)
+//   )
+// )

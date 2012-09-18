@@ -42,6 +42,10 @@ My javascript Router have some interesting features:
 ```
 
 ```javascript
+ Router.when('uri/:param', action1.and(action2))
+```
+
+```javascript
  Router.when('uri/:param').par(action1, action2)
 ```
 
@@ -77,6 +81,8 @@ Router.when('uri/:param').lazy(function() {
 
 #### Server ####
 
+Binding to server events.
+
 ```javascript
  server.onReceive('uri/:param')
        .await(actions)
@@ -91,11 +97,15 @@ Router.when('uri/:param').lazy(function() {
 
 #### DOM ####
 
+Binding to DOM events:
+
 ```javascript
  When(event).await(actions).subscribe();
 ```
 
 #### Bucket ####
+
+'Bucket' is a just one place where you can put some models and collections.
 
 ##### Collection #####
 

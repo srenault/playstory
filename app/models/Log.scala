@@ -39,6 +39,9 @@ case class Log(
 
 object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "project")) with Searchable {
 
+  type LogFromWeb = (String, String, String, Date, String, String,
+                     Long, String, String, String, String)
+
   object json {
     def date(log: JsValue): Option[Date] = (log \ "date" \ "$date").asOpt[Long].map(new Date(_))
     def project(log: JsValue): Option[String] = (log \ "project").asOpt[String]
@@ -164,11 +167,13 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
 
   def comment(id: ObjectId, comment: JsValue) = {
     val byId = Json.obj("_id" -> Json.obj("$oid" -> id.toString))
-    val toComments = Json.obj("$push" -> Json.obj("comments" -> comment))
+    val toComments = Json.obj(
+      "$push" -> Json.obj("comments" -> Comment.writeForMongo.writes(comment))
+    )
     collectAsync.update[JsValue, JsValue](byId, toComments)
   }
 
-  implicit val readFromWeb = {
+  val readFromWeb: Reads[LogFromWeb] = {
     (
       (__ \ 'project).read[String] and
       (__ \ 'logger).read[String] and
@@ -184,12 +189,40 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     ) tupled
   }
 
-  implicit val writeForMongo = {
-    (__ \ "_id").json.put(
-      (__ \ "_id").json.pick.transform { 
-        (json:JsValue) => Json.obj("$oid" -> (json \ "_id"))
-      })
+  val writeForInit: Writes[JsValue] = {
+    val id = new ObjectId
+    (
+      (__).json.pick and
+      (__ \ "_id").json.put(JsString(id.toString)) and
+      (__ \ "comments").json.put(Json.arr())
+    ) join
   }
+
+  val writeForWeb: Writes[JsValue] = {
+    (
+      (__).json.pick and
+      (__ \ "_id").json.put(
+        (__ \ "_id").json.pick.transform { json =>
+          json \ "_id" \ "$oid"
+        }
+      ) and
+      (__ \ "date").json.put(
+        (__ \ "date").json.pick.transform { json =>
+          json \ "date" \ "$date"
+        }
+      )
+//      (__ \ "comments").json.put(Comment.writeForMongo)
+    ) join
+  }
+
+  val writeForMongo: Writes[JsValue] = (
+    (__).json.pick and
+    (__ \ "_id").json.put(
+      (__ \ "_id").json.pick.transform { json =>
+        Json.obj("$oid" -> (json \ "_id"))
+      }
+    )
+  ) join
 
   implicit object LogFormat extends Format[Log] {
     def reads(json: JsValue): JsResult[Log] = JsSuccess(Log(

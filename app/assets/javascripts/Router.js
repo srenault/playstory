@@ -89,7 +89,6 @@
                         },
                         lazy: function(actions) {
                             var A = Action(function(any, next) {
-                                alert('lazy');
                                 actions().onComplete(next)._do(any);
                             });
                             subscribe(router, route, [A]);

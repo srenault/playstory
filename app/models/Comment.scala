@@ -4,6 +4,7 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
 import play.api.libs.json._
 import play.api.libs.json.Json._
+import play.api.libs.json.util._
 import db.MongoDB
 
 case class Comment(_id: ObjectId, author: ObjectId, message: String)
@@ -13,6 +14,26 @@ object Comment {
   def apply(author: ObjectId, message: String): Comment = {
     Comment(new ObjectId, author, message)
   }
+
+  val writeForWeb: Writes[JsValue] = {
+    (
+      (__).json.pick and
+      (__ \ "_id").json.put(
+        (__ \ "_id").json.pick.transform { json =>
+          json \ "_id" \ "$oid"
+        }
+      )
+    ) join
+  }
+
+  val writeForMongo: Writes[JsValue] = (
+    (__ \ "comments").json.pick and
+    (__ \ "comments" \\ "_id").json.put(
+      (__ \ "comments" \\ "_id").json.pick.transform { json =>
+        Json.obj("$oid" -> (json \ "_id"))
+      }
+    )
+  ) join
 
   implicit object CommentFormat extends Format[Comment] {
     def reads(json: JsValue): JsResult[Comment] = JsSuccess(Comment(
