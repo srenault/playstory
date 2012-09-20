@@ -14,200 +14,206 @@
         }
     }
 
-    .column-left {
-        float: left;
-        margin-right: 50px;
-        background: white;
+    .page {
+        overflow: none;
+        width: 64%;
+        margin: auto;
 
-        .inbox {
-            .box
+        .column-left {
+            float: left;
+            margin-right: 50px;
+            background: white;
+
+            .inbox {
+                .box
+            }
         }
-    }
 
-    .column-middle {
-        float: left;
-        overflow: hidden;
-
-        ul.tabs {
-            margin: 0;
+        .column-middle {
+            float: left;
             overflow: hidden;
-            li {
-                text-align: center;
-                width: 75px;
-                background: url('/assets/images/commons/stripes.png');
-                color: @blackPlay;
-                border: 1px solid white;
-                padding-left: 10px;
-                padding-right: 10px;
-                padding-top: 5px;
-                padding-bottom: 5px;
-                float: left;
-                cursor: pointer;
 
-                &:first-child {
-                    border-bottom-left-radius: 3px;
-                }
-
-                &:last-child {
-                    border-bottom-right-radius: 3px;
-                }
-
-                &.on {
-                    background: @orangePlay;
-                    a {
-                        color: white;
-                    }
-                }
-            }
-        }
-
-        .feeds {
-            width: 700px;
-
-            .top-feeds {
-                margin-top: 15px;
-                background: white;
-                color: @blackPlay;
-                text-align: center;
-                padding: 7px;
-                border-top: solid 1px @greyLightPlay;
-                border-bottom: solid 1px @greyLightPlay;
-            }
-
-
-            &.past {
-                .more-feeds {
-                    display: none;
-                    .top-feeds;
-                    .counter {
-                    }
-                }
-            }
-
-            &.present {
-                display: none;
-
-                .waiting-feeds {
-                    .top-feeds
-                }
-            }
-
-            .feed {
-                margin-top: 15px;
-                background: white;
-                padding: 15px;
-                border-radius: 2px;
-                box-shadow: 0px 4px 5px #888;
+            ul.tabs {
+                margin: 0;
                 overflow: hidden;
-                -webkit-transition: opacity 2s ease 1s;
-
-                &:hover {
-                    border: 1px solid #8F8181;
-                }
-
-                &.clicked {
-                    border: 1px solid #5F5D5D;
-                }
-
-                div.avatar {
+                li {
+                    text-align: center;
+                    width: 75px;
+                    background: url('/assets/images/commons/stripes.png');
+                    color: @blackPlay;
+                    border: 1px solid white;
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    padding-top: 5px;
+                    padding-bottom: 5px;
                     float: left;
-                    img {
-                        border-radius: 5px;
-                    }     
-                }
-                
-                div.log {
-                    padding-left: 8px;
-                    float: left;
-                    width: 600px;
+                    cursor: pointer;
 
-                    >.header {
-                        overflow: hidden;
-                        border-bottom: 1px solid @greyLightIPlay;
-                        padding-bottom: 2px;
+                    &:first-child {
+                        border-bottom-left-radius: 3px;
+                    }
 
-                        .project {
-                            display: block;
-                            color: @blackPlay;
-                            font-weight: bold;
-                            float: left;
+                    &:last-child {
+                        border-bottom-right-radius: 3px;
+                    }
+
+                    &.on {
+                        background: @orangePlay;
+                        a {
+                            color: white;
                         }
+                    }
+                }
+            }
 
-                        .time {
-                            float: right;
-                            color: @blueEmacs;
-                            font-size: 0.7em;
+            .feeds {
+                width: 700px;
+
+                .top-feeds {
+                    margin-top: 15px;
+                    background: white;
+                    color: @blackPlay;
+                    text-align: center;
+                    padding: 7px;
+                    border-top: solid 1px @greyLightPlay;
+                    border-bottom: solid 1px @greyLightPlay;
+                }
+
+
+                &.past {
+                    .more-feeds {
+                        display: none;
+                        .top-feeds;
+                        .counter {
+                        }
+                    }
+                }
+
+                &.present {
+                    display: none;
+
+                    .waiting-feeds {
+                        .top-feeds
+                    }
+                }
+
+                .feed {
+                    margin-top: 15px;
+                    background: white;
+                    padding: 15px;
+                    border-radius: 2px;
+                    box-shadow: 0px 4px 5px #888;
+                    overflow: hidden;
+                    -webkit-transition: opacity 2s ease 1s;
+
+                    &:hover {
+                        border: 1px solid #8F8181;
+                    }
+
+                    &.clicked {
+                        border: 1px solid #5F5D5D;
+                    }
+
+                    div.avatar {
+                        float: left;
+                        img {
+                            border-radius: 5px;
                         }
                     }
 
-                    .content {
-                        padding-top: 8px;
-                        .level {
-                            color: @redPlay;
-                        }
-                    }
+                    div.log {
+                        padding-left: 8px;
+                        float: left;
+                        width: 600px;
 
-                    .comments {
-                        .comment {
-                            margin-top: 10px;
+                        >.header {
                             overflow: hidden;
-                            background: #EDEFFA;
+                            border-bottom: 1px solid @greyLightIPlay;
+                            padding-bottom: 2px;
 
-                            > div.body {
+                            .project {
+                                display: block;
+                                color: @blackPlay;
+                                font-weight: bold;
                                 float: left;
-                                padding-left: 6px;
-                                width: 90%;
+                            }
 
-                                .header {
-                                    border-bottom: 1px solid white;
-                                    padding: 2px;
-                                    font-size: 0.9em;
+                            .time {
+                                float: right;
+                                color: @blueEmacs;
+                                font-size: 0.7em;
+                            }
+                        }
 
-                                    a {
-                                        color: @blackPlay;
-                                        font-weight: bold;
+                        .content {
+                            padding-top: 8px;
+                            .level {
+                                color: @redPlay;
+                            }
+                        }
+
+                        .comments {
+                            .comment {
+                                margin-top: 10px;
+                                overflow: hidden;
+                                background: #EDEFFA;
+
+                                > div.body {
+                                    float: left;
+                                    padding-left: 6px;
+                                    width: 90%;
+
+                                    .header {
+                                        border-bottom: 1px solid white;
+                                        padding: 2px;
+                                        font-size: 0.9em;
+
+                                        a {
+                                            color: @blackPlay;
+                                            font-weight: bold;
+                                        }
                                     }
-                                }
 
-                                .message {
-                                    font-size: 0.9em;
-                                    padding: 4px;
+                                    .message {
+                                        font-size: 0.9em;
+                                        padding: 4px;
 
-                                    textarea {
-                                        height: 45px;
-                                        width: 50%;
+                                        textarea {
+                                            height: 45px;
+                                            width: 50%;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    .footer {
-                        margin-top: 12px;
-                        border-top: 1px solid @greyLightIPlay;
-                        padding-top: 4px;
+                        .footer {
+                            margin-top: 12px;
+                            border-top: 1px solid @greyLightIPlay;
+                            padding-top: 4px;
 
-                        a {
-                            color: @blueEmacs;
-                            font-size: 0.9em;
+                            a {
+                                color: @blueEmacs;
+                                font-size: 0.9em;
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    .column-right {
-        float: left;
-        margin-left: 50px;
-        background: white;
+        .column-right {
+            float: left;
+            margin-left: 50px;
+            background: white;
 
-        .apps {
-            .box;
+            .apps {
+                .box;
 
-            li {
-                a {
-                    text-transform: uppercase;
+                li {
+                    a {
+                        text-transform: uppercase;
+                    }
                 }
             }
         }

@@ -20,7 +20,7 @@ trait Secured {
             jsonUser <- maybeUser
             user     <- jsonUser.asOpt[User]
           } yield {
-            securedAction(AuthenticatedRequest(user, request))
+            securedAction(AuthenticatedRequest(User.assignAvatar(user), request))
           }
         }.await match {
           case Redeemed(Some(r)) => r

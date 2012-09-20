@@ -193,7 +193,9 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     val id = new ObjectId
     (
       (__).json.pick and
-      (__ \ "_id").json.put(JsString(id.toString)) and
+      (__ \ "_id").json.put(
+        Json.obj("_id" -> Json.obj("$oid" -> id.toString))
+      ) and
       (__ \ "comments").json.put(Json.arr())
     ) join
   }
@@ -213,15 +215,6 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
       )
     ) join
   }
-
-  val writeForMongo: Writes[JsValue] = (
-    (__).json.pick and
-    (__ \ "_id").json.put(
-      (__ \ "_id").json.pick.transform { json =>
-        Json.obj("$oid" -> (json \ "_id"))
-      }
-    )
-  ) join
 
   implicit object LogFormat extends Format[Log] {
     def reads(json: JsValue): JsResult[Log] = JsSuccess(Log(

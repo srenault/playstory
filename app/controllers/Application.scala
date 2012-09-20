@@ -24,7 +24,7 @@ object Application extends Controller with GoogleOpenID with Secured {
   }
 
   def index = Authenticated { implicit request =>
-    Logger.info("Welcome authenticated user !")
+    Logger.info("Welcome authenticated user : " + request.user)
     Async {
       Project.all().map { projects =>
         Ok(views.html.playstory.index(

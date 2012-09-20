@@ -30,29 +30,6 @@ import models.{ Log, User, Project, Comment, Searchable, DashboardData }
 
 object Dashboard extends Controller with Secured with Pulling {
 
-  def index = Authenticated { implicit request =>
-    Logger.info("[Dashboard] Welcome : " + request.user)
-
-    Project.byNameAsync("onconnect").onComplete {
-      case Right(Some(p)) => request.user.follow("onconnect")
-      case _ =>
-    }
-
-    Project.byNameAsync("scanup").onComplete {
-      case Right(Some(p)) => request.user.follow("scanup")
-      case _ =>
-    }
-
-    Async {
-      Project.all().map { projects =>
-        Ok(views.html.playstory.index(
-          request.user,
-          DashboardData(request.user, projects)
-        ))
-      }
-    }
-  }
-
   def listen(project: String) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Waitings logs...")
     AsyncResult {

@@ -161,12 +161,16 @@
 
          this.displayNewFeed = function(limit) {
              return Action(function(feed, next) {
+                 console.log(feed);
                  elts.$feedsList().prepend(feedTmpl({
                      feed: feed,
                      commentView: function(comment) {
                          return commentTmpl({
-                             author: comment.author || 'n/a',
-                             message: comment.message || 'n/a'
+                             author: comment.author || { avatar: '/assets/images/avatars/srenault.contact@gmail.com.png',
+                                                         firstname: 'Sébastien',
+                                                         lastname: 'RENAULT'
+                                                       }, //TODO
+                             message: comment.message
                          });
                      }
                  }));

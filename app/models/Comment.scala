@@ -26,14 +26,15 @@ object Comment {
     ) join
   }
 
-  val writeForMongo: Writes[JsValue] = (
-    (__ \ "comments").json.pick and
-    (__ \ "comments" \\ "_id").json.put(
-      (__ \ "comments" \\ "_id").json.pick.transform { json =>
-        Json.obj("$oid" -> (json \ "_id"))
-      }
-    )
-  ) join
+  val writeForMongo: Writes[JsValue] = {
+    val id = new ObjectId
+    (
+      (__).json.pick and
+      (__ \ "_id").json.put(
+        Json.obj("_id" -> Json.obj("$oid" -> id.toString))
+      )
+    ) join
+  }
 
   implicit object CommentFormat extends Format[Comment] {
     def reads(json: JsValue): JsResult[Comment] = JsSuccess(Comment(
