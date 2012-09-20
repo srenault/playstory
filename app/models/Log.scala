@@ -211,7 +211,6 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
           json \ "date" \ "$date"
         }
       )
-//      (__ \ "comments").json.put(Comment.writeForMongo)
     ) join
   }
 

@@ -28,6 +28,7 @@
              commentTmpl = _.template($("#comment_tmpl").html());
 
          this.render = function() {
+             console.log("[Dashboard] Rendering PastDOM");
              elts.$middleColumn().append(tmpl({
              }));
          };
@@ -59,12 +60,19 @@
              };
          };
 
+         var preventDefault = function(callback) {
+             return function(evt) {
+                 evt.preventDefault();
+                 callback(evt);
+             };
+         };
+
          this.onMoreFeedsClick = function(next) {
              elts.$moreFeeds().click(next);
          };
 
          this.onNewCommentClick = function(next) {
-             elts.$feedsContainer().on('click', 'a.comment', next);
+             elts.$feedsContainer().on('click', 'a.comment', preventDefault(next));
          };
 
          this.onSubmitCommentClick = function(next) {
@@ -72,7 +80,7 @@
          };
 
          this.onBookmarkClick = function(next) {
-             elts.$feedsContainer().on('click', '.footer .bookmark', next);
+             elts.$feedsContainer().on('click', '.footer .bookmark', preventDefault(next));
          };
 
          this.onFeedClick = function(next) {

@@ -15,6 +15,7 @@
         var tmpl = _.template($("#dashboard_layout_tmpl").html());
 
         this.render = function() {
+            console.log("[Dashboard] Rendering Layout");
             elts.$content().append(tmpl({
             }));
             elts.$content().addClass("dashboard");

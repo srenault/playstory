@@ -16,11 +16,15 @@
         };
 
         var loadURL = function() {
+            var newURI = { newURL: '#' + currentRoute() };
             subscribers.forEach(function(callback, index) {
-                callback({
-                    newURL: '#' + currentRoute()
-                });
+                callback(newURI);
             });
+        };
+
+        var loadLastURL = function() {
+            var newURI = { newURL: '#' + currentRoute() };
+            subscribers[subscribers.length-1](newURI);
         };
 
         var onRouteChange = function(next) {
@@ -59,7 +63,7 @@
             router.match(r).subscribe();
 
             if(routeAsRegex.test(currentRoute())) {
-                loadURL();
+                loadLastURL();
             }
         };
 

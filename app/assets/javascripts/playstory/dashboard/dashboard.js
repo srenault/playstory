@@ -17,6 +17,15 @@
             inboxView
         );
 
+        var bind = Action(function(evt, next) {
+            tabsView.lazyInit();
+            inboxView.lazyInit();
+            appsView.lazyInit();
+            searchView.lazyInit();
+            feedsView.lazyInit();
+            next(evt);
+        });
+
         var renderDashboard = layout.renderAsAction.then(
             searchView.dom.renderAsAction
            .and(tabsView.dom.renderAsAction)
@@ -24,14 +33,7 @@
            .and(feedsView.pastDOM.renderAsAction)
            .and(feedsView.presentDOM.renderAsAction)
            .and(appsView.dom.renderAsAction)
-        );
-
-        //bind events
-        tabsView.lazyInit();
-        inboxView.lazyInit();
-        appsView.lazyInit();
-        searchView.lazyInit();
-        feedsView.lazyInit();
+        ).and(bind);
 
         var destroyDashboard = layout.destroyAsAction.then(
             tabsView.dom.destroyAsAction
@@ -41,7 +43,6 @@
            .and(appsView.dom.destroyAsAction)
         );
 
-        //PlayStory.Home.destroy.and(renderDashboard)
         Router.from('home').when('dashboard*paths', PlayStory.Home.destroy.and(renderDashboard));
         Router.fromStart().when('dashboard*paths', renderDashboard);
 

@@ -28,6 +28,7 @@
              commentTmpl = _.template($("#comment_tmpl").html());
 
          this.render = function() {
+             console.log("[Dashboard] Rendering PresentView");
              elts.$middleColumn().append(tmpl({
              }));
          };

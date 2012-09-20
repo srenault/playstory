@@ -18,6 +18,11 @@ import models.{ User, Project, DashboardData }
 
 object Application extends Controller with GoogleOpenID with Secured {
 
+  def signin = Action { implicit request =>
+    Logger.info("Welcome unauthenticated user !")
+    Ok(views.html.signin())
+  }
+
   def index = Authenticated { implicit request =>
     Logger.info("Welcome authenticated user !")
     Async {

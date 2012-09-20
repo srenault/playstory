@@ -119,9 +119,9 @@ object User extends MongoDB("users") {
       (json \ "language").as[String],
       (json \ "avatar").asOpt[String],
       (json \ "projects").asOpt[List[String]].getOrElse(Nil),
-      (json \ "bookmarkIds").asOpt[List[String]].map { bids =>
-        bids.map(new ObjectId(_))
-      }.getOrElse(Nil)
+      (json \ "bookmarkIds" \\ "$oid").flatMap { id =>
+        id.asOpt[String].map(new ObjectId(_))
+      }.toList
     ))
 
     def writes(user: User) = Json.obj(
@@ -132,7 +132,7 @@ object User extends MongoDB("users") {
       "language" -> user.language,
       "avatar" -> user.avatar,
       "projects" -> user.projectNames,
-      "bookmarkIds" -> JsArray(user.bookmarkIds.map(l => Json.obj("$oid" -> l.toString)))
+      "bookmarkIds" -> JsArray(user.bookmarkIds.map(l => JsString(l.toString)))
     )
   }
 }

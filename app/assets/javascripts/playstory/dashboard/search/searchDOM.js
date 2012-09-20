@@ -20,6 +20,7 @@
          this.render = function() {
              elts.$content().prepend(tmpl({
              }));
+            console.log("[Dashboard] Rendering SearchView");
          };
 
          this.renderAsAction = Action(function(any, next) {

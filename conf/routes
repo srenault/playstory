@@ -7,6 +7,7 @@ GET     /                                       controllers.Application.index()
 GET     /openid                                 controllers.Application.openid()
 GET     /openid/callback                        controllers.Application.openidCallback()
 
+GET     /signin                                controllers.Application.signin()
 GET     /signout                                controllers.Application.signout()
 
 GET     /dashboard/all/bookmarks                controllers.Dashboard.bookmarks()

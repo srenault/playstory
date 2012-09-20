@@ -19,6 +19,7 @@
          var tmpl = _.template($("#apps_tmpl").html());
 
          this.render = function() {
+             console.log("[Dashboard] Rendering AppsView");
              elts.$rightColumn().append(tmpl({
              }));
          };

@@ -32,7 +32,6 @@
 
         if(Router.currentRoute() == '') {
             Router.go('home');
-            renderHome._do();
         }
 
         menuView.lazyInit();

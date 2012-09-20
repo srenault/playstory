@@ -33,6 +33,7 @@
          var tmpl = _.template($("#inbox_tmpl").html());
 
          this.render = function() {
+            console.log("[Dashboard] Rendering InboxView");
              elts.$leftColumn().append(tmpl({
              }));
          };

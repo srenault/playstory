@@ -11,7 +11,6 @@
             modelsDef = PlayStory.ModelsDef,
             server = PlayStory.Server;
 
-        //Init
         this.dom = new Search.SearchDOM();
 
         this.lazyInit = function() {

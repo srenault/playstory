@@ -39,7 +39,7 @@ trait Secured {
       }
     })
 
-  def askSignIn = Redirect(routes.Application.index)
+  def askSignIn = Redirect(routes.Application.signin)
 }
 
 case class AuthenticatedRequest(user: User, request: Request[AnyContent]) extends WrappedRequest(request)

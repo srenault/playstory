@@ -21,6 +21,7 @@
          var tmpl = _.template($("#tabs_tmpl").html());
 
          this.render = function() {
+            console.log("[Dashboard] Rendering TabsView");
              elts.$middleColumn().append(tmpl({
              }));
          };
