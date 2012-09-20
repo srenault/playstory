@@ -34,10 +34,11 @@ object Dashboard extends Controller with Secured with Pulling {
     Logger.info("[Dashboard] Waitings logs...")
     AsyncResult {
       implicit val timeout = Timeout(5 second)
-      (StoryActor.ref ? Listen(project)).mapTo[Enumerator[JsValue]].asPromise.map { chunks =>
+      val chanID = request.user.email -> project
+      (StoryActor.ref ? Listen(chanID)).mapTo[Enumerator[JsValue]].asPromise.map { chunks =>
         Log.create(chunks.map(toJson(_)))
         implicit val LogComet = Comet.CometMessage[JsValue](log => wrappedLog(log).toString)
-        playPulling(chunks).getOrElse(BadRequest)
+        playPulling(project, chunks).getOrElse(BadRequest)
       }
     }
   }
@@ -207,10 +208,13 @@ object Dashboard extends Controller with Secured with Pulling {
       request.body.asJson.map { json =>
         json.validate(Log.readFromWeb) match {
           case s: JsSuccess[_] => {
-            StoryActor.ref ! NewLog(Log.writeForInit.writes(json));
+            StoryActor.ref ! NewLog(Log.writeForStream.writes(json));
             Ok
           }
-          case JsError(errors) => BadRequest("Failed to validate json")
+          case JsError(errors) => {
+            Logger.error("[Dashbord] - Failed to validate the json : " + json)
+            BadRequest("Failed to validate json")
+          }
         }
       } getOrElse BadRequest
   }

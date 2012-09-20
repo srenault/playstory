@@ -13,12 +13,14 @@ import models.{Project, Log}
 trait Pulling {
   self: Controller =>
 
-  protected def playPulling(chunks: Enumerator[JsValue])(implicit request: AuthenticatedRequest, cometMessage: Comet.CometMessage[JsValue]) = {
+  protected def playPulling(listenedProject: String, chunks: Enumerator[JsValue])(implicit request: AuthenticatedRequest, cometMessage: Comet.CometMessage[JsValue]) = {
     val comet = Comet(callback = "window.parent.PlayStory.Home.FeedsPresent.server.fromPulling")
     val filterByUser = Enumeratee.filter[JsValue] { l =>
-      Log.json.project(l).map { project =>
-         request.user.isFollowedProject(project)
-      } getOrElse false
+      project match {
+        case Project.ALL => request.user.projects.contains(listenedProject)
+        case _ => Log.json.project(l).map { logProject =>
+          listenedProject == logProject
+        } getOrElse false
     }
 
     request.headers.get("ACCEPT").map( _ match {

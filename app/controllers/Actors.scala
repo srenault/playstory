@@ -18,65 +18,59 @@ class StoryActor extends Actor {
 
   import StoryActor._
 
-  private var projects: Map[String, Set[Channel[JsValue]]] = Map.empty
+  private var streams: Map[ChannelID, Channel[JsValue]] = Map.empty
 
   def receive = {
 
-    case Listen(project: String) => {
+    case Listen(chanID) => {
       lazy val channel: Enumerator[JsValue] = Concurrent.unicast(
-        channel => self ! Init(project, channel),
-        onComplete = self ! Stop(project),
+        channel => self ! Init(chanID, channel),
+        onComplete = self ! Stop(chanID),
         onError = { case(error, _) =>
-          Logger.error("[Actor] Error during stream log for %s : %s".format(project,error))
+          Logger.error("[Actor] Error during streaming log for user %s on %s : %s".format(chanID._1, chanID._2, error))
         }
       )
       sender ! channel
     }
 
-    case Init(project, channel) => {
-      Logger.info("[Actor] Stream project " + project)
-      val channels: Set[Channel[JsValue]] = findChannels(project)
-      projects += (project -> (channels + channel))
+    case Init(chanID, channel) => {
+      Logger.info("[Actor] Stream for user " + chanID._1 + " on project " + chanID._2)
+      streams += chanID -> channel
     }
 
-    case IsAlive() => projects.foreach {
-        case (project, channels) => {
-          channels.foreach(channel => {
-            //Logger.debug("[Actor] Project %s alive".format(project))
-            channel.push(Input.Empty)
-          })
-        }
+    case IsAlive() => streams.foreach {
+        case (chanID, channel) => channel.push(Input.Empty)
     }
 
-    case Stop(project: String) => {
-      Logger.warn("[Actor] Stream %s has been closed ...".format(project))
-      projects = projects.filter(p => p._1 != project)
+    case Stop(chanID) => {
+      Logger.warn("[Actor] Stream for user %s on %s has been closed ...".format(chanID._1, chanID._2))
+      streams = streams.filter {
+        case (channelID, _) => chanID != channelID
+      }
     }
 
     case NewLog(log: JsValue) => {
       Log.json.project(log).map { projectName =>
-        val project = Project(projectName, projectName)
-        Project.createIfNot(toJson(project))
         pushToChannel(projectName, log)
-      }
+      } getOrElse Logger.warn("[Actor] Failed getting project name from json")
     }
   }
 
-  private def findChannels(projectName: String): Set[Channel[JsValue]] = {
-    projects.find(_._1 == projectName).map(_._2).getOrElse(Set.empty)
+  private def findChannels(wishProject: String): Option[Channel[JsValue]] = {
+    println(wishProject)
+    println(streams)
+    streams.find {
+      case ((_, Project.ALL), channel) => true
+      case ((_, project), channel) => project == wishProject
+    }.map {
+      case(_, channel) => channel
+    }
   }
 
   private def pushToChannel(project: String, log: JsValue) = {
-    findChannels(Project.ALL).foreach { channel =>
+    findChannels(project).foreach { channel =>
+      println("push to channel")
       channel.push(log)
-    }
-
-    if(project != Project.ALL) {
-      Log.json.project(log).map { project =>
-        findChannels(project).foreach { channel =>
-          channel.push(log)
-        }
-      }
     }
   }
 }
@@ -85,11 +79,12 @@ object StoryActor {
   import play.api.Play.current
   import akka.util.duration._
 
+  type ChannelID = (String, String)
   sealed trait Event
-  case class Listen(project: String) extends Event
-  case class Stop(project: String) extends Event
+  case class Listen(chanID: ChannelID) extends Event
+  case class Stop(chanID: ChannelID) extends Event
   case class NewLog(log: JsValue)
-  case class Init(project: String, p: Channel[JsValue])
+  case class Init(chanID: ChannelID, p: Channel[JsValue])
   case class IsAlive()
 
   lazy val system = ActorSystem("storyroom")

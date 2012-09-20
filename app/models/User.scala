@@ -54,7 +54,7 @@ object User extends MongoDB("users") {
             firstname: String,
             email: String,
             language: String,
-            avatar: Option[String] = None,
+A           avatar: Option[String] = None,
             projects: List[String] = Nil,
             bookmarkIds: List[ObjectId] = Nil): User = {
     User(new ObjectId, lastname, firstname, email, language, avatar, projects, bookmarkIds)

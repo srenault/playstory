@@ -9,7 +9,6 @@
          var self = this,
              bucket = PlayStory.Bucket;
 
-         //DOM elements
          var elts = {
              $middleColumn : function() { return $('.column-middle'); },
              $feedsContainer : function() { return $('.feeds.past'); },
@@ -47,7 +46,6 @@
              next(any);
          });
 
-         //Events
          this.onBottomPageReach = function(next) {
              window.onscroll = function() {
                  var pageHeight = document.documentElement.scrollHeight,
@@ -161,7 +159,6 @@
 
          this.displayNewFeed = function(limit) {
              return Action(function(feed, next) {
-                 console.log(feed);
                  elts.$feedsList().prepend(feedTmpl({
                      feed: feed,
                      commentView: function(comment) {

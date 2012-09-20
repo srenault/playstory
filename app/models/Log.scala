@@ -8,7 +8,6 @@ import play.api.libs.iteratee.Enumerator
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.libs.json.util._
-import play.modules.reactivemongo.MongoHelpers.{ObjectId, RegEx}
 import play.modules.reactivemongo.PlayBsonImplicits.JsValueWriter
 import reactivemongo.api.{QueryBuilder, QueryOpts}
 import reactivemongo.api.SortOrder.Descending
@@ -154,7 +153,12 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   }
 
   def create(stream: Enumerator[JsValue]): Future[Int] = {
-    collectAsync.insert[JsValue](stream, 1)
+    val adaptedStream = stream.map { json =>
+      val j = Log.writeForMongo.writes(json)
+      println("here!")
+      j
+    }
+    collectAsync.insert[JsValue](adaptedStream, 1)
   }
 
   def create(log: JsObject): Future[LastError] = {
@@ -189,14 +193,29 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     ) tupled
   }
 
-  val writeForInit: Writes[JsValue] = {
+  val writeForStream: Writes[JsValue] = {
     val id = new ObjectId
     (
       (__).json.pick and
       (__ \ "_id").json.put(
-        Json.obj("_id" -> Json.obj("$oid" -> id.toString))
+        JsString(id.toString)
       ) and
       (__ \ "comments").json.put(Json.arr())
+    ) join
+  }
+
+  val writeForMongo: Writes[JsValue] = {
+    val id = new ObjectId
+    (
+      (__).json.pick and
+      (__ \ "_id").json.put(
+        Json.obj("$oid" -> id.toString)
+      ) and
+      (__ \ "date").json.put(
+        (__ \ "date").json.pick.transform { json =>
+          Json.obj("$date" -> json \ "date")
+        }
+      )
     ) join
   }
 
