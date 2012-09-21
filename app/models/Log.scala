@@ -36,10 +36,7 @@ case class Log(
   def countByLevel(): List[(String, Double)] = Log.countByLevel(project)
 }
 
-object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "project")) with Searchable {
-
-  type LogFromWeb = (String, String, String, Date, String, String,
-                     Long, String, String, String, String)
+object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "project")) {
 
   object json {
     def date(log: JsValue): Option[Date] = (log \ "date" \ "$date").asOpt[Long].map(new Date(_))
@@ -70,7 +67,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
 
   def search(project: String, fields: List[Regex], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
     val byProject = Json.obj("project" -> project)
-    val jsonQuery = JsonQueryBuilder().query(byKeywords(fields)).sort("date" -> Descending)
+    val jsonQuery = JsonQueryBuilder().query(Searchable.byKeywords(fields)).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
@@ -175,7 +172,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     collectAsync.update[JsValue, JsValue](byId, toComments)
   }
 
-  val readFromWeb: Reads[LogFromWeb] = {
+  val readFromWeb = {
     (
       (__ \ 'project).read[String] and
       (__ \ 'logger).read[String] and
@@ -213,7 +210,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
         (__ \ 'date).json.pick.transform { json =>
           Json.obj("$date" -> json \ "date")
         }
-      )
+      ) and Searchable.writeKeywords (__ \ 'message)
     ) join
   }
 
