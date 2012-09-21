@@ -195,10 +195,10 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     val id = new ObjectId
     (
       (__).json.pick and
-      (__ \ "_id").json.put(
+      (__ \ '_id).json.put(
         JsString(id.toString)
       ) and
-      (__ \ "comments").json.put(Json.arr())
+      (__ \ 'comments).json.put(Json.arr())
     ) join
   }
 
@@ -206,11 +206,11 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     val id = new ObjectId
     (
       (__).json.pick and
-      (__ \ "_id").json.put(
+      (__ \ '_id).json.put(
         Json.obj("$oid" -> id.toString)
       ) and
-      (__ \ "date").json.put(
-        (__ \ "date").json.pick.transform { json =>
+      (__ \ 'date).json.put(
+        (__ \ 'date).json.pick.transform { json =>
           Json.obj("$date" -> json \ "date")
         }
       )
@@ -220,13 +220,13 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   val writeForWeb: OWrites[JsValue] = {
     (
       (__).json.pick and
-      (__ \ "_id").json.put(
-        (__ \ "_id").json.pick.transform { json =>
+      (__ \ '_id).json.put(
+        (__ \ '_id).json.pick.transform { json =>
           json \ "_id" \ "$oid"
         }
       ) and
-      (__ \ "date").json.put(
-        (__ \ "date").json.pick.transform { json =>
+      (__ \ 'date).json.put(
+        (__ \ 'date).json.pick.transform { json =>
           json \ "date" \ "$date"
         }
       )

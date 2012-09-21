@@ -14,9 +14,9 @@
         this.dom = new Search.SearchDOM();
 
         this.lazyInit = function() {
-            var goSearchedFeed = Router.goAsAction('past/:project/search/:query', function(uriPattern, query) {
+            var goSearchedFeed = Router.goAsAction('dashboard/past/:project/search/:query', function(uriPattern, query) {
                 return uriPattern.replace(':project', query.project)
-                    .replace(':query', query.keywords);
+                      .replace(':query', query.keywords);
             }, true);
 
             When(this.dom.onTypingEnter)

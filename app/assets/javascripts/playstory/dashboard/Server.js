@@ -12,7 +12,7 @@
             last:        PlayRoutes.controllers.Dashboard.last(':project').url,
             byLevel:     PlayRoutes.controllers.Dashboard.byLevel(':project', ':level').url,
             bookmarks:   PlayRoutes.controllers.Dashboard.bookmarks().url,
-            more:        PlayRoutes.controllers.Dashboard.more(':project', ':id', ':level', ':limit').url,
+            more:        PlayRoutes.controllers.Dashboard.more(':project', ':id', ':limit').url,
             withContext: PlayRoutes.controllers.Dashboard.withContext(':project', ':id', ':limit').url,
             inbox:       PlayRoutes.controllers.Dashboard.inbox(':project').url,
             bookmark:    PlayRoutes.controllers.Dashboard.bookmark(':project', ':id').url,
@@ -176,8 +176,6 @@
                                 .replace(':id', lastFeed.id)
                                 .replace(':limit', 6);
 
-            console.log(uri);
-
             if(source.route == 'dashboard/past/:project/level/:level') {
                 uri += '?level=' + source.params[1];
             }
@@ -185,6 +183,7 @@
         });
 
         this.searchFeeds = this.fetch('/dashboard/:project/search?:keywords', function(uriPattern, params) {
+            console.log("search");
             return uriPattern.replace(':project', params[0])
                              .replace(':keywords', params[1]);
         });
