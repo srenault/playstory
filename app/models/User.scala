@@ -39,9 +39,8 @@ case class User(
   def projects: Future[List[JsValue]] = Project.byNames(projectNames:_*)
 
   def follow(projectName: String): Option[Future[LastError]] = {
-    if(!isFollowedProject(projectName)) {
+    if(!isFollowedProject(projectName))
       Some(User.follow(_id, projectName))
-    }
     else None
   }
 
@@ -54,7 +53,7 @@ object User extends MongoDB("users") {
             firstname: String,
             email: String,
             language: String,
-A           avatar: Option[String] = None,
+            avatar: Option[String] = None,
             projects: List[String] = Nil,
             bookmarkIds: List[ObjectId] = Nil): User = {
     User(new ObjectId, lastname, firstname, email, language, avatar, projects, bookmarkIds)

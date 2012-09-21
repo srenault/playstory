@@ -152,21 +152,19 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     }
   }
 
-  def create(stream: Enumerator[JsValue]): Future[Int] = {
+  def create(stream: Enumerator[JsObject]): Future[Int] = {
     val adaptedStream = stream.map { json =>
-      val j = Log.writeForMongo.writes(json)
-      println("here!")
-      j
+      Log.writeForMongo.writes(json)
     }
-    collectAsync.insert[JsValue](adaptedStream, 1)
+    collectAsync.insert[JsObject](adaptedStream, 1)
   }
 
   def create(log: JsObject): Future[LastError] = {
-    val message = (log \ "message").as[String]
-    val keywords = asKeywords(asWords(message))
-    val fullLog = log ++ keywords
-    println(fullLog)
-    collectAsync.insert[JsValue](fullLog)
+    val mongoLog = Log.writeForMongo.writes(log)
+    println("-----------------------------")
+    println(mongoLog)
+    println("-----------------------------")
+    collectAsync.insert[JsValue](mongoLog)
   }
 
   def comment(id: ObjectId, comment: JsValue) = {
@@ -193,7 +191,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     ) tupled
   }
 
-  val writeForStream: Writes[JsValue] = {
+  val writeForStream: OWrites[JsValue] = {
     val id = new ObjectId
     (
       (__).json.pick and
@@ -204,7 +202,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     ) join
   }
 
-  val writeForMongo: Writes[JsValue] = {
+  val writeForMongo: OWrites[JsValue] = {
     val id = new ObjectId
     (
       (__).json.pick and
@@ -219,7 +217,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     ) join
   }
 
-  val writeForWeb: Writes[JsValue] = {
+  val writeForWeb: OWrites[JsValue] = {
     (
       (__).json.pick and
       (__ \ "_id").json.put(

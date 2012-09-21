@@ -33,11 +33,16 @@ object Dashboard extends Controller with Secured with Pulling {
   def listen(project: String) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Waitings logs...")
     AsyncResult {
+      val ts = new Date().getTime
+      val chanID = (request.user.email, project, ts)
       implicit val timeout = Timeout(5 second)
-      val chanID = request.user.email -> project
       (StoryActor.ref ? Listen(chanID)).mapTo[Enumerator[JsValue]].asPromise.map { chunks =>
-        Log.create(chunks.map(toJson(_)))
-        implicit val LogComet = Comet.CometMessage[JsValue](log => wrappedLog(log).toString)
+        implicit val logPulling = Comet.CometMessage[JsValue] { log =>
+          Json.obj(
+            "log" -> toJson(log),
+            "src" -> JsString(request.uri)
+          ).toString
+        }
         playPulling(project, chunks).getOrElse(BadRequest)
       }
     }
@@ -60,8 +65,15 @@ object Dashboard extends Controller with Secured with Pulling {
       case Project.ALL => Some(Log.countByLevel())
       case projectName => Project.byName(project).map(_ => Log.countByLevel(project))
     }
+
     countersOpt.map { counters =>
-      Ok(wrappedInbox(counters))
+      val inboxCounters = JsArray(counters.map { case(level, count) =>
+        Json.obj(
+          "counter" -> Json.obj("level" -> level, "count" -> count),
+          "src" -> JsString(request.uri)
+        )
+     })
+     Ok(inboxCounters)
     } getOrElse BadRequest
   }
 
@@ -219,27 +231,11 @@ object Dashboard extends Controller with Secured with Pulling {
       } getOrElse BadRequest
   }
 
-  private def wrappedLog(log: Log)(implicit request: RequestHeader) = {
-    Json.obj(
-      "log" -> toJson(log),
-      "src" -> JsString(request.uri)
-    )
-  }
-
   private def wrappedLog(log: JsValue)(implicit request: RequestHeader): JsValue = {
     Json.obj(
       "log" -> Log.writeForWeb.writes(log),
       "src" -> request.uri
     )
-  }
-
-  private def wrappedInbox(counters: List[(String, Double)])(implicit request: RequestHeader) = {
-    JsArray(counters.map { case(level, count) =>
-        Json.obj(
-          "counter" -> Json.obj("level" -> level, "count" -> count),
-          "src" -> JsString(request.uri)
-        )
-    })
   }
 }
 

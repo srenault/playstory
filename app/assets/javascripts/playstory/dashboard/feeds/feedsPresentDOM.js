@@ -8,19 +8,17 @@
          console.log("[FeedsPresent.DOM] Init feeds present DOM");
          var self = this;
 
-         //Subscriptions
          var subscriptions = [];
          var subscribe = function(eventName, callback) {
              subscriptions[eventName] = subscriptions[eventName] || [];
              subscriptions[eventName].push(callback);
          };
 
-         //DOM elements
          var elts = {
              $middleColumn : function() { return $('.column-middle'); },
              $feedsContainer : function() { return $('.feeds.present'); },
              $waitingFeeds : function() { return $('.feeds.present .waiting-feeds'); },
-             $feedsList : function() { return  $('.feeds.present ul'); }
+             $feedsList : function() { return  $('.feeds.present ul.logs'); }
          };
 
          var tmpl = _.template($("#feeds_present_tmpl").html()),

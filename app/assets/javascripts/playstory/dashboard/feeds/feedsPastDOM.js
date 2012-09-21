@@ -12,8 +12,8 @@
          var elts = {
              $middleColumn : function() { return $('.column-middle'); },
              $feedsContainer : function() { return $('.feeds.past'); },
-             $feedsList : function() { return $('.feeds.past ul.feeds'); },
-             $feeds : function() { return $('.feeds.past ul.feeds li'); },
+             $feedsList : function() { return $('.feeds.past ul.logs'); },
+             $feeds : function() { return $('.feeds.past ul.logs li'); },
              $moreFeeds : function() { return $('.feeds.past .more-feeds'); },
              $counter : function() { return $('.feeds.past .more-feeds .counter'); },
              findFeed : function(id) {
@@ -154,7 +154,7 @@
              var current = parseInt(elts.$counter().text());
              if(isNaN(current)) current = 0;
              elts.$counter().text(current+1);
-             elts.$moreFeeds.show();
+             elts.$moreFeeds().show();
          });
 
          this.displayNewFeed = function(limit) {

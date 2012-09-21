@@ -14,24 +14,26 @@ trait Pulling {
   self: Controller =>
 
   protected def playPulling(listenedProject: String, chunks: Enumerator[JsValue])(implicit request: AuthenticatedRequest, cometMessage: Comet.CometMessage[JsValue]) = {
-    val comet = Comet(callback = "window.parent.PlayStory.Home.FeedsPresent.server.fromPulling")
+    val comet = Comet(callback = "window.parent.PlayStory.Dashboard.Server.fromPulling")
+    val prettyfy = Enumeratee.map[JsValue]{ l => Logger.debug("[Pulling] " + l); l}
     val filterByUser = Enumeratee.filter[JsValue] { l =>
-      project match {
-        case Project.ALL => request.user.projects.contains(listenedProject)
+      (listenedProject, Log.json.project(l)) match {
+        case (Project.ALL, Some(projectName)) => request.user.projectNames.contains(projectName)
         case _ => Log.json.project(l).map { logProject =>
           listenedProject == logProject
         } getOrElse false
+      }
     }
 
     request.headers.get("ACCEPT").map( _ match {
       case "text/event-stream" => {
         Logger.debug("[Story] Pushing data using Server Sent Event");
-        Ok.stream(chunks &> filterByUser &> EventSource()) withHeaders(CONTENT_TYPE -> "text/event-stream")
+        Ok.stream(chunks &> filterByUser &> prettyfy &> EventSource()) withHeaders(CONTENT_TYPE -> "text/event-stream")
       }
       case _ => {
         Logger.debug("[Story] Pushing data using Commet");
-        Ok.stream(chunks &> comet)
+        Ok.stream(chunks &> filterByUser &> comet)
       }
-    }).orElse(None)
+    }) orElse None
   }
 }

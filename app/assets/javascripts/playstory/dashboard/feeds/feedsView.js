@@ -19,8 +19,8 @@
                 .map(modelsDef.asFeed)
                 .await(
                  bucket.collections('feeds').putAsAction
-                   .and(this.presentDOM.displayNewFeed()
-                   .then(this.pastDOM.updateCounter))
+                .and(this.presentDOM.displayNewFeed())
+                .then(this.pastDOM.updateCounter)
             ).subscribe();
 
             server.onReceive(server.urls.last)

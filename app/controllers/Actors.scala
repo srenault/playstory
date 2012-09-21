@@ -18,12 +18,12 @@ class StoryActor extends Actor {
 
   import StoryActor._
 
-  private var streams: Map[ChannelID, Channel[JsValue]] = Map.empty
+  private var streams: Map[ChannelID, Channel[JsObject]] = Map.empty
 
   def receive = {
 
     case Listen(chanID) => {
-      lazy val channel: Enumerator[JsValue] = Concurrent.unicast(
+      lazy val channel: Enumerator[JsObject] = Concurrent.unicast(
         channel => self ! Init(chanID, channel),
         onComplete = self ! Stop(chanID),
         onError = { case(error, _) =>
@@ -35,11 +35,11 @@ class StoryActor extends Actor {
 
     case Init(chanID, channel) => {
       Logger.info("[Actor] Stream for user " + chanID._1 + " on project " + chanID._2)
-      streams += chanID -> channel
+      streams += (chanID -> channel)
     }
 
     case IsAlive() => streams.foreach {
-        case (chanID, channel) => channel.push(Input.Empty)
+      case (chanID, channel) => channel.push(Input.Empty)
     }
 
     case Stop(chanID) => {
@@ -49,27 +49,23 @@ class StoryActor extends Actor {
       }
     }
 
-    case NewLog(log: JsValue) => {
+    case NewLog(log: JsObject) => {
       Log.json.project(log).map { projectName =>
         pushToChannel(projectName, log)
       } getOrElse Logger.warn("[Actor] Failed getting project name from json")
     }
   }
 
-  private def findChannels(wishProject: String): Option[Channel[JsValue]] = {
-    println(wishProject)
-    println(streams)
-    streams.find {
-      case ((_, Project.ALL), channel) => true
-      case ((_, project), channel) => project == wishProject
-    }.map {
-      case(_, channel) => channel
-    }
+  private def findChannels(wishProject: String): Set[Channel[JsObject]] = {
+    streams.collect {
+      case ((_, Project.ALL, _), channel) => channel
+      case ((_, project, _), channel) if project == wishProject => channel
+    }.foldLeft(Set[Channel[JsObject]]())( _ + _)
   }
 
-  private def pushToChannel(project: String, log: JsValue) = {
+  private def pushToChannel(project: String, log: JsObject) = {
+    Log.create(log)
     findChannels(project).foreach { channel =>
-      println("push to channel")
       channel.push(log)
     }
   }
@@ -79,12 +75,12 @@ object StoryActor {
   import play.api.Play.current
   import akka.util.duration._
 
-  type ChannelID = (String, String)
+  type ChannelID = (String, String, Long)
   sealed trait Event
   case class Listen(chanID: ChannelID) extends Event
   case class Stop(chanID: ChannelID) extends Event
-  case class NewLog(log: JsValue)
-  case class Init(chanID: ChannelID, p: Channel[JsValue])
+  case class NewLog(log: JsObject)
+  case class Init(chanID: ChannelID, p: Channel[JsObject])
   case class IsAlive()
 
   lazy val system = ActorSystem("storyroom")

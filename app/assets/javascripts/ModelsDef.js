@@ -14,12 +14,6 @@
                     return project.name == data.log.project;
                 })[0];
 
-            if(!project) {
-                project.name = 'n/a';
-                project.realName = 'n/a';
-                project.avatar = 'n/a';
-            }
-
             var feed = {
                 id: data.log._id,
                 realName: project.realName,
