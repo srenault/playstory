@@ -66,8 +66,9 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   }
 
   def search(project: String, fields: List[Regex], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
+    import Searchable._
     val byProject = Json.obj("project" -> project)
-    val jsonQuery = JsonQueryBuilder().query(Searchable.byKeywords(fields)).sort("date" -> Descending)
+    val jsonQuery = JsonQueryBuilder().query(byKeywords(fields)).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
@@ -200,6 +201,8 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   }
 
   val writeForMongo: OWrites[JsValue] = {
+    import Searchable._
+
     val id = new ObjectId
     (
       (__).json.pick and
@@ -210,7 +213,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
         (__ \ 'date).json.pick.transform { json =>
           Json.obj("$date" -> json \ "date")
         }
-      ) and Searchable.writeKeywords (__ \ 'message)
+      ) and writeKeywords (__ \ 'message)
     ) join
   }
 
