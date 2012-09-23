@@ -63,25 +63,13 @@
                     return _collections;
                 };
 
-                this.putAsAction = Action(function(model, next) {
-                    self.put(model);
-                    next(model);
-                });
+                this.putAsAction = asAction(self.put);
 
-                this.setAsAction = Action(function(model, next) {
-                    self.set(model);
-                    next(model);
-                });
+                this.setAsAction = asAction(self.set);
 
-                this.destroyAsAction = Action(function(any, next) {
-                    this.destroy(name);
-                    next(any);
-                });
+                this.destroyAsAction = asAction(this.destroy);
 
-                this.resetAsAction = Action(function(any, next) {
-                    self.reset();
-                    next(any);
-                });
+                this.resetAsAction = asAction(self.reset);
 
                 this.asFifo = function(limit) {
                     return Action(function(model, next) {
@@ -107,10 +95,7 @@
                     return _models[name];
                 };
 
-                this.setAsAction = Action(function(model, next) {
-                    self.set(model);
-                    next(model);
-                });
+                this.setAsAction = asAction(self.set);
             });
         };
     })();

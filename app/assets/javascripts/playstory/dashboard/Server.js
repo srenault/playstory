@@ -2,7 +2,7 @@
  * Server.js
  */
 
-(function(Dashboard) {
+(function(Dashboard, PlayStory, PlayRoutes, RouterUtils) {
 
     Dashboard.Server = function() {
         console.log("[Server] Init Server");
@@ -215,4 +215,7 @@
             });
         });
     };
-})(window.PlayStory.Init.Dashboard);
+})(window.PlayStory.Init.Dashboard,
+   window.PlayStory,
+   window.PlayRoutes,
+   window.RouterUtils);

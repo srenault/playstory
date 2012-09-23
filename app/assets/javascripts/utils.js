@@ -32,4 +32,11 @@
             return function() { return $(selector); };
         }
     };
+
+    window.asAction = function(action) {
+        return Action(function(any, next) {
+            action(any);
+            next(any);
+        });
+    };
 })();

@@ -48,6 +48,7 @@
             return Action(function(route, next) {
                 var params= RouterUtils.matchParams(currentRoute(), routeAsRegex);
                 next(params);
+                //next.apply(null, params);
             });
         };
 

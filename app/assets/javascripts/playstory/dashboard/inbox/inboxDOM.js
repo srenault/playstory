@@ -31,19 +31,13 @@
              }));
          };
 
-         this.renderAsAction = Action(function(any, next) {
-             self.render();
-             next(any);
-         });
+         this.renderAsAction = asAction(self.render);
 
          this.destroy = function() {
             elts.$inbox().remove();
          };
 
-         this.destroyAsAction = Action(function(any, next) {
-             self.destroy();
-             next(any);
-         });
+         this.destroyAsAction = asAction(self.destroy);
 
          var summup = function($counter) {
              var currentCounter = $counter.text().replace('(','')

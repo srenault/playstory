@@ -2,15 +2,14 @@
  * layout.js
  */
 
-(function(Dashboard) {
+(function(Dashboard, DOM) {
 
      Dashboard.LayoutDOM = function() {
          console.log("[Dashboard.LayoutDOM] Init layout DOM");
          var self = this;
 
-         //DOM elements
          var elts = {
-             $content: function() { return $('.content'); }
+             $content: DOM.$elt('.content')
          };
 
          var tmpl = _.template($("#layout_tmpl").html());
@@ -34,5 +33,4 @@
              next(any);
          });
      };
-
- })(window.PlayStory.Init.Dashboard);
+ })(window.PlayStory.Init.Dashboard, window.DOM);

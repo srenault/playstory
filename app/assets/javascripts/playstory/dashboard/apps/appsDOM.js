@@ -24,19 +24,13 @@
              }));
          };
 
-         this.renderAsAction = Action(function(any, next) {
-             self.render();
-             next(any);
-         });
+         this.renderAsAction = asAction(self.render);
 
          this.destroy = function() {
             elts.$apps().remove();
          };
 
-         this.destroyAsAction = Action(function(any, next) {
-             self.destroy();
-             next(any);
-         });
+         this.destroyAsAction = asAction(self.destroy);
 
          this.updateFollowedProjects = Action(function(any, next) {
              var user = bucket.models('user').get();

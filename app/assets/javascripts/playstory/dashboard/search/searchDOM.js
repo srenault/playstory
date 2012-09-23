@@ -23,14 +23,13 @@
              }));
          };
 
-         this.renderAsAction = Action(function(any, next) {
-             self.render();
-             next(any);
-         });
+         this.renderAsAction = asAction(self.render);
 
          this.destroy = function() {
             elts.$content().empty();
          };
+
+         this.destroyAsAction = asAction(self.destroy);
 
          this.onTypingEnter = function(next) {
              elts.$search().on('keydown', function(evt) {
