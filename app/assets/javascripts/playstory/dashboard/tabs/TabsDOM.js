@@ -2,7 +2,7 @@
  * tabsDOM.js
  */
 
-(function(Tabs) {
+(function(Tabs, DOM) {
 
      Tabs.TabsDOM = function() {
          console.log("[Tabs.DOM] Init tabs DOM");
@@ -10,12 +10,12 @@
 
          //DOM elements
          var elts = {
-             $middleColumn: function() { return $('.column-middle'); },
-             $tabs: function() { return $('.tabs'); },
-             $presentTab: function() { return $('.tabs .present'); },
-             $pastTab: function() { return $('.tabs .past'); },
-             $pastPannel: function() { return $('.feeds.past'); },
-             $presentPannel: function() { return $('.feeds.present'); }
+             $middleColumn: DOM.$elt('.column-middle'),
+             $tabs: DOM.$elt('.tabs'),
+             $presentTab: DOM.$elt('.tabs .present'),
+             $pastTab: DOM.$elt('.tabs .past'),
+             $pastPannel: DOM.$elt('.feeds.past'),
+             $presentPannel: DOM.$elt('.feeds.present')
          };
 
          var tmpl = _.template($("#tabs_tmpl").html());
@@ -74,4 +74,4 @@
          });
      };
 
- })(window.PlayStory.Init.Dashboard.Tabs);
+ })(window.PlayStory.Init.Dashboard.Tabs, window.DOM);

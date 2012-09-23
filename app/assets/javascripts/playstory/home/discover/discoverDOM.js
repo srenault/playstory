@@ -2,15 +2,15 @@
  * discoverDOM.js
  */
 
-(function(Discover) {
+(function(Discover, DOM) {
 
      Discover.DiscoverDOM = function() {
          console.log("[Discover.DOM] Init Discover DOM");
          var self = this;
 
          var elts = {
-             $middleColumn : function() { return $('.column-middle'); },
-             $discover : function() { return  $('.discover'); }
+             $middleColumn : DOM.$elt('.column-middle'),
+             $discover : DOM.$elt('.discover')
          };
 
          var tmpl = _.template($("#discover_tmpl").html());
@@ -37,4 +37,4 @@
          return this;
      };
 
- })(window.PlayStory.Init.Home.Discover);
+ })(window.PlayStory.Init.Home.Discover, window.DOM);

@@ -51,14 +51,12 @@
                    .and(self.pastDOM.displayNewFeed())
             ).subscribe();
 
-            var isWishedFeed = function(feed) {
-                var params = Router.matchCurrentRoute('dashboard/past/:project/feed/:id/:limit');
-                return feed.id == params[1];
-            };
-
             server.onReceive(server.urls.withContext)
                 .map(modelsDef.asFeed)
-                .filter(isWishedFeed)
+                .filter(function(feed) {
+                    var params = Router.matchCurrentRoute('dashboard/past/:project/feed/:id/:limit');
+                    return feed.id == params[1];
+                })
                 .await(
                     bucket.collections('feeds').asFifo(limit)
                        .and(this.pastDOM.displayNewFeed(limit)
@@ -67,7 +65,10 @@
 
             server.onReceive(server.urls.withContext)
                 .map(modelsDef.asFeed)
-                .filter(function(feed) { return !isWishedFeed(feed); })
+                .filter(function(feed) {
+                    var params = Router.matchCurrentRoute('dashboard/past/:project/feed/:id/:limit');
+                    return !feed.id == params[1];
+                })
                 .await(
                     bucket.collections('feeds').asFifo(limit)
                    .and(self.pastDOM.displayNewFeed(limit))

@@ -2,7 +2,7 @@
  * feedsPresentDOM.js
  */
 
-(function(Feeds) {
+(function(Feeds, DOM) {
 
      Feeds.FeedsPresentDOM = function() {
          console.log("[FeedsPresent.DOM] Init feeds present DOM");
@@ -15,10 +15,10 @@
          };
 
          var elts = {
-             $middleColumn : function() { return $('.column-middle'); },
-             $feedsContainer : function() { return $('.feeds.present'); },
-             $waitingFeeds : function() { return $('.feeds.present .waiting-feeds'); },
-             $feedsList : function() { return  $('.feeds.present ul.logs'); }
+             $middleColumn : DOM.$elt('.column-middle'),
+             $feedsContainer : DOM.$elt('.feeds.present'),
+             $waitingFeeds : DOM.$elt('.feeds.present .waiting-feeds'),
+             $feedsList : DOM.$elt('.feeds.present ul.logs')
          };
 
          var tmpl = _.template($("#feeds_present_tmpl").html()),
@@ -91,4 +91,4 @@
          });
      };
 
- })(window.PlayStory.Init.Dashboard.Feeds);
+ })(window.PlayStory.Init.Dashboard.Feeds, window.DOM);

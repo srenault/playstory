@@ -2,15 +2,15 @@
  * menuDOM.js
  */
 
-(function(Menu) {
+(function(Menu, DOM) {
 
      Menu.MenuDOM = function() {
          console.log("[Menu.DOM] Init Menu DOM");
          var self = this;
 
          var elts = {
-             $leftColumn : function() { return $('.column-left'); },
-             $menu : function() { return  $('.menu'); }
+             $leftColumn : DOM.$elt('.column-left'),
+             $menu : DOM.$elt('.menu')
          };
 
          var tmpl = _.template($("#menu_tmpl").html());
@@ -37,4 +37,4 @@
          return this;
      };
 
- })(window.PlayStory.Init.Home.Menu);
+ })(window.PlayStory.Init.Home.Menu, window.DOM);

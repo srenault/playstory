@@ -26,4 +26,10 @@
             }
         };
     })();
+
+    window.DOM = {
+        $elt: function(selector) {
+            return function() { return $(selector); };
+        }
+    };
 })();

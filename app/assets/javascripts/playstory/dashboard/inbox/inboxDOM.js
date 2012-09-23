@@ -2,32 +2,25 @@
  * inboxDOM.js
  */
 
-(function(Inbox) {
+(function(Inbox, DOM) {
 
      Inbox.InboxDOM = function() {
          console.log("[Inbox.DOM] Init Inbox DOM");
          var self = this,
              bucket = PlayStory.Bucket;
 
-         var $el = function(selector) {
-             return function() {
-                 return $(selector);
-             };
-         };
-
-         //DOM elements
          var elts = {
-             $leftColumn : $el('.column-left'),
-             $inbox : $el('.inbox'),
-             $levels : $el('.inbox ul.levels li:not(.all)'),
-             $info : $el('.inbox li.info'),
-             $debug : $el('.inbox li.debug'),
-             $error : $el('.inbox li.error'),
-             $fatal : $el('.inbox li.fatal'),
-             $trace : $el('.inbox li.trace'),
-             $warn : $el('.inbox li.warn'),
-             $all : $el(".inbox ul li.all a"),
-             $starred : $el(".inbox ul.mainstream li a")
+             $leftColumn : DOM.$elt('.column-left'),
+             $inbox : DOM.$elt('.inbox'),
+             $levels : DOM.$elt('.inbox ul.levels li:not(.all)'),
+             $info : DOM.$elt('.inbox li.info'),
+             $debug : DOM.$elt('.inbox li.debug'),
+             $error : DOM.$elt('.inbox li.error'),
+             $fatal : DOM.$elt('.inbox li.fatal'),
+             $trace : DOM.$elt('.inbox li.trace'),
+             $warn : DOM.$elt('.inbox li.warn'),
+             $all : DOM.$elt(".inbox ul li.all a"),
+             $starred : DOM.$elt(".inbox ul.mainstream li a")
          };
 
          var tmpl = _.template($("#inbox_tmpl").html());
@@ -113,4 +106,4 @@
          });
      };
 
- })(window.PlayStory.Init.Dashboard.Inbox);
+ })(window.PlayStory.Init.Dashboard.Inbox, window.DOM);

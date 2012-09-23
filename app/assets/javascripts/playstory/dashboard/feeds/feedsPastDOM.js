@@ -2,7 +2,7 @@
  * feedsPastDOM.js
  */
 
-(function(PlayStory, Feeds) {
+(function(PlayStory, Feeds, DOM) {
 
      Feeds.FeedsPastDOM = function() {
          console.log("[FeedsPast.DOM] Init feeds past DOM");
@@ -10,14 +10,14 @@
              bucket = PlayStory.Bucket;
 
          var elts = {
-             $middleColumn : function() { return $('.column-middle'); },
-             $feedsContainer : function() { return $('.feeds.past'); },
-             $feedsList : function() { return $('.feeds.past ul.logs'); },
-             $feeds : function() { return $('.feeds.past ul.logs li'); },
-             $moreFeeds : function() { return $('.feeds.past .more-feeds'); },
-             $counter : function() { return $('.feeds.past .more-feeds .counter'); },
-             findFeed : function(id) {
-                 return $('.feeds.past ul #' + id);
+             $middleColumn : DOM.$elt('.column-middle'),
+             $feedsContainer : DOM.$elt('.feeds.past'),
+             $feedsList : DOM.$elt('.feeds.past ul.logs'),
+             $feeds : DOM.$elt('.feeds.past ul.logs li'),
+             $moreFeeds : DOM.$elt('.feeds.past .more-feeds'),
+             $counter : DOM.$elt('.feeds.past .more-feeds .counter'),
+             $feed : function(id) {
+                 return DOM.$elt('.feeds.past ul #' + id)();
              }
          };
 
@@ -144,7 +144,7 @@
          });
 
          this.highlightFeed = Action(function(feed, next) {
-             var $feed = elts.findFeed(feed.id);
+             var $feed = elts.$feed(feed.id);
              elts.$feeds().removeClass('clicked');
              $feed.addClass('clicked');
              next(feed);
@@ -182,4 +182,5 @@
      };
 
  })(window.PlayStory,
-    window.PlayStory.Init.Dashboard.Feeds);
+    window.PlayStory.Init.Dashboard.Feeds,
+    window.DOM);

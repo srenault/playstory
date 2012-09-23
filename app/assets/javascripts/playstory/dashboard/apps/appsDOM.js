@@ -2,7 +2,7 @@
  * appsDOM.js
  */
 
-(function(Apps) {
+(function(Apps, DOM) {
 
      Apps.AppsDOM = function() {
          console.log("[Inbox.DOM] Init Apps DOM");
@@ -10,10 +10,10 @@
              bucket = PlayStory.Bucket;
 
          var elts = {
-             $rightColumn : function() { return $('.column-right'); },
-             $apps : function() { return  $('.apps'); },
-             $projectsContainer : function() { return $('.apps ul'); },
-             $projects : function() { return $('.apps ul li.project'); }
+             $rightColumn : DOM.$elt('.column-right'),
+             $apps : DOM.$elt('.apps'),
+             $projectsContainer : DOM.$elt('.apps ul'),
+             $projects : DOM.$elt('.apps ul li.project')
          };
 
          var tmpl = _.template($("#apps_tmpl").html());
@@ -63,4 +63,4 @@
          return this;
      };
 
- })(window.PlayStory.Init.Dashboard.Apps);
+ })(window.PlayStory.Init.Dashboard.Apps, window.DOM);

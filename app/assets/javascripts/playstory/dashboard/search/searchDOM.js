@@ -2,7 +2,7 @@
  * searchDOM.js
  */
 
-(function(Search) {
+(function(Search, DOM) {
 
      Search.SearchDOM = function() {
          console.log("[Search.DOM] Init Search DOM");
@@ -10,17 +10,17 @@
 
          //DOM elements
          var elts = {
-             $content: function() { return $('.content'); },
-             $searchContainer : function() { return $('.search'); },
-             $search : function() { return $('.search input[name=search]'); }
+             $content: DOM.$elt('.content'),
+             $searchContainer : DOM.$elt('.search'),
+             $search : DOM.$elt('.search input[name=search]')
          };
 
          var tmpl = _.template($("#search_tmpl").html());
 
          this.render = function() {
+             console.log("[Dashboard] Rendering SearchView");
              elts.$content().prepend(tmpl({
              }));
-            console.log("[Dashboard] Rendering SearchView");
          };
 
          this.renderAsAction = Action(function(any, next) {
@@ -59,4 +59,4 @@
          });
      };
 
- })(window.PlayStory.Init.Dashboard.Search);
+ })(window.PlayStory.Init.Dashboard.Search, window.DOM);
