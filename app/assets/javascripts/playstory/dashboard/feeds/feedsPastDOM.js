@@ -145,7 +145,7 @@
          });
 
          this.updateCounter = Action(function(evt, next) {
-             var current = parseInt(elts.$counter().text());
+             var current = parseInt(elts.$counter().text(), 10);
              if(isNaN(current)) current = 0;
              elts.$counter().text(current+1);
              elts.$moreFeeds().show();

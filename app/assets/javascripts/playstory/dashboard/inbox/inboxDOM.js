@@ -43,7 +43,7 @@
              var currentCounter = $counter.text().replace('(','')
                                                  .replace(')','');
 
-             var newCounter = (parseInt(currentCounter) || 0) + 1;
+             var newCounter = (parseInt(currentCounter, 10) || 0) + 1;
              $counter.text(' (' + newCounter + ')');
          };
 

@@ -31,19 +31,13 @@
              }));
          };
 
-         this.renderAsAction = Action(function(any, next) {
-             self.render();
-             next(any);
-         });
+         this.renderAsAction = asAction(self.render);
 
          this.destroy = function() {
             elts.$feedsContainer().remove();
          };
 
-         this.destroyAsAction = Action(function(any, next) {
-             self.destroy();
-             next(any);
-         });
+         this.destroyAsAction = asAction(self.destroy);
 
          this.onFeedClick = function(next) {
              elts.$feedsList().on('click', 'li.feed', next);

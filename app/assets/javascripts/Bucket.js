@@ -67,7 +67,7 @@
 
                 this.setAsAction = asAction(self.set);
 
-                this.destroyAsAction = asAction(this.destroy);
+                this.destroyAsAction = asAction(self.destroy);
 
                 this.resetAsAction = asAction(self.reset);
 
