@@ -157,7 +157,7 @@ object Dashboard extends Controller with Secured with Pulling {
 
   def withContext(project: String, id: String, limit: Int) = Action { implicit request =>
     Logger.info("[Dashboard] Getting on log %s with its context for project %s.".format(project, id))
-    val limitBefore, limitAfter = scala.math.round(limit/2)
+    val limitBefore = scala.math.round(limit/2)
     val logId = new ObjectId(id)
     Async {
       Log.byId(logId).flatMap { logOpt =>
@@ -165,13 +165,14 @@ object Dashboard extends Controller with Secured with Pulling {
           log  <- logOpt
           date <- Log.json.date(log)
         } yield {
-          val beforeLogs = Log.byProjectBefore(project, date, None, limitBefore)
-          val afterLogs = Log.byProjectAfter(project, date, None, limitAfter)
-          Promise.sequence(List(beforeLogs, afterLogs)).map { beforeAfter =>
-            val foundLogs = beforeAfter.reduceLeft((before, after) => before ::: (log :: after))
+          Log.byProjectBefore(project, date, None, limitBefore).flatMap { beforeLogs =>
+            val limitAfter = (limitBefore - beforeLogs.size) + limitBefore
+            Log.byProjectAfter(project, date, None, limitAfter).map { afterLogs =>
+              val logWithContext = afterLogs ::: (log :: beforeLogs)
               Ok(JsArray(
-                foundLogs.reverse.map(wrappedLog)
+                logWithContext.reverse.map(wrappedLog)
               ))
+            }
           }
         }) getOrElse Promise.pure(
           BadRequest("[Dashboard] Failed to getting one log with his context: The following log was not found: " + id)

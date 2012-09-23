@@ -167,6 +167,11 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     collectAsync.insert[JsValue](mongoLog)
   }
 
+  def uncheckedCreate(log: JsObject) {
+    val mongoLog = Log.writeForMongo.writes(log)
+    collectAsync.uncheckedInsert(mongoLog)
+  }
+
   def comment(id: ObjectId, comment: JsValue) = {
     val byId = Json.obj("_id" -> Json.obj("$oid" -> id.toString))
     val toComments = Json.obj(
