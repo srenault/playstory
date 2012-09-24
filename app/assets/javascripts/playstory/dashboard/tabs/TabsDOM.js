@@ -57,7 +57,9 @@
              next(evt);
          });
 
-         this.refreshNavigation = Action(function(project, next) {
+         this.refreshNavigation = Action(function(params, next) {
+             var project = params[0];
+
              var pastURL = '#dashboard/past/:project'.replace(':project', project);
              elts.$pastTab().find('a').attr('href', pastURL);
 

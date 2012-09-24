@@ -134,8 +134,8 @@
 
             this.go = function(route, trigger) {
                 previousRoute =  currentRoute();
-                history.pushState({ }, route, "#" + route);
-                if(trigger) loadLastURL();
+                history.pushState({}, route, "#" + route);
+                if(trigger) loadURL();
             };
 
             this.forward = function() {

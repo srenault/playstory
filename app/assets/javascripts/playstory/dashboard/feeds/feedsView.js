@@ -48,7 +48,15 @@
                 .map(modelsDef.asFeed)
                 .await(
                     bucket.collections('feeds').putAsAction
+                   .and(self.pastDOM.displayPastFeed())
+            ).subscribe();
+
+            server.onReceive(server.urls.news)
+                .map(modelsDef.asFeed)
+                .await(
+                    bucket.collections('feeds').putAsAction
                    .and(self.pastDOM.displayNewFeed())
+                   .then(self.pastDOM.hideMoreFeeds)
             ).subscribe();
 
             server.onReceive(server.urls.withContext)
@@ -158,7 +166,8 @@
 
             When(this.pastDOM.onBottomPageReach)
                 .map(onlySpecifiedRoutes(['dashboard/past/:project',
-                                          'dashboard/past/:project/level/:level']))
+                                          'dashboard/past/:project/level/:level',
+                                          'dashboard/past/:project/feed/:id/:level']))
                 .filter(isRouteValid)
                 .await(server.fetchMoreFeeds)
                 .subscribe();
@@ -166,7 +175,7 @@
             var goFeed = function(trigger) {
                 return Router.goAsAction('dashboard/past/:project/feed/:id/' + limit, function(uriPattern, params) {
                     return uriPattern.replace(':project', params.project)
-                        .replace(':id', params.id);
+                                     .replace(':id', params.id);
                 }, trigger);
             };
 
@@ -187,6 +196,14 @@
                         project: $feed.data('project')
                     };
                 }).await(goFeed(true).and(this.pastDOM.highlightFeed)).subscribe();
+
+            When(this.pastDOM.onMoreFeedsClick)
+                .map(onlySpecifiedRoutes(['dashboard/past/:project',
+                                          'dashboard/past/:project/level/:level',
+                                          'dashboard/past/:project/feed/:id/:level']))
+                .filter(isRouteValid)
+                .await(server.fetchNewFeeds)
+                .subscribe();
         };
     };
 

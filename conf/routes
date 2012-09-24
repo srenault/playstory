@@ -18,6 +18,7 @@ GET     /dashboard/:project/level/:level        controllers.Dashboard.byLevel(pr
 GET     /dashboard/:project/last                controllers.Dashboard.last(project: String)
 GET     /dashboard/:project/last/:from          controllers.Dashboard.lastFrom(project: String, from: Long)
 GET     /dashboard/:project/log/:id/more/:limit controllers.Dashboard.more(project: String, id: String, limit: Int, level: Option[String])
+GET     /dashboard/:project/log/:id/news/:limit controllers.Dashboard.news(project: String, id: String, limit: Int, level: Option[String])
 GET     /dashboard/:project/log/:id/:limit      controllers.Dashboard.withContext(project: String, id: String, limit: Int)
 POST    /dashboard/:project/log/:id/comment     controllers.Dashboard.comment(project: String, id: String)
 POST    /dashboard/:project/log/:id/bookmark    controllers.Dashboard.bookmark(project: String, id: String)

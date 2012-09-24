@@ -22,7 +22,7 @@
          };
 
          var tmpl = _.template($("#feeds_present_tmpl").html()),
-             feedTmpl = _.template($("#feed_tmpl").html()),
+             feedTmpl = _.template($("#feed_present_tmpl").html()),
              commentTmpl = _.template($("#comment_tmpl").html());
 
          this.render = function() {
@@ -51,6 +51,8 @@
 
          this.displayNewFeed = function(limit) {
              return Action(function(feed, next) {
+                 elts.$waitingFeeds().hide();
+
                  elts.$feedsList().prepend(feedTmpl({
                      feed: feed,
                      commentView: function(comment) {

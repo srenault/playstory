@@ -91,10 +91,13 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   }
 
   def byProjectBefore(project: String, before: Date, levelOpt: Option[String] = None, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
-    val byProject = Json.obj("project" -> project)
+    val byProject = project match {
+      case Project.ALL => Json.obj()
+      case _ => Json.obj("project" -> project)
+    }
     val byBefore = Json.obj("date" -> Json.obj("$lt" -> Json.obj("$date" -> before.getTime)))
     val byLevel = levelOpt.map { level =>
-      Json.obj("level" -> level)
+      Json.obj("level" -> level.toUpperCase)
     }.getOrElse(Json.obj())
 
     val jsonQuery = JsonQueryBuilder().query(byProject ++ byBefore ++ byLevel).sort("date" -> Descending)
@@ -102,10 +105,13 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   }
 
   def byProjectAfter(project: String, before: Date, levelOpt: Option[String] = None, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
-    val byProject = Json.obj("project" -> project)
+    val byProject = project match {
+      case Project.ALL => Json.obj()
+      case _ => Json.obj("project" -> project)
+    }
     val byAfter = Json.obj("date" -> Json.obj("$gt" -> Json.obj("$date" -> before.getTime)))
     val byLevel = levelOpt.map { level =>
-      Json.obj("level" -> level)
+      Json.obj("level" -> level.toUpperCase)
     }.getOrElse(Json.obj())
 
     val jsonQuery = JsonQueryBuilder().query(byProject ++ byAfter ++ byLevel).sort("date" -> Descending)

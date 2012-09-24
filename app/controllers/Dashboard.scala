@@ -134,6 +134,27 @@ object Dashboard extends Controller with Secured with Pulling {
     }
   }
 
+  def news(project: String, id: String, limit: Int, level: Option[String]) = Action { implicit request =>
+    Logger.info("[Dashboard] Getting newlogs from project %s and log %s.".format(project, id))
+    val logRefId = new ObjectId(id)
+    Async {
+      Log.byId(logRefId).flatMap { logRefOpt =>
+        (for {
+          logRef <- logRefOpt
+          date   <- Log.json.date(logRef)
+        } yield {
+          Log.byProjectAfter(project, date, level, limit).map { logsBefore =>
+            Ok(JsArray(
+              logsBefore.reverse.map(wrappedLog)
+            ))
+          }
+        }) getOrElse Promise.pure(
+            BadRequest("Failed new logs. The following log was not found: " + id)
+        )
+      }
+    }
+  }
+
   def more(project: String, id: String, limit: Int, level: Option[String]) = Action { implicit request =>
     Logger.info("[Dashboard] Getting more logs from project %s and log %s.".format(project, id))
     val logRefId = new ObjectId(id)
@@ -143,13 +164,13 @@ object Dashboard extends Controller with Secured with Pulling {
           logRef <- logRefOpt
           date   <- Log.json.date(logRef)
         } yield {
-          Log.byProjectAfter(project, date, level, limit).map { logsAfter =>
+          Log.byProjectBefore(project, date, level, limit).map { logsAfter =>
             Ok(JsArray(
               logsAfter.reverse.map(wrappedLog)
             ))
           }
         }) getOrElse Promise.pure(
-            BadRequest("Failed to comment log. The following log was not found: " + id)
+            BadRequest("Failed to get more logs. The following log was not found: " + id)
         )
       }
     }

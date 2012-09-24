@@ -13,6 +13,7 @@
             byLevel:     PlayRoutes.controllers.Dashboard.byLevel(':project', ':level').url,
             bookmarks:   PlayRoutes.controllers.Dashboard.bookmarks().url,
             more:        PlayRoutes.controllers.Dashboard.more(':project', ':id', ':limit').url,
+            news:        PlayRoutes.controllers.Dashboard.news(':project', ':id', ':limit').url,
             withContext: PlayRoutes.controllers.Dashboard.withContext(':project', ':id', ':limit').url,
             inbox:       PlayRoutes.controllers.Dashboard.inbox(':project').url,
             bookmark:    PlayRoutes.controllers.Dashboard.bookmark(':project', ':id').url,
@@ -166,8 +167,20 @@
                              .replace(':level', level);
         });
 
-        this.fetchLastFeeds = this.fetch(this.urls.last, function(uriPatten, project) {
-            return uriPatten.replace(':project', project);
+        this.fetchLastFeeds = this.fetch(this.urls.last, function(uriPattern, project) {
+            return uriPattern.replace(':project', project);
+        });
+
+        this.fetchNewFeeds = this.fetch(this.urls.news, function(uriPattern, source) {
+            var firstFeed = bucket.collections('feeds').first();
+            var uri = uriPattern.replace(':project', source.params[0]) //TODO
+                                .replace(':id', firstFeed.id)
+                                .replace(':limit', 6);
+
+            if(source.route == 'dashboard/past/:project/level/:level') {
+                uri += '?level=' + source.params[1];
+            }
+            return uri;
         });
 
         this.fetchMoreFeeds = this.fetch(this.urls.more, function(uriPattern, source) {

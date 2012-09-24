@@ -60,7 +60,7 @@
          };
 
          this.onMoreFeedsClick = function(next) {
-             elts.$moreFeeds().click(next);
+             elts.$moreFeeds().click(preventDefault(next));
          };
 
          this.onNewCommentClick = function(next) {
@@ -119,6 +119,11 @@
              next(evt);
          });
 
+         this.hideMoreFeeds = Action(function(any, next) {
+             elts.$moreFeeds().hide();
+             next(any);
+         });
+
          this.displayNewComment = Action(function(evt, next) {
              var $feed = $(evt.currentTarget).closest('.log')
                      .find('.comments');
@@ -154,6 +159,29 @@
          this.displayNewFeed = function(limit) {
              return Action(function(feed, next) {
                  elts.$feedsList().prepend(feedTmpl({
+                     feed: feed,
+                     commentView: function(comment) {
+                         return commentTmpl({
+                             author: comment.author || { avatar: '/assets/images/avatars/srenault.contact@gmail.com.png',
+                                                         firstname: 'Sébastien',
+                                                         lastname: 'RENAULT'
+                                                       }, //TODO
+                             message: comment.message
+                         });
+                     }
+                 }));
+
+                 if(limit) {
+                     var currentFeedsSize = elts.$feeds().length;
+                     if(currentFeedsSize > limit) elts.$feedsList().find('li:last').remove();
+                 }
+                 next(feed);
+             });
+         };
+
+         this.displayPastFeed = function(limit) {
+             return Action(function(feed, next) {
+                 elts.$feedsList().append(feedTmpl({
                      feed: feed,
                      commentView: function(comment) {
                          return commentTmpl({
