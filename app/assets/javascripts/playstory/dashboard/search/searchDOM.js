@@ -44,12 +44,12 @@
              return $(evt.currentTarget).val().split(' ');
          };
 
-         this.fillSearch = Action(function(params, next) {
-             var keywords = params[1].match(/keywords=([\w]*)/g).map(function(keyword) {
-                 return keyword.split('=')[1];
+         this.fillSearch = Action(function(project, keywords, next) {
+             var words = keywords.match(/keywords=([\w]*)/g).map(function(word) {
+                 return word.split('=')[1];
              }).join(' ');
-             elts.$search().val(keywords);
-             next(params);
+             elts.$search().val(words);
+             next(project, keywords);
          });
 
          this.clearSearch = Action(function(params, next) {

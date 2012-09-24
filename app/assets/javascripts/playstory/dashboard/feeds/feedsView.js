@@ -55,7 +55,7 @@
                 .map(modelsDef.asFeed)
                 .filter(function(feed) {
                     var params = Router.matchCurrentRoute('dashboard/past/:project/feed/:id/:limit');
-                    return feed.id == params[1];
+                    return (feed.id == params[1]);
                 })
                 .await(
                     bucket.collections('feeds').asFifo(limit)
@@ -67,7 +67,7 @@
                 .map(modelsDef.asFeed)
                 .filter(function(feed) {
                     var params = Router.matchCurrentRoute('dashboard/past/:project/feed/:id/:limit');
-                    return !feed.id == params[1];
+                    return !(feed.id == params[1]);
                 })
                 .await(
                     bucket.collections('feeds').asFifo(limit)
@@ -132,7 +132,7 @@
                 .map(this.pastDOM.newBookmark)
                 .await(server.bookmark.then(inboxView.dom.summupStarred))
                 .subscribe();
-            
+
             When(this.pastDOM.onSubmitCommentClick)
                 .map(this.pastDOM.newComment)
                 .await(server.saveNewComment.then(this.pastDOM.displayComment))
@@ -164,9 +164,9 @@
                 .subscribe();
 
             var goFeed = function(trigger) {
-                return Router.goAsAction('dashboard/past/:project/feed/:id/' + limit, function(uriPattern, feed) {
-                    return uriPattern.replace(':project', feed.project)
-                        .replace(':id', feed.id);
+                return Router.goAsAction('dashboard/past/:project/feed/:id/' + limit, function(uriPattern, params) {
+                    return uriPattern.replace(':project', params.project)
+                        .replace(':id', params.id);
                 }, trigger);
             };
 

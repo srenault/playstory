@@ -16,7 +16,8 @@
          var tmpl = _.template($("#discover_tmpl").html());
 
          this.render = function() {
-             elts.$middleColumn().append(tmpl({
+             console.log('render');
+             elts.$middleColumn().html(tmpl({
              }));
          };
 

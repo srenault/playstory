@@ -104,7 +104,7 @@
 
         this.stream = function(uriPattern, buildURI) {
             return Action(function(params, next) {
-                var uri = buildURI(uriPattern, params);
+                var uri = buildURI.apply(null, [uriPattern].concat(arguments[0]));
                 if(!_alreadyConnected(uri)) {
                     console.log("[Server] Bind to stream " + uri);
                     var source = new EventSource(uri);
@@ -117,24 +117,24 @@
             });
         };
 
-        this.streamFeeds = this.stream(this.urls.listen, function(uriPattern, params) {
-            return uriPattern.replace(':project', params[0]);
+        this.streamFeeds = this.stream(this.urls.listen, function(uriPattern, project) {
+            return uriPattern.replace(':project', project);
         }),
 
         this.closeStream = function(uriPattern) {
-            return Action(function(params, next) {
-                var nextURI = uriPattern.replace(':project', params[0]);
+            return Action(function(project, next) {
+                var nextURI = uriPattern.replace(':project', project);
                 if(!_alreadyConnected(nextURI)) {
                     _closeStream(uriPattern);
                 }
-                next(params);
+                next(project);
             });
         };
 
         this.fetch = function(uriPattern, buildURI) {
             return Action(function(params, next) {
                 var uri = uriPattern;
-                if(buildURI) uri = buildURI(uriPattern, params);
+                if(buildURI) uri = buildURI.apply(null, [uriPattern].concat(arguments[0]));
                 $.ajax({
                     url: uri,
                     dataType: 'json',
@@ -151,28 +151,28 @@
             });
         };
 
-        this.fetchInbox = this.fetch(this.urls.inbox, function(uriPattern, params) {
-            return uriPattern.replace(':project', params[0]);
+        this.fetchInbox = this.fetch(this.urls.inbox, function(uriPattern, project) {
+            return uriPattern.replace(':project', project);
         });
 
-        this.fetchFeedWithContext = this.fetch(this.urls.withContext, function(uriPattern, params) {
-            return uriPattern.replace(':project', params[0])
-                             .replace(':id', params[1])
-                             .replace(':limit', params[2]);
+        this.fetchFeedWithContext = this.fetch(this.urls.withContext, function(uriPattern, project, id, limit) {
+            return uriPattern.replace(':project', project)
+                             .replace(':id', id)
+                             .replace(':limit', limit);
         });
 
-        this.fetchFeedsByLevel = this.fetch(this.urls.byLevel, function(uriPattern, params) {
-            return uriPattern.replace(':project', params[0])
-                             .replace(':level', params[1]);
+        this.fetchFeedsByLevel = this.fetch(this.urls.byLevel, function(uriPattern, project, level) {
+            return uriPattern.replace(':project', project)
+                             .replace(':level', level);
         });
 
-        this.fetchLastFeeds = this.fetch(this.urls.last, function(uriPatten, params) {
-            return uriPatten.replace(':project', params[0]);
+        this.fetchLastFeeds = this.fetch(this.urls.last, function(uriPatten, project) {
+            return uriPatten.replace(':project', project);
         });
 
         this.fetchMoreFeeds = this.fetch(this.urls.more, function(uriPattern, source) {
             var lastFeed = bucket.collections('feeds').last();
-            var uri = uriPattern.replace(':project', source.params[0])
+            var uri = uriPattern.replace(':project', source.params[0]) //TODO
                                 .replace(':id', lastFeed.id)
                                 .replace(':limit', 6);
 
@@ -182,10 +182,10 @@
             return uri;
         });
 
-        this.searchFeeds = this.fetch('/dashboard/:project/search?:keywords', function(uriPattern, params) {
+        this.searchFeeds = this.fetch('/dashboard/:project/search?:keywords', function(uriPattern, project, keywords) {
             console.log("search");
-            return uriPattern.replace(':project', params[0])
-                             .replace(':keywords', params[1]);
+            return uriPattern.replace(':project', project)
+                             .replace(':keywords', keywords);
         });
 
         this.bookmark = Action(function(bookmark, next) {

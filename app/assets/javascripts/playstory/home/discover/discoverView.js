@@ -12,6 +12,7 @@
         this.dom = new Discover.DiscoverDOM();
 
         this.lazyInit = function() {
+            Router.from('*paths').when('home/discover', this.dom.renderAsAction);
         };
     };
 

@@ -12,6 +12,7 @@
         this.dom = new Overview.OverviewDOM();
 
         this.lazyInit = function() {
+            Router.from('*paths').when('home', this.dom.renderAsAction);
         };
     };
 

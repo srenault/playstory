@@ -86,17 +86,20 @@
          });
 
          this.refreshNavigation = Action(function(params, next) {
-             var noFilterURL = '#dashboard/past/:project'.replace(':project', params[0]);
-             elts.$all().attr('href', noFilterURL);
+             var project = params[0],
+                 level = params[1],
+                 allURI = '#dashboard/past/:project'.replace(':project', project);
+
+             elts.$all().attr('href', allURI);
              elts.$levels().each(function(index, l) {
                  var $level = $(l),
                      level = $level.attr('class');
                  if(level) {
-                     var uri = ('#dashboard/past/:project/level/' + level).replace(':project', params[0]);
+                     var uri = ('#dashboard/past/:project/level/' + level).replace(':project', project);
                      $level.find('a').attr('href', uri);
                  }
              });
-             next(params);
+             next(project, level);
          });
      };
 

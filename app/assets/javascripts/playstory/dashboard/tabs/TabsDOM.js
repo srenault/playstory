@@ -8,7 +8,6 @@
          console.log("[Tabs.DOM] Init tabs DOM");
          var self = this;
 
-         //DOM elements
          var elts = {
              $middleColumn: DOM.$elt('.column-middle'),
              $tabs: DOM.$elt('.tabs'),
@@ -58,13 +57,13 @@
              next(evt);
          });
 
-         this.refreshNavigation = Action(function(params, next) {
-             var pastURL = '#dashboard/past/:project'.replace(':project', params[0]);
+         this.refreshNavigation = Action(function(project, next) {
+             var pastURL = '#dashboard/past/:project'.replace(':project', project);
              elts.$pastTab().find('a').attr('href', pastURL);
 
-             var presentURL = '#dashboard/present/:project'.replace(':project', params[0]);
+             var presentURL = '#dashboard/present/:project'.replace(':project', project);
              elts.$presentTab().find('a').attr('href', presentURL);
-             next(params);
+             next(project);
          });
      };
 

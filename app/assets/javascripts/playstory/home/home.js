@@ -34,14 +34,15 @@
             Router.go('home');
         }
 
+        Router.fromStart().when('home*paths', layout.renderAsAction);
+
         menuView.lazyInit();
         overviewView.lazyInit();
+        discoverView.lazyInit();
 
-        Router.from('dashboard*paths').when('home').lazy(function() {
+        Router.from('dashboard*paths').when('home*paths').lazy(function() {
             return PlayStory.Dashboard.destroy.and(renderHome);
         });
-
-        Router.fromStart().when('home', renderHome);
 
         return {
             render       : renderHome,

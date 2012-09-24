@@ -48,7 +48,6 @@
             return Action(function(route, next) {
                 var params= RouterUtils.matchParams(currentRoute(), routeAsRegex);
                 next(params);
-                //next.apply(null, params);
             });
         };
 
@@ -136,7 +135,7 @@
             this.go = function(route, trigger) {
                 previousRoute =  currentRoute();
                 history.pushState({ }, route, "#" + route);
-                if(trigger) loadURL();
+                if(trigger) loadLastURL();
             };
 
             this.forward = function() {
@@ -148,10 +147,10 @@
             };
 
             this.goAsAction = function(uriPattern, buildURI, trigger) {
-                return Action(function(any, next) {
-                    var uri = buildURI(uriPattern, any);
+                return Action(function(params, next) {
+                    var uri = buildURI.apply(null, [uriPattern].concat(arguments[0]));
                     self.go(uri, trigger);
-                    next(any);
+                    next(params);
                 });
             };
 
