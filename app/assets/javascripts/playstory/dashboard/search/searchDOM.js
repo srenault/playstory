@@ -44,12 +44,14 @@
              return $(evt.currentTarget).val().split(' ');
          };
 
-         this.fillSearch = Action(function(project, keywords, next) {
+         this.fillSearch = Action(function(params, next) {
+             var project = params[0],
+                 keywords = params[1];
              var words = keywords.match(/keywords=([\w]*)/g).map(function(word) {
                  return word.split('=')[1];
              }).join(' ');
              elts.$search().val(words);
-             next(project, keywords);
+             next(params);
          });
 
          this.clearSearch = Action(function(params, next) {

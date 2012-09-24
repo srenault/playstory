@@ -36,7 +36,16 @@ case class Log(
   def countByLevel(): List[(String, Double)] = Log.countByLevel(project)
 }
 
-object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "project")) with Searchable {
+object Log extends MongoDB("logs") with Searchable {
+
+  override def indexes = List(
+    List("project"),
+    List("level"),
+    List("project", "level"),
+    List("keywords"),
+    List("level", "keywords"),
+    List("project", "level", "keywords")
+  )
 
   type LogFromWeb = (String, String, String, Date, String, String,
                      Long, String, String, String, String)
@@ -171,7 +180,13 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
   }
 
   def uncheckedCreate(log: JsObject) {
+    println("---------------------")
+    println(log)
+    println("---------------------")
     val mongoLog = Log.writeForMongo.writes(log)
+    println("---------------------")
+    println(mongoLog)
+    println("---------------------")
     collectAsync.uncheckedInsert(mongoLog)
   }
 
@@ -223,7 +238,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
         (__ \ 'date).json.pick.transform { json =>
           Json.obj("$date" -> json \ "date")
         }
-      )
+      ) and Searchable.writeAsKeywords (__ \ 'message)
     ) join
   }
 

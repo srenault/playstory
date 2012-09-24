@@ -28,7 +28,7 @@ trait Pulling {
     request.headers.get("ACCEPT").map( _ match {
       case "text/event-stream" => {
         Logger.debug("[Story] Pushing data using Server Sent Event");
-        Ok.stream(chunks &> filterByUser &> prettyfy &> EventSource()) withHeaders(CONTENT_TYPE -> "text/event-stream")
+        Ok.stream(chunks &> filterByUser &> EventSource()) withHeaders(CONTENT_TYPE -> "text/event-stream")
       }
       case _ => {
         Logger.debug("[Story] Pushing data using Commet");

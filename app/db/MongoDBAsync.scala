@@ -7,7 +7,7 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.Play.current
 import play.modules.reactivemongo._
-
+import reactivemongo.api.indexes.{ NSIndex, Index }
 import reactivemongo.api._
 import reactivemongo.bson._
 import reactivemongo.bson.handlers._
@@ -15,13 +15,12 @@ import reactivemongo.bson.handlers.DefaultBSONHandlers._
 
 import play.api.libs.iteratee.Iteratee
 
-class MongoDBAsync(collectName: String, indexes: Seq[String] = Nil) {
+class MongoDBAsync(val collectName: String) {
   import MongoDB._
 
   implicit val ec: ExecutionContext = ExecutionContext.Implicits.global
 
   lazy val collectAsync = ReactiveMongoPlugin.collection(collectName)
-  //indexes.foreach(index => collection.ensureIndex(index))
 }
 
 case class InsertException(message: String) extends Exception {
