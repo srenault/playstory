@@ -66,22 +66,8 @@ class StoryActor extends Actor {
   }
 
   private def pushToChannel(project: String, log: JsObject) = {
-    // Log.create(log).map {
-    //   case LastError(true, _, _, _, _) => {
-    //     println("Goooooddddddddd")
-    //     findChannels(project).foreach { channel =>
-    //       println("pushhhhinggggg")
-    //       channel.push(log)
-    //     }
-    //   }
-    //   case LastError(false, Some(err), Some(code), Some(errorMsg), _) =>
-    //     Logger.error("[Actors] Failed creating log : err { %s } ; code { %d } ; errorMsg { %s }".format(err, code, errorMsg))
-    //   case _ => Logger.error("[Actors] Something went wrong while creating a log")
-    // }
-
     Log.uncheckedCreate(log)
     findChannels(project).foreach { channel =>
-      println("pushhhhinggggg")
       channel.push(log)
     }
   }

@@ -161,9 +161,6 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
 
   def create(log: JsObject): Future[LastError] = {
     val mongoLog = Log.writeForMongo.writes(log)
-    println("-----------------------------")
-    println(mongoLog)
-    println("-----------------------------")
     collectAsync.insert[JsValue](mongoLog)
   }
 
@@ -180,7 +177,7 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     collectAsync.update[JsValue, JsValue](byId, toComments)
   }
 
-  val readFromWeb: Reads[LogFromWeb] = {
+  lazy val readFromWeb: Reads[LogFromWeb] = {
     (
       (__ \ 'project).read[String] and
       (__ \ 'logger).read[String] and
@@ -196,23 +193,25 @@ object Log extends MongoDB("logs", indexes = Seq("keywords", "level", "date", "p
     ) tupled
   }
 
-  val writeForStream: OWrites[JsValue] = {
-    val id = new ObjectId
+  lazy val writeForStream: OWrites[JsValue] = {
+    import reactivemongo.bson.BSONObjectID
+    def id = BSONObjectID.generate.stringify
     (
       (__).json.pick and
       (__ \ '_id).json.put(
-        JsString(id.toString)
+        Writes[JsValue](_ => JsString(id))
       ) and
       (__ \ 'comments).json.put(Json.arr())
     ) join
   }
 
-  val writeForMongo: OWrites[JsValue] = {
-    val id = new ObjectId
+  lazy val writeForMongo: OWrites[JsValue] = {
     (
       (__).json.pick and
       (__ \ '_id).json.put(
-        Json.obj("$oid" -> id.toString)
+        (__ \ '_id).json.pick.transform { json =>
+          Json.obj("$oid" -> json \ "_id")
+        }
       ) and
       (__ \ 'date).json.put(
         (__ \ 'date).json.pick.transform { json =>
