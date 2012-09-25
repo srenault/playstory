@@ -1,5 +1,9 @@
 *README currently in work*
 
+# Pre requirements
+This app works with play 2.1-SNAPSHOT.
+At the moment, you must checkout at this commit : a61a48e35a4c6c0e0d28966c84bcbbd0d4d4014a.
+
 # PlayStory #
 
 PlayStory is an app that receive logs over HTTP, persist them in MongoDB and display them in a Web page in real time.

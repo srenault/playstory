@@ -77,32 +77,14 @@ object Dashboard extends Controller with Secured with Pulling {
     } getOrElse BadRequest
   }
 
-  // def simpleUpdate() = Action { implicit request =>
-  //   import reactivemongo.bson._
-  //   import reactivemongo.bson.handlers.DefaultBSONHandlers._
-
-  //   val byLevel = BSONDocument("level" -> BSONString("WARN"))
-  //   val $setMessage = BSONDocument("message" -> BSONString("I was updated"))
-
-  //   Async {
-  //     Log.collectAsync.update(byLevel, $setMessage).map {
-  //       case e: LastError => Ok(e.toString)
-  //     }
-  //   }
-  // }
-
   def comment(project: String, id: String) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Comment log #%s from project %s".format(id, project))
     val logId = new ObjectId(id)
     request.body.asJson.map { comment =>
       Async {
-        
         Log.byId(logId).flatMap { logOpt =>
           logOpt.map { _ =>
-            Log.comment(logId, comment).orTimeout(5).map { //TODO
-              case Right(number) => println("right: " + number)
-              case Left(e) => println("left " + e)
-            }
+            Log.comment(logId, comment)
             Promise.pure(Ok)
           } getOrElse Promise.pure(
             BadRequest("Failed to comment log. The follow log was not found: " + id)
@@ -119,11 +101,7 @@ object Dashboard extends Controller with Secured with Pulling {
       Async {
         Log.byId(logId).flatMap {
           case Some(foundLog) => {
-            request.user.bookmark(logId).onComplete {
-              case Right(LastError(true, _, _, _, _)) => println("ok....")
-              case Right(LastError(false, Some(errMsg), code, errorMsg, doc)) => println("aie aie aie")
-              case Left(e) => println("mamamilla")
-            }
+            request.user.bookmark(logId)
             Promise.pure(Ok)
           }
           case _ => Promise.pure(

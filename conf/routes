@@ -23,8 +23,6 @@ POST    /dashboard/:project/log/:id/comment     controllers.Dashboard.comment(pr
 POST    /dashboard/:project/log/:id/bookmark    controllers.Dashboard.bookmark(project: String, id: String)
 POST    /dashboard/eval                         controllers.Dashboard.eval()
 
-#GET     /simpleUpdate                           controllers.Dashboard.simpleUpdate()
-
 # Map static resources from the /public folder to the /assets URL path
 
 GET     /assets/*file                           controllers.Assets.at(path="/public", file)
