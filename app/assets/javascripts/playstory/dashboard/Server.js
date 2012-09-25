@@ -170,14 +170,14 @@
             return uriPattern.replace(':project', project);
         });
 
-        this.fetchMoreFeeds = this.fetch(this.urls.more, function(uriPattern, source) {
+        this.fetchMoreFeeds = this.fetch(this.urls.more, function(uriPattern, params) {
             var lastFeed = bucket.collections('feeds').last();
-            var uri = uriPattern.replace(':project', source.params[0]) //TODO
+            var uri = uriPattern.replace(':project', params.project)
                                 .replace(':id', lastFeed.id)
                                 .replace(':limit', 6);
 
-            if(source.route == 'dashboard/past/:project/level/:level') {
-                uri += '?level=' + source.params[1];
+            if(params.level == 'dashboard/past/:project/level/:level') {
+                uri += '?level=' + params.level;
             }
             return uri;
         });

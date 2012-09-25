@@ -15,6 +15,11 @@
         this.presentDOM =  new Dashboard.Feeds.FeedsPresentDOM();
 
         this.lazyInit = function() {
+
+            /**
+             * Binding to server responses.
+             */
+
             server.onReceive(server.urls.listen)
                 .map(modelsDef.asFeed)
                 .await(
@@ -86,6 +91,27 @@
                 server.streamFeeds
             );
 
+            /**
+             * Binding to routes
+             */
+
+            var onlyRoutes = function(routes) {
+                return function() {
+                    var matchedRoutes = routes.filter(function(route) {
+                        return Router.isMatchCurrentRoute(route);
+                    });
+                    return (matchedRoutes.length > 0) && (bucket.collections('feeds').size() > 0);
+                };
+            };
+
+            var goFeed = function(trigger) {
+                return Router.goAsAction('dashboard/past/:project/feed/:id/' + limit,
+                       function(uriPattern, params) {
+                           return uriPattern.replace(':project', params.project)
+                                            .replace(':id', params.id);
+                       }, trigger);
+            };
+
             Router.when('dashboard/past/:project').chain(
                 searchView.dom.clearSearch,
                 bucket.collections('feeds').resetAsAction,
@@ -138,38 +164,15 @@
                 .await(server.saveNewComment.then(this.pastDOM.displayComment))
                 .subscribe();
 
-            var onlySpecifiedRoutes = function(routes) {
-                return function() {
-                    var matchedRoutes = routes.filter(function(route) {
-                        return Router.isMatchCurrentRoute(route);
-                    });
-                    if(matchedRoutes.length > 0) {
-                        return {
-                            route: matchedRoutes[0],
-                            params: Router.matchCurrentRoute(matchedRoutes[0])
-                        };
-                    } else return null;
-                };
-            };
-
-            var isRouteValid = function(params) {
-                return params != null && bucket.collections('feeds').size() > 0;
-            };
-
-            // When(this.pastDOM.onBottomPageReach)
-            //     .map(onlySpecifiedRoutes(['dashboard/past/:project',
-            //                               'dashboard/past/:project/level/:level',
-            //                               'dashboard/past/:project/feed/:id/:level']))
-            //     .filter(isRouteValid)
-            //     .await(server.fetchMoreFeeds)
-            //     .subscribe();
-
-            var goFeed = function(trigger) {
-                return Router.goAsAction('dashboard/past/:project/feed/:id/' + limit, function(uriPattern, params) {
-                    return uriPattern.replace(':project', params.project)
-                                     .replace(':id', params.id);
-                }, trigger);
-            };
+            When(this.pastDOM.onBottomPageReach)
+                .filter(onlyRoutes(['dashboard/past/:project',
+                                    'dashboard/past/:project/level/:level',
+                                    'dashboard/past/:project/feed/:id/:level']))
+                .map(function() {
+                    return Router.currentParams();
+                })
+                .await(server.fetchMoreFeeds)
+                .subscribe();
 
             When(this.pastDOM.onFeedClick)
                 .map(this.pastDOM.clickedFeed)
@@ -178,7 +181,9 @@
                         id: $feed.attr('id'),
                         project: $feed.data('project')
                     };
-                }).await(goFeed().and(this.pastDOM.highlightFeed)).subscribe();
+                }).await(
+                    goFeed().and(this.pastDOM.highlightFeed)
+                ).subscribe();
 
             When(this.presentDOM.onFeedClick)
                 .map(this.presentDOM.clickedFeed)
@@ -187,15 +192,21 @@
                         id: $feed.attr('id'),
                         project: $feed.data('project')
                     };
-                }).await(goFeed(true).and(this.pastDOM.highlightFeed)).subscribe();
+                }).await(
+                    goFeed(true).and(this.pastDOM.highlightFeed)
+                ).subscribe();
 
             When(this.pastDOM.onMoreFeedsClick)
-                .map(onlySpecifiedRoutes(['dashboard/past/:project',
-                                          'dashboard/past/:project/level/:level',
-                                          'dashboard/past/:project/feed/:id/:level']))
-                .filter(isRouteValid)
-                .map(function(res) {
-                    return res.params[0];
+                .filter(onlyRoutes(['dashboard/past/:project',
+                                    'dashboard/past/:project/level/:level',
+                                    'dashboard/past/:project/feed/:id/:level']))
+                .map(function() {
+                    var paramsAsArray = [];
+                    var params = Router.currentParams();
+                    for(var p in params) {
+                        paramsAsArray.push(params[p]);
+                    }
+                    return params;
                 })
                 .await(server.fetchLastFeeds.then(self.pastDOM.resetMoreFeeds))
                 .subscribe();
