@@ -48,15 +48,7 @@
                 .map(modelsDef.asFeed)
                 .await(
                     bucket.collections('feeds').putAsAction
-                   .and(self.pastDOM.displayPastFeed())
-            ).subscribe();
-
-            server.onReceive(server.urls.news)
-                .map(modelsDef.asFeed)
-                .await(
-                    bucket.collections('feeds').putAsAction
-                   .and(self.pastDOM.displayNewFeed())
-                   .then(self.pastDOM.hideMoreFeeds)
+                   .and(self.pastDOM.displayPastFeed)
             ).subscribe();
 
             server.onReceive(server.urls.withContext)
@@ -202,7 +194,10 @@
                                           'dashboard/past/:project/level/:level',
                                           'dashboard/past/:project/feed/:id/:level']))
                 .filter(isRouteValid)
-                .await(server.fetchNewFeeds)
+                .map(function(res) {
+                    return res.params[0];
+                })
+                .await(server.fetchLastFeeds.then(self.pastDOM.resetMoreFeeds))
                 .subscribe();
         };
     };

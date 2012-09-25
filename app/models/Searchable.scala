@@ -9,6 +9,7 @@ import reactivemongo.core.commands.LastError
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json._
+import play.api.libs.json.Json._
 import db._
 
 trait Searchable {
@@ -34,9 +35,11 @@ trait Searchable {
 
   def asKeywords(fields: List[String]): JsObject = Json.obj("keywords" -> fields.map(JsString(_)))
   def byKeywords(fields: List[Regex]): JsObject = {
-    Json.obj("keywords" -> Json.obj("$all" -> fields.map { k => 
-      Json.obj("$regex" -> k.toString)
-    }))
+    Json.obj("keywords" ->
+      Json.obj("$elemMatch" -> fields.map { k =>
+        Json.obj("$regex" -> k.toString)
+                                         }.foldLeft(Json.obj())((k1, k2) => k1 ++ k2))
+    )
   }
 }
 
@@ -49,7 +52,7 @@ object Searchable {
     (__ \ 'keywords).json.put(
       path.json.pick.transform { json =>
         val keywords = asWords((json \ "message").as[String]).map(JsString(_))
-        Json.arr(keywords)
+        JsArray(keywords)
       }
     )
   }
