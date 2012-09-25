@@ -25,11 +25,9 @@
                     keywords = 'keywords=' + keywords.reduce(function(query, keyword) {
                         return (query + '&keywords=' + keyword);
                     });
-
-                    return {
-                        keywords: keywords,
-                        project: 'onconnect'
-                    };
+                    var params =  Router.currentParams();
+                    params.keywords = keywords;
+                    return params;
             }).await(goSearchedFeed).subscribe();
         };
     };

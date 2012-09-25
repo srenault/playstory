@@ -77,26 +77,30 @@ object Log extends MongoDB("logs") with Searchable {
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList
   }
 
-  def search(project: String, fields: List[Regex], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
-    val byProject = Json.obj("project" -> project)
-    println("----------------------")
-    println(byKeywords(fields))
-    println("----------------------")
-    val jsonQuery = JsonQueryBuilder().query(byKeywords(fields)).sort("date" -> Descending)
+  def search(project: String, fields: List[Regex], level: Option[String], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
+    val byProject = project match {
+      case Project.ALL => Json.obj()
+      case _ => Json.obj("project" -> project)
+    }
+    val jsonQuery = JsonQueryBuilder().query(byKeywords(fields) ++ byProject).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
   def byProject(project: String, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
-    val byProject = Json.obj("project" -> project)
+    val byProject = project match {
+      case Project.ALL => Json.obj()
+      case _ => Json.obj("project" -> project)
+    }
     val jsonQuery = JsonQueryBuilder().query(byProject).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
-  def byLevel(level: String, projectOpt: Option[String] = None, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
+  def byLevel(level: String, project: String, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
     val byLevel = Json.obj("level" -> level.toUpperCase)
-    val byProject = projectOpt.map { project =>
-      Json.obj("project" -> project)
-    }.getOrElse(Json.obj())
+    val byProject = project match {
+      case Project.ALL => Json.obj()
+      case _ => Json.obj("project" -> project)
+    }
 
     val jsonQuery = JsonQueryBuilder().query(byProject ++ byLevel).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)

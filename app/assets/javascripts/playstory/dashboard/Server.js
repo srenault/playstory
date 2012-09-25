@@ -182,9 +182,11 @@
             return uri;
         });
 
-        this.searchFeeds = this.fetch('/dashboard/:project/search?:keywords', function(uriPattern, project, keywords) {
-            return uriPattern.replace(':project', project)
-                             .replace(':keywords', keywords);
+        this.searchFeeds = this.fetch('/dashboard/:project/search?:keywords', function(uriPattern, project, keywords, level) {
+            var uri = uriPattern.replace(':project', project)
+                                .replace(':keywords', keywords);
+            if(level) uri += '?level=' + level;
+            return uri;
         });
 
         this.bookmark = Action(function(bookmark, next) {

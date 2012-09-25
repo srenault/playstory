@@ -11,7 +11,7 @@ GET     /signin                                controllers.Application.signin()
 GET     /signout                                controllers.Application.signout()
 
 GET     /dashboard/all/bookmarks                controllers.Dashboard.bookmarks()
-GET     /dashboard/:project/search              controllers.Dashboard.search(project: String, keywords: List[String])
+GET     /dashboard/:project/search              controllers.Dashboard.search(project: String, keywords: List[String], level: Option[String])
 GET     /dashboard/:project/inbox               controllers.Dashboard.inbox(project: String)
 GET     /dashboard/:project/listen              controllers.Dashboard.listen(project: String)
 GET     /dashboard/:project/level/:level        controllers.Dashboard.byLevel(project: String, level: String)

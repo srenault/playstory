@@ -156,13 +156,13 @@
                 return params != null && bucket.collections('feeds').size() > 0;
             };
 
-            When(this.pastDOM.onBottomPageReach)
-                .map(onlySpecifiedRoutes(['dashboard/past/:project',
-                                          'dashboard/past/:project/level/:level',
-                                          'dashboard/past/:project/feed/:id/:level']))
-                .filter(isRouteValid)
-                .await(server.fetchMoreFeeds)
-                .subscribe();
+            // When(this.pastDOM.onBottomPageReach)
+            //     .map(onlySpecifiedRoutes(['dashboard/past/:project',
+            //                               'dashboard/past/:project/level/:level',
+            //                               'dashboard/past/:project/feed/:id/:level']))
+            //     .filter(isRouteValid)
+            //     .await(server.fetchMoreFeeds)
+            //     .subscribe();
 
             var goFeed = function(trigger) {
                 return Router.goAsAction('dashboard/past/:project/feed/:id/' + limit, function(uriPattern, params) {

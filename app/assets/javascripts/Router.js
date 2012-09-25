@@ -7,8 +7,9 @@
     PlayStory.Router = (function() {
         console.log("[PlayStory.Router] Init play story router");
 
-        var self=this,
+        var self = this,
             subscribers = [],
+            currentParams,
             previousRoute;
 
         var currentRoute = function() {
@@ -44,22 +45,42 @@
 
         var defaultRouter = newRouter();
 
-        var matchParams = function(routeAsRegex) {
+        var matchParams = function(uriPattern, routeAsRegex) {
             return Action(function(route, next) {
-                var params= RouterUtils.matchParams(currentRoute(), routeAsRegex);
-                next(params);
+                var values = RouterUtils.matchParams(currentRoute(), routeAsRegex);
+                var names = uriPattern.match(/:\w+/g);
+                if(names) {
+                    names = names.map(function(name) {
+                        return name.substring(1, name.length);
+                    });
+                }
+                next({
+                    names: names || [],
+                    values: values
+                });
             });
         };
 
         var subscribe = function(router, route, actions) {
             var routeAsRegex = RouterUtils.routeAsRegex(route);
+            var saveParams = Action(function(params, next) {
+                var result = {};
+                params.names.forEach(function(name, index) {
+                    result[name] = params.values[index];
+                });
+                self.currentParams = result;
+                next(params.values);
+            });
 
-            actions.unshift(matchParams(routeAsRegex));
+            actions.unshift(
+                matchParams(route, routeAsRegex).then(saveParams)
+            );
+
             var composedActions = actions.reduce(function(prevAction, currentAction) {
                 return prevAction.then(currentAction);
             });
 
-            var r = Match.regex(routeAsRegex, matchParams(routeAsRegex).then(composedActions));
+            var r = Match.regex(routeAsRegex, composedActions);
             router.match(r).subscribe();
 
             if(routeAsRegex.test(currentRoute())) {
@@ -103,8 +124,7 @@
         };
 
         return new (function() {
-            var self = this;
-
+            var that = this;
             this.currentRoute = currentRoute;
 
             this.when = PureRouter(defaultRouter);
@@ -149,7 +169,7 @@
             this.goAsAction = function(uriPattern, buildURI, trigger) {
                 return Action(function(params, next) {
                     var uri = buildURI.apply(null, [uriPattern].concat(arguments[0]));
-                    self.go(uri, trigger);
+                    that.go(uri, trigger);
                     next(params);
                 });
             };
@@ -166,7 +186,10 @@
                 var routeAsRegex = RouterUtils.routeAsRegex(patternURI);
                 return RouterUtils.matchParams(currentRoute(), routeAsRegex);
             };
+
+            this.currentParams = function() {
+                return self.currentParams;
+            };
         })();
     })();
-
 })(window.PlayStory || {}, window.RouterUtils || {});

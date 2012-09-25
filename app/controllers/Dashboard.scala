@@ -48,10 +48,10 @@ object Dashboard extends Controller with Secured with Pulling {
     }
   }
 
-  def search(project: String, keywords: List[String]) = Authenticated { implicit request =>
+  def search(project: String, keywords: List[String], level: Option[String]) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Searching logs for project " + project)
     AsyncResult {
-      Log.search(project, Searchable.asRegex(keywords)).map { foundLogs =>
+      Log.search(project, Searchable.asRegex(keywords), level).map { foundLogs =>
         Ok(JsArray(
           foundLogs.reverse.map(wrappedLog)
         ))
@@ -125,8 +125,7 @@ object Dashboard extends Controller with Secured with Pulling {
   def byLevel(project: String, level: String) = Action { implicit request =>
     Logger.info("[Dashboard] Getting logs by level for %s".format(project))
     Async {
-      val specificProject = if (project == Project.ALL) None else Some(project)
-      Log.byLevel(level, specificProject).map { logs =>
+      Log.byLevel(level, project).map { logs =>
         Ok(JsArray(
           logs.reverse.map(wrappedLog)
         ))
