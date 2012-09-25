@@ -52,13 +52,6 @@
             };
         };
 
-        var preventDefault = function(callback) {
-            return function(evt) {
-                evt.preventDefault();
-                callback(evt);
-            };
-        };
-
         this.onMoreFeedsClick = function(next) {
             elts.$moreFeeds().click(preventDefault(next));
         };
@@ -163,10 +156,11 @@
                     feed: feed,
                     commentView: function(comment) {
                         return commentTmpl({
-                            author: comment.author || { avatar: '/assets/images/avatars/srenault.contact@gmail.com.png',
-                                                        firstname: 'Sébastien',
-                                                        lastname: 'RENAULT'
-                                                      }, //TODO
+                            author: comment.author ||
+                                { avatar: '/assets/images/avatars/srenault.contact@gmail.com.png',
+                                  firstname: 'Sébastien',
+                                  lastname: 'RENAULT'
+                                }, //TODO
                             message: comment.message
                         });
                     }
@@ -185,10 +179,11 @@
                 feed: feed,
                 commentView: function(comment) {
                     return commentTmpl({
-                        author: comment.author || { avatar: '/assets/images/avatars/srenault.contact@gmail.com.png',
-                                                    firstname: 'Sébastien',
-                                                    lastname: 'RENAULT'
-                                                  }, //TODO
+                        author: comment.author ||
+                            { avatar: '/assets/images/avatars/srenault.contact@gmail.com.png',
+                              firstname: 'Sébastien',
+                              lastname: 'RENAULT'
+                            }, //TODO
                         message: comment.message
                     });
                 }

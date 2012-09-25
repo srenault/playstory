@@ -39,4 +39,11 @@
             next(any);
         });
     };
+
+    window.preventDefault = function(callback) {
+        return function(evt) {
+            evt.preventDefault();
+            callback(evt);
+        };
+    };
 })();

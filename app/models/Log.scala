@@ -9,7 +9,7 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.libs.json.util._
 import play.modules.reactivemongo.PlayBsonImplicits.JsValueWriter
-import reactivemongo.api.{QueryBuilder, QueryOpts}
+import reactivemongo.api.{QueryBuilder, QueryOpts, FailoverStrategy}
 import reactivemongo.api.SortOrder.Descending
 import reactivemongo.bson.handlers.DefaultBSONHandlers._
 import reactivemongo.core.commands.LastError
@@ -187,17 +187,11 @@ object Log extends MongoDB("logs") with Searchable {
   }
 
   def uncheckedCreate(log: JsObject) {
-    println("---------------------")
-    println(log)
-    println("---------------------")
     val mongoLog = Log.writeForMongo.writes(log)
-    println("---------------------")
-    println(mongoLog)
-    println("---------------------")
     collectAsync.uncheckedInsert(mongoLog)
   }
 
-  def comment(id: ObjectId, comment: JsValue) = {
+  def comment(id: ObjectId, comment: JsValue): Future[LastError] = {
     val byId = Json.obj("_id" -> Json.obj("$oid" -> id.toString))
     val toComments = Json.obj(
       "$push" -> Json.obj("comments" -> Comment.writeForMongo.writes(comment))

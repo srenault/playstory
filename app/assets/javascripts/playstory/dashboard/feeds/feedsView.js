@@ -150,6 +150,10 @@
                 server.streamFeeds
             ).and(server.fetchFeedWithContext);
 
+            /**
+             * Binding to DOM
+             */
+
             When(this.pastDOM.onNewCommentClick)
                 .await(this.pastDOM.displayNewComment)
                 .subscribe();
@@ -206,7 +210,7 @@
                     for(var p in params) {
                         paramsAsArray.push(params[p]);
                     }
-                    return params;
+                    return paramsAsArray;
                 })
                 .await(server.fetchLastFeeds.then(self.pastDOM.resetMoreFeeds))
                 .subscribe();

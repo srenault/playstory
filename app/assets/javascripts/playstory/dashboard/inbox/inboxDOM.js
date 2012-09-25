@@ -40,6 +40,7 @@
          this.destroyAsAction = asAction(self.destroy);
 
          var summup = function($counter) {
+             console.log('summup');
              var currentCounter = $counter.text().replace('(','')
                                                  .replace(')','');
 

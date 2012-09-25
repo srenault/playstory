@@ -31,7 +31,7 @@ object Comment {
     (
       (__).json.pick and
       (__ \ "_id").json.put(
-        Json.obj("_id" -> Json.obj("$oid" -> id.toString))
+        Json.obj("$oid" -> id.toString)
       )
     ) join
   }
