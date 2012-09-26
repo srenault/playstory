@@ -7,7 +7,8 @@
     Feeds.FeedsPastDOM = function() {
         console.log("[FeedsPast.DOM] Init feeds past DOM");
         var self = this,
-            bucket = PlayStory.Bucket;
+            bucket = PlayStory.Bucket,
+            lastBottomPage;
 
         var elts = {
             $middleColumn : DOM.$elt('.column-middle'),
@@ -46,10 +47,19 @@
                     clientHeight = document.documentElement.clientHeight,
                     scrollPos = window.pageYOffset;
 
-                if(pageHeight - (scrollPos + clientHeight) < 70){
+                var wait = function() {
+                    if(lastBottomPage) {
+                        var seconds = (Date.now() - lastBottomPage) / 1000;
+                        return seconds > 2;
+                    }
+                    return true;
+                };
+
+                if(pageHeight - (scrollPos + clientHeight) < 70 && wait()) {
+                    lastBottomPage = Date.now();
                     next();
                 }
-            };
+             };
         };
 
         this.onMoreFeedsClick = function(next) {

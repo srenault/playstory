@@ -10,7 +10,7 @@ import play.api.libs.json.Json._
 import play.api.libs.json.util._
 import play.modules.reactivemongo.PlayBsonImplicits.JsValueWriter
 import reactivemongo.api.{QueryBuilder, QueryOpts, FailoverStrategy}
-import reactivemongo.api.SortOrder.Descending
+import reactivemongo.api.SortOrder.{ Ascending, Descending }
 import reactivemongo.bson.handlers.DefaultBSONHandlers._
 import reactivemongo.core.commands.LastError
 import com.mongodb.casbah.Imports._
@@ -116,7 +116,7 @@ object Log extends MongoDB("logs") with Searchable {
       Json.obj("level" -> level.toUpperCase)
     }.getOrElse(Json.obj())
 
-    val jsonQuery = JsonQueryBuilder().query(byProject ++ byBefore ++ byLevel).sort("date" -> Descending)
+    val jsonQuery = JsonQueryBuilder().query(byProject ++ byBefore ++ byLevel).sort("date" -> Ascending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 

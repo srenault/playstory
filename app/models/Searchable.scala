@@ -37,13 +37,13 @@ trait Searchable {
 
   def byKeywords(fields: List[Regex]): JsObject = {
     Json.obj("keywords" -> fields.map { k =>
-        Json.obj("$regex" -> k.toString)
+        Json.obj("$regex" -> k.toString, "$options" -> "i")
     }.foldLeft(Json.obj())((k1, k2) => k1 ++ k2))
   }
 }
 
 object Searchable {
-  def asRegex(keywords: List[String]): List[Regex] = keywords.map(k => """^.*(i?)%s.*""".format(k).r)
+  def asRegex(keywords: List[String]): List[Regex] = keywords.map(k => """^.*%s.*""".format(k).r)
 
   def asWords(sentence: String): List[String] = sentence.split(" ").toList
 
