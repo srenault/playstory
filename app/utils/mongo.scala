@@ -1,13 +1,29 @@
-package utils.reactivemongo
+package utils.mongo
 
 import org.jboss.netty.buffer.ChannelBuffer
-import play.api.libs.json._
-import play.api.libs.json.Json._
-import play.modules.reactivemongo.PlayBsonImplicits._
 import reactivemongo.api.{ SortOrder, FlattenedCursor, Collection, QueryOpts }
+import reactivemongo.core.commands.LastError
 import reactivemongo.bson._
 import reactivemongo.bson.handlers._
 import reactivemongo.bson.handlers.DefaultBSONHandlers._
+import play.api.libs.json._
+import play.api.libs.json.Json._
+import play.api.mvc.Result
+import play.modules.reactivemongo.PlayBsonImplicits._
+
+object MongoUtils {
+  def handleLastError(lastError: LastError, success: => Result, failed: String => Result) = {
+    lastError match {
+      case LastError(true, _, _, _, _) => success
+      case LastError(false, Some(err), code, errorMsg, _) => {
+        val message = """Error : %s \n
+                         Error code: %d \n
+                         Error message: %s""".format(err, code, errorMsg)
+        failed(message)
+      }
+    }
+  }
+}
 
 case class QueryBuilder(
   queryDoc: Option[JsObject] = None,
@@ -43,27 +59,17 @@ case class QueryBuilder(
   def makeMergedBuffer :ChannelBuffer = {
     projectionDoc.map { p =>
       JsObjectWriter.write(makeQueryDocument ++ p)
-                     }.getOrElse {
-                       JsObjectWriter.write(makeQueryDocument)
-                     }
+    } getOrElse JsObjectWriter.write(makeQueryDocument)
   }
 
-  /**
-   * Sets the query (the selector document).
-   *
-   * @tparam Qry The type of the query. An implicit [[reactivemongo.bson.handlers.BSONWriter]][Qry] typeclass for handling it has to be in the scope.
-   */
   def query[Qry](selector: Qry)(implicit writer: BSONWriter[Qry]) :QueryBuilder = copy(queryDoc=Some(
     JsObjectReader.read(writer.write(selector))
   ))
 
-  /** Sets the query (the selector document). */
   def query(selector: JsObject) :QueryBuilder = copy(queryDoc=Some(selector))
 
-  /** Sets the sorting document. */
   def sort(document: JsObject) :QueryBuilder = copy(sortDoc=Some(document))
 
-  /** Sets the sorting document. */
   def sort( sorters: (String, SortOrder)* ) :QueryBuilder = copy(sortDoc = {
     if(sorters.size == 0)
       None
@@ -78,27 +84,16 @@ case class QueryBuilder(
     }
   })
 
-  /**
-   * Sets the projection document (for [[http://www.mongodb.org/display/DOCS/Retrieving+a+Subset+of+Fields retrieving only a subset of fields]]).
-   *
-   * @tparam Pjn The type of the projection. An implicit [[reactivemongo.bson.handlers.BSONWriter]][Pjn] typeclass for handling it has to be in the scope.
-   */
   def projection[Pjn](p: Pjn)(implicit writer: BSONWriter[Pjn]) :QueryBuilder = copy(projectionDoc=Some(
     JsObjectReader.read(writer.write(p))
   ))
 
-  /** Sets the hint document (a document that declares the index MongoDB should use for this query). */
-  def hint(document: JsObject) :QueryBuilder = copy(hintDoc=Some(document))
+   def hint(document: JsObject) :QueryBuilder = copy(hintDoc=Some(document))
 
-  /** Sets the hint document (a document that declares the index MongoDB should use for this query). */
-  def hint(indexName: String) :QueryBuilder = copy(hintDoc=Some(Json.obj(indexName -> 1)))
+   def hint(indexName: String) :QueryBuilder = copy(hintDoc=Some(Json.obj(indexName -> 1)))
 
-  //TODO def explain(flag: Boolean = true) :QueryBuilder = copy(explainFlag=flag)
-
-  /** Toggles [[http://www.mongodb.org/display/DOCS/How+to+do+Snapshotted+Queries+in+the+Mongo+Database snapshot mode]]. */
   def snapshot(flag: Boolean = true) :QueryBuilder = copy(snapshotFlag=flag)
 
-  /** Adds a comment to this query, that may appear in the MongoDB logs. */
   def comment(message: String) :QueryBuilder = copy(commentString=Some(message))
 }
 

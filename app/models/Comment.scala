@@ -1,18 +1,30 @@
 package models
 
+import scala.concurrent.Future
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.libs.json.util._
+import play.api.libs.concurrent.execution.defaultContext
 import db.MongoDB
 
-case class Comment(_id: ObjectId, author: ObjectId, message: String)
+case class Comment(_id: ObjectId, author: User, message: String)
 
 object Comment {
 
-  def apply(author: ObjectId, message: String): Comment = {
+  def apply(author: User, message: String): Comment = {
     Comment(new ObjectId, author, message)
+  }
+
+  def completeAuthor(author: User, comment: JsValue): JsValue =
+    writeAuthor(toJson(author)).writes(comment)
+
+  def writeAuthor(author: JsValue): Writes[JsValue] = {
+    (
+      (__).json.pick and
+      (__ \ 'author).json.put(author)
+    ) join
   }
 
   val writeForWeb: Writes[JsValue] = {
@@ -39,7 +51,7 @@ object Comment {
   implicit object CommentFormat extends Format[Comment] {
     def reads(json: JsValue): JsResult[Comment] = JsSuccess(Comment(
       (json \ "id").asOpt[String].map(id => new ObjectId(id)).getOrElse(new ObjectId),
-      new ObjectId((json \ "author").as[String]),
+      (json \ "author").as[User],
       (json \ "message").as[String]
     ))
 

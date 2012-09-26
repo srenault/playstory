@@ -13,8 +13,7 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.MongoConnection
 import reactivemongo.core.commands.LastError
 import reactivemongo.api.SortOrder.{ Ascending, Descending }
-import utils.reactivemongo._
-import utils.reactivemongo.{ QueryBuilder => JsonQueryBuilder }
+import utils.mongo.{ JsonQueryHelpers, QueryBuilder => JsonQueryBuilder }
 import db.MongoDB
 
 case class User(
@@ -72,6 +71,13 @@ object User extends MongoDB("users") {
     val byId = Json.obj("_id" -> Json.obj("$oid" -> id.toString))
     val jsonQuery = JsonQueryBuilder().query(byId)
     JsonQueryHelpers.find(collectAsync, jsonQuery).headOption
+  }
+
+  def byIds(ids: List[ObjectId], projection: Option[JsObject] = None): Future[List[JsValue]] = {
+    def asId(id: ObjectId) = Json.obj("$oid" -> id.toString)
+    val byIds = Json.obj("_id" -> Json.obj("$in" -> JsArray(ids.map(asId))))
+    val jsonQuery = JsonQueryBuilder(None, None, None, projection).query(byIds)
+    JsonQueryHelpers.find(collectAsync, jsonQuery).toList
   }
 
   def byEmail(email: String): Future[Option[JsValue]] = {

@@ -25,6 +25,7 @@ import actors.StoryActor._
 import akka.pattern.ask
 import akka.util.Timeout
 import akka.util.duration._
+import utils.mongo.MongoUtils
 
 import models.{ Log, User, Project, Comment, Searchable, DashboardData }
 
@@ -80,18 +81,24 @@ object Dashboard extends Controller with Secured with Pulling {
   def comment(project: String, id: String) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Comment log #%s from project %s".format(id, project))
     val logId = new ObjectId(id)
-    request.body.asJson.map { comment =>
+    request.body.asJson.map { rawComment =>
       Async {
-        Log.byId(logId).flatMap { logOpt =>
-          logOpt.map { _ =>
+        Log.byId(logId).flatMap {
+          case Some(_) => {
+            val comment = Comment.completeAuthor(request.user, rawComment)
             Log.comment(logId, comment).map {
-              case LastError(true, _, _, _, _) => Ok
-              case LastError(false, Some(errMsg), code, errorMsg, _) =>
-                InternalServerError("Failed comment one log %s : %s".format(id, errorMsg))
+              MongoUtils.handleLastError(
+                _,
+                Ok,
+                errorMsg => InternalServerError("Failed to comment one log :" + errorMsg)
+              )
             }
-          } getOrElse Promise.pure(
-            BadRequest("Failed to comment log. The follow log was not found: " + id)
-          )
+          }
+          case _ => {
+            Promise.pure(
+              BadRequest("Failed to comment log. The follow log was not found: " + id)
+            )
+          }
         }
       }
     } getOrElse BadRequest("Malformated JSON comment: " + request.body)
@@ -103,13 +110,14 @@ object Dashboard extends Controller with Secured with Pulling {
     if(!request.user.hasBookmark(logId)) {
       Async {
         Log.byId(logId).flatMap {
-          case Some(foundLog) => {
+          case Some(_) =>
             request.user.bookmark(logId).map {
-              case LastError(true, _, _, _, _) => Ok
-              case LastError(false, Some(errMsg), code, errorMsg, _) =>
-                InternalServerError("Failed comment one log %s : %s".format(id, errorMsg))
+              MongoUtils.handleLastError(
+                _,
+                Ok,
+                errorMsg => InternalServerError("Failed to bookmark one log :" + errorMsg)
+              )
             }
-          }
           case _ => Promise.pure(
             BadRequest("Failed to bookmark a log. It was not found")
           )

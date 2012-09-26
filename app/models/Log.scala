@@ -14,7 +14,7 @@ import reactivemongo.api.SortOrder.Descending
 import reactivemongo.bson.handlers.DefaultBSONHandlers._
 import reactivemongo.core.commands.LastError
 import com.mongodb.casbah.Imports._
-import utils.reactivemongo.{QueryBuilder => JsonQueryBuilder, _}
+import utils.mongo.{QueryBuilder => JsonQueryBuilder, _}
 import db.MongoDB
 
 case class Log(

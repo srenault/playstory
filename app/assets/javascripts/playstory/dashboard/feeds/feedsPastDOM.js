@@ -156,11 +156,7 @@
                     feed: feed,
                     commentView: function(comment) {
                         return commentTmpl({
-                            author: comment.author ||
-                                { avatar: '/assets/images/avatars/srenault.contact@gmail.com.png',
-                                  firstname: 'Sébastien',
-                                  lastname: 'RENAULT'
-                                }, //TODO
+                            author: comment.author,
                             message: comment.message
                         });
                     }

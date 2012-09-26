@@ -10,11 +10,9 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.Logger
 import db.MongoDB
-
 import play.modules.reactivemongo.PlayBsonImplicits.{ JsValueWriter, JsValueReader }
 import reactivemongo.core.commands.LastError
-import utils.reactivemongo._
-import utils.reactivemongo.{ QueryBuilder => JsonQueryBuilder }
+import utils.mongo.{ JsonQueryHelpers, QueryBuilder => JsonQueryBuilder }
 import reactivemongo.api.SortOrder.{ Ascending, Descending }
 
 case class Project(name: String, realName: String, avatar: Option[String] = None)
