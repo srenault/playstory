@@ -84,8 +84,11 @@ object Dashboard extends Controller with Secured with Pulling {
       Async {
         Log.byId(logId).flatMap { logOpt =>
           logOpt.map { _ =>
-            Log.comment(logId, comment)
-            Promise.pure(Ok)
+            Log.comment(logId, comment).map {
+              case LastError(true, _, _, _, _) => Ok
+              case LastError(false, Some(errMsg), code, errorMsg, _) =>
+                InternalServerError("Failed comment one log %s : %s".format(id, errorMsg))
+            }
           } getOrElse Promise.pure(
             BadRequest("Failed to comment log. The follow log was not found: " + id)
           )
@@ -101,8 +104,11 @@ object Dashboard extends Controller with Secured with Pulling {
       Async {
         Log.byId(logId).flatMap {
           case Some(foundLog) => {
-            request.user.bookmark(logId)
-            Promise.pure(Ok)
+            request.user.bookmark(logId).map {
+              case LastError(true, _, _, _, _) => Ok
+              case LastError(false, Some(errMsg), code, errorMsg, _) =>
+                InternalServerError("Failed comment one log %s : %s".format(id, errorMsg))
+            }
           }
           case _ => Promise.pure(
             BadRequest("Failed to bookmark a log. It was not found")

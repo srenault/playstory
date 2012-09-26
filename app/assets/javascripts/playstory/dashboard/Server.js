@@ -195,7 +195,6 @@
                 type: 'POST',
                 dataType: 'json',
                 success: function() {
-                    console.log('success');
                     next(bookmark);
                 }
             });
