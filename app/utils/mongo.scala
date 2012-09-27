@@ -34,7 +34,6 @@ case class QueryBuilder(
   snapshotFlag: Boolean = false,
   commentString: Option[String] = None
 ) {
-  /** Builds the query document by merging all the params. */
   def makeQueryDocument: JsObject = {
     if(!sortDoc.isDefined && !hintDoc.isDefined && !explainFlag && !snapshotFlag && !commentString.isDefined)
       queryDoc.getOrElse(Json.obj())
