@@ -12,7 +12,13 @@
         this.dom = new Overview.OverviewDOM();
 
         this.lazyInit = function() {
-            Router.from('*paths').when('home', this.dom.renderAsAction);
+            server.onReceive(server.urls.summary)
+           .await(this.dom.drawSummary).subscribe();
+
+            Router.from('*paths').when('home').chain(
+                this.dom.renderAsAction,
+                server.fetchSummary
+            );
         };
     };
 

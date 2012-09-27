@@ -63,17 +63,19 @@ object Dashboard extends Controller with Secured with Pulling {
   def inbox(project: String) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Getting inbox data of %s...".format(project))
     val countersOpt = project match {
-      case Project.ALL => Some(Log.countByLevel())
-      case projectName => Project.byName(project).map(_ => Log.countByLevel(project))
+      case Project.ALL => Some(Log.countByLevel(request.user.projectNames))
+      case projectName => Project.byName(project).map(_ => Log.countByLevel(List(project)))
     }
 
     countersOpt.map { counters =>
-      val inboxCounters = JsArray(counters.map { case(level, count) =>
-        Json.obj(
-          "counter" -> Json.obj("level" -> level, "count" -> count),
-          "src" -> JsString(request.uri)
-        )
-     })
+      val inboxCounters = JsArray(
+        counters.map { case(level, count) =>
+          Json.obj(
+            "counter" -> Json.obj("level" -> level, "count" -> count),
+            "src" -> JsString(request.uri)
+          )
+        }
+      )
      Ok(inboxCounters)
     } getOrElse BadRequest
   }

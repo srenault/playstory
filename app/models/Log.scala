@@ -33,7 +33,6 @@ case class Log(
   comments: Seq[Comment] = Nil
 ) {
   def comment(comment: JsValue) = Log.comment(_id, comment)
-  def countByLevel(): List[(String, Double)] = Log.countByLevel(project)
 }
 
 object Log extends MongoDB("logs") with Searchable {
@@ -134,7 +133,7 @@ object Log extends MongoDB("logs") with Searchable {
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
-  def countByLevel(projects: String*): List[(String, Double)] = {
+  def countByLevel(projects: List[String]): List[(String, Int)] = {
     val mapFunction = """
     function() {
         emit(this.level, { count: 1 });
@@ -169,9 +168,50 @@ object Log extends MongoDB("logs") with Searchable {
         value <- result.getAs[DBObject]("value")
         count <- value.getAs[Double]("count")
       } yield {
-        (level, count)
+        (level, count.toInt)
       }
     }
+  }
+
+  def countByLevel(): Map[String, List[(String, Int)]] = {
+    val mapFunction = """
+    function() {
+        emit({ level: this.level, project: this.project }, { count: 1 });
+    }
+    """
+
+    val reduceFunction = """
+    function(key, values) {
+        var result = { count:  0 };
+        values.forEach(function(value) {
+            result.count += value.count;
+        });
+        return result;
+     }
+     """
+
+    val r = collection.mapReduce(
+      mapFunction,
+      reduceFunction,
+      MapReduceInlineOutput
+    ).cursor.toList
+
+    val results = r.flatMap { result =>
+      for {
+        id      <- result.getAs[DBObject]("_id")
+        level   <- id.getAs[String]("level")
+        project <- id.getAs[String]("project")
+        value   <- result.getAs[DBObject]("value")
+        count   <- value.getAs[Double]("count")
+      } yield {
+        (project, level -> count.toInt)
+      }
+    }
+
+    results.groupBy{ case (project, _) => project }
+           .map { case (project, r) =>
+             project -> r.map(_._2)
+           }
   }
 
   def create(stream: Enumerator[JsObject]): Future[Int] = {

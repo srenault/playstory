@@ -9,7 +9,7 @@
         var layout       = new Init.Home.Layout();
         var menuView     = new Init.Home.Menu.MenuView();
         var discoverView = new Init.Home.Discover.DiscoverView();
-        var overviewView = new Init.Home.Overview.OverviewView();
+        var overviewView = new Init.Home.Overview.OverviewView(server);
 
         server.onReceiveFromTemplate('user')
             .await(PlayStory.Bucket.models('user').setAsAction)

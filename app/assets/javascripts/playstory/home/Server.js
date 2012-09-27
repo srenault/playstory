@@ -8,7 +8,7 @@
         console.log("[Server] Init Server");
 
         this.urls = {
-            //listen:      PlayRoutes.controllers.Dashboard.listen(':project').url
+            summary:      PlayRoutes.controllers.Home.summary().url
         };
 
         var self = this,
@@ -123,18 +123,23 @@
             });
         };
 
-        this.fetch = function(uriPattern, buildURI) {
+        this.fetch = function(uriPattern, buildURI, asStream) {
             return Action(function(params, next) {
                 var uri = uriPattern;
                 if(buildURI) uri = buildURI(uriPattern, params);
                 $.ajax({
                     url: uri,
                     dataType: 'json',
-                    success: function(feeds) {
-                        feeds.forEach(function(feed) {
-                            _streamChunks(feed);
-                        });
-                        next(params);
+                    success: function(data) {
+                        if(asStream) {
+                            data.forEach(function(feed) {
+                                _streamChunks(feed);
+                            });
+                            next(params);
+                        } else {
+                            _streamChunks(data);
+                            next(data);
+                        }
                     },
                     error: function() {
                         next(params);
@@ -143,19 +148,8 @@
             });
         };
 
-        // this.fetchInbox = this.fetch(this.urls.inbox, function(uriPattern, params) {
-        //     return uriPattern.replace(':project', params[0]);
-        // });
-
-        // this.bookmark = Action(function(bookmark, next) {
-        //     $.ajax({
-        //         url: PlayRoutes.controllers.Dashboard.bookmark(bookmark.project, bookmark.feed).url,
-        //         type: 'POST',
-        //         dataType: 'json',
-        //         success: function() {
-        //             next(bookmark);
-        //         }
-        //     });
-        // });
+        this.fetchSummary = this.fetch(this.urls.summary, function(uriPattern, any) {
+            return uriPattern;
+        });
     };
 })(window.PlayStory.Init.Home);
