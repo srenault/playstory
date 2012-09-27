@@ -48,31 +48,32 @@
     };
 
     window.Charts = {
-        drawStackedBars: function(input, legend, elt, colors, onClickLegend) {
+        drawStackedBars: function(input, axisX, elt, rangeColor, onClickAxisX, renderLegend) {
             var n = 4,
                 m = 4,
                 data = d3.layout.stack()(input),
-                color = d3.interpolateHcl(colors.start, colors.end);
+                color = d3.interpolateHcl(rangeColor.start, rangeColor.end),
+                colors = [];
 
             var margin = 20,
                 width = 600,
                 height = 300 - .5 - margin;
 
-            mx = m,
-            my = d3.max(data, function(d) {
-                return d3.max(d, function(d) {
-                    return d.y0 + d.y;
-                });
-            }),
-            mz = d3.max(data, function(d) {
-                return d3.max(d, function(d) {
-                    return d.y;
-                });
-            }),
-            x = function(d) { return d.x * width / mx; },
-            y0 = function(d) { return height - d.y0 * height / my; },
-            y1 = function(d) { return height - (d.y + d.y0) * height / my; },
-            y2 = function(d) { return d.y * height / mz; };
+            var mx = m,
+                my = d3.max(data, function(d) {
+                    return d3.max(d, function(d) {
+                        return d.y0 + d.y;
+                    });
+                }),
+                mz = d3.max(data, function(d) {
+                    return d3.max(d, function(d) {
+                        return d.y;
+                    });
+                }),
+                x = function(d) { return d.x * width / mx; },
+                y0 = function(d) { return height - d.y0 * height / my; },
+                y1 = function(d) { return height - (d.y + d.y0) * height / my; },
+                y2 = function(d) { return d.y * height / mz; };
 
             var vis = d3.select(elt)
                     .append('svg')
@@ -83,7 +84,11 @@
             var layers = vis.selectAll('g.layer')
                     .data(data)
                     .enter().append('g')
-                    .style('fill', function(d, i) { return color(i / n - 1); })
+                    .style('fill', function(d, i) {
+                        var c = color(i / n - 1);
+                        colors.push(c);
+                        return c;
+                    })
                     .attr('class', 'layer');
 
             var bars = layers.selectAll('g.bar')
@@ -91,7 +96,6 @@
                     .enter().append('g')
                     .attr('class', 'bar')
                     .attr('transform', function(d) { return 'translate(' + x(d) + ',0)'; });
-
 
             bars.append('rect')
                 .attr('width', x({x: .9}))
@@ -114,11 +118,10 @@
                     .append('a')
                     .attr('href', '#')
                     .on('click', function(l) {
-                        console.log(l);
-                        onClickLegend(legend[l.x]);
+                        onClickAxisX(axisX[l.x]);
                     })
                     .text(function(d, i) {
-                        return legend[i];
+                        return axisX[i];
                     });
 
             vis.append('line')
@@ -126,6 +129,8 @@
                 .attr('x2', width - x({x: .1}))
                 .attr('y1', height)
                 .attr('y2', height);
+
+            renderLegend(colors);
         }
     };
 })();

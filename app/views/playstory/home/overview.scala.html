@@ -5,3 +5,11 @@
     <div id="chart"></div>
   </div>
 </script>
+
+<script id="overview_chart_legend_tmpl" type="text/html">
+  <ul class="legend">
+    <% levels.forEach(function(level, index) { %>
+    <li><span class="color" style="background:<%= colors[index] %>;"></span><%= level %></li>
+    <% }) %>
+  </ul>
+</script>

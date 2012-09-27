@@ -8,7 +8,6 @@
         console.log("[Overview.View] Init Overview view");
         var self = this;
 
-        //Init
         this.dom = new Overview.OverviewDOM();
 
         this.lazyInit = function() {
@@ -19,6 +18,14 @@
                 this.dom.renderAsAction,
                 server.fetchSummary
             );
+
+            When(this.dom.onProjectClick)
+            .await(Router.goAsAction("dashboard/past/:project",
+                function(uriPattern, project) {
+                    return uriPattern.replace(':project', project);
+                },
+                true
+            )).subscribe();
         };
     };
 

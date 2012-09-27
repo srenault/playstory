@@ -43,7 +43,7 @@
            .and(appsView.dom.destroyAsAction)
         );
 
-        Router.from('home').when('dashboard*paths', PlayStory.Home.destroy.and(renderDashboard));
+        Router.from('home*path').when('dashboard*paths', PlayStory.Home.destroy.and(renderDashboard));
         Router.fromStart().when('dashboard*paths', renderDashboard);
 
         return {
