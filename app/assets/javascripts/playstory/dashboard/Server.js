@@ -176,7 +176,7 @@
                                 .replace(':id', lastFeed.id)
                                 .replace(':limit', 6);
 
-            if(params.level == 'dashboard/past/:project/level/:level') {
+            if(params.level) {
                 uri += '?level=' + params.level;
             }
             return uri;

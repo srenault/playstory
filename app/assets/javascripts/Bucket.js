@@ -38,6 +38,7 @@
 
                 this.onSet = function(next) {
                     _subscribe('model_' + name, next);
+                    _call('collect_' + name, collection);
                 };
 
                 this.get = function() {
@@ -58,8 +59,8 @@
                 };
 
                 this.set = function(collection) {
-                    _call('collect_' + name, collection);
                     _collections[name] = collection;
+                    _call('collect_' + name, collection);
                 };
 
                 this.put = function(model) {

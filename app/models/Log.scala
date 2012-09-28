@@ -158,7 +158,8 @@ object Log extends MongoDB("logs") with Searchable {
     }
   }
 
-  def countByLevel(): Map[String, List[(String, Int)]] = {
+  def countByLevelAndProject(projects: List[String]): Map[String, List[(String, Int)]] = {
+    val byProjects = MongoDBObject("project" -> MongoDBObject("$in" -> projects))
     val mapFunction = """
     function() {
         emit({ level: this.level, project: this.project }, { count: 1 });
@@ -178,7 +179,8 @@ object Log extends MongoDB("logs") with Searchable {
     val r = collection.mapReduce(
       mapFunction,
       reduceFunction,
-      MapReduceInlineOutput
+      MapReduceInlineOutput,
+      Some(byProjects)
     ).cursor.toList
 
     val results = r.flatMap { result =>

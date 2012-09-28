@@ -42,7 +42,7 @@ object Home extends Controller with Secured {
 
   def summary() = Authenticated { implicit request =>
     Logger.info("[Dashboard] Getting summary data...")
-    val summary = Log.countByLevel().map { case (project, counters) =>
+    val summary = Log.countByLevelAndProject(request.user.projectNames).map { case (project, counters) =>
       Json.obj(
         "project" -> project,
         "counters" -> counters.map { case(level, count) =>
