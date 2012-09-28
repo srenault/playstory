@@ -9,7 +9,8 @@
 
         this.urls = {
             summary:      PlayRoutes.controllers.Home.summary().url,
-            allProjects:  PlayRoutes.controllers.Home.allProjects().url
+            allProjects:  PlayRoutes.controllers.Home.allProjects().url,
+            createProject: PlayRoutes.controllers.Home.createProject().url
         };
 
         var self = this,
@@ -155,6 +156,19 @@
 
         this.fetchAllProjects = this.fetch(this.urls.allProjects, function(uriPattern, any) {
             return uriPattern;
+        });
+
+        this.createProject = Action(function(project, next) {
+            $.ajax({
+                url: PlayRoutes.controllers.Home.createProject().url,
+                data: JSON.stringify(project),
+                type: 'POST',
+                dataType: 'json',
+                contentType: 'application/json',
+                success: function() {
+                    next(project);
+                }
+            });
         });
     };
 })(window.PlayStory.Init.Home);

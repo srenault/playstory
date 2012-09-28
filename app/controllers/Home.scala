@@ -10,8 +10,11 @@ import models.Project
 
 object Home extends Controller with Secured {
 
-  def createProject(project: String) = Authenticated { implicit request =>
-    Ok
+  def createProject() = Authenticated { implicit request =>
+    request.body.asJson.map { json =>
+       Project.createIfNot(json)
+       Ok
+    }.getOrElse(BadRequest)
   }
 
   def follow(project: String) = Authenticated { implicit request =>
