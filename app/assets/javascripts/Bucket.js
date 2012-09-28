@@ -7,7 +7,24 @@
     PlayStory.Bucket  = new (function() {
 
         var _collections = [],
-            _models = [];
+            _models = [],
+            subscriptions = [];
+
+        var _subscribe = function(name, callback) {
+            subscriptions[name] = subscriptions[name] || [];
+            subscriptions[name].push(callback);
+        };
+
+        var _call = function(name, data) {
+            for(var _name in subscriptions) {
+                if(_name == name) {
+                    var callbacks = subscriptions[name];
+                    callbacks.forEach(function(callback) {
+                        callback(data);
+                    });
+                }
+            }
+        };
 
         this.collections = function(name) {
 
@@ -18,6 +35,10 @@
 
             return new (function() {
                 var self = this;
+
+                this.onSet = function(next) {
+                    _subscribe('model_' + name, next);
+                };
 
                 this.get = function() {
                     return collection();
@@ -37,6 +58,7 @@
                 };
 
                 this.set = function(collection) {
+                    _call('collect_' + name, collection);
                     _collections[name] = collection;
                 };
 
@@ -87,8 +109,13 @@
             return new (function() {
                 var self = this;
 
+                this.onSet = function(next) {
+                    _subscribe('model_' + name, next);
+                };
+
                 this.set = function(model) {
                     _models[name] = model;
+                    _call('model_' + name, model);
                 };
 
                 this.get = function() {

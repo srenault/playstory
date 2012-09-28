@@ -32,14 +32,13 @@
 
          this.destroyAsAction = asAction(self.destroy);
 
-         this.updateFollowedProjects = Action(function(any, next) {
-             var user = bucket.models('user').get();
+         this.updateFollowedProjects = Action(function(user, next) {
              user.projects.forEach(function(project) {
                  elts.$projectsContainer().append(
                      $('<li><a href="#dashboard/past/:project">:project</a></li>'.replace(/:project/g, project))
                  );
              });
-             next(any);
+             next(user);
          });
 
          this.refreshNavigation = function(pastOrPresent) {

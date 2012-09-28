@@ -35,7 +35,7 @@ case class User(
 
   def isFollowedProject(project: String): Boolean = projectNames.find(_ == project).isDefined
 
-  def projects: Future[List[JsValue]] = Project.byNames(projectNames:_*)
+  def projects(): Future[List[JsValue]] = Project.byNames(projectNames:_*)
 
   def follow(projectName: String): Option[Future[LastError]] = {
     if(!isFollowedProject(projectName))

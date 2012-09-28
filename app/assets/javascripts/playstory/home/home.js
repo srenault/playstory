@@ -11,12 +11,12 @@
         var discoverView = new Init.Home.Discover.DiscoverView();
         var overviewView = new Init.Home.Overview.OverviewView(server);
 
-        server.onReceiveFromTemplate('user')
-            .await(PlayStory.Bucket.models('user').setAsAction)
-            .subscribe();
-
         server.onReceiveFromTemplate('projects')
             .await(PlayStory.Bucket.collections('projects').setAsAction)
+            .subscribe();
+
+        server.onReceiveFromTemplate('user')
+            .await(PlayStory.Bucket.models('user').setAsAction)
             .subscribe();
 
         var renderHome = layout.renderAsAction.then(

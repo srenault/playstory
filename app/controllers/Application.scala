@@ -28,7 +28,7 @@ object Application extends Controller with GoogleOpenID with Secured {
     Async {
       val project = Project("onconnect", "ONconnect", Some("/assets/images/avatars/onconnect.png"))
       Project.createIfNot(toJson(project))
-      Project.all().map { projects =>
+      request.user.projects().map { projects =>
         Ok(views.html.playstory.index(
           request.user,
           DashboardData(request.user, projects)
