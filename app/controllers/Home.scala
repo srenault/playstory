@@ -8,10 +8,6 @@ import models.Log
 
 object Home extends Controller with Secured {
 
-  def projects() = Authenticated { implicit request =>
-    Ok
-  }
-
   def createProject(project: String) = Authenticated { implicit request =>
     Ok
   }

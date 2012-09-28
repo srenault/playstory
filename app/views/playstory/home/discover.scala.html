@@ -2,6 +2,20 @@
 
 <script id="discover_tmpl" type="text/html">
   <div class="content-middle discover">
-    [Discover]
+    <fieldset>
+      <legend>Create a project</legend>
+      <form name="create_project">
+        <label for="name">Name</label>
+        <input type="text" name="name" />
+        <label for="name">Real name</label>
+        <input type="text" name="realName" />
+        <button>Create</button>
+      </form>
+    </fieldset>
+    <fieldset>
+      <legend>Projects</legend>
+      <ul class="projects">
+      </ul>
+    </fieldset>
   </div>
 </script>
