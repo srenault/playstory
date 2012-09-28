@@ -52,7 +52,7 @@ object Dashboard extends Controller with Secured with Pulling {
   def search(project: String, keywords: List[String], level: Option[String]) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Searching logs for project " + project)
     AsyncResult {
-      Log.search(project, Searchable.asRegex(keywords), level).map { foundLogs =>
+      Log.search(projects(project), Searchable.asRegex(keywords), level).map { foundLogs =>
         Ok(JsArray(
           foundLogs.reverse.map(wrappedLog)
         ))
@@ -62,22 +62,16 @@ object Dashboard extends Controller with Secured with Pulling {
 
   def inbox(project: String) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Getting inbox data of %s...".format(project))
-    val countersOpt = project match {
-      case Project.ALL => Some(Log.countByLevel(request.user.projectNames))
-      case projectName => Project.byName(project).map(_ => Log.countByLevel(List(project)))
-    }
-
-    countersOpt.map { counters =>
-      val inboxCounters = JsArray(
-        counters.map { case(level, count) =>
-          Json.obj(
-            "counter" -> Json.obj("level" -> level, "count" -> count),
-            "src" -> JsString(request.uri)
-          )
-        }
-      )
-     Ok(inboxCounters)
-    } getOrElse BadRequest
+    val counters = Log.countByLevel(request.user.projectNames)
+    val inboxCounters = JsArray(
+      counters.map { case(level, count) =>
+        Json.obj(
+          "counter" -> Json.obj("level" -> level, "count" -> count),
+          "src" -> JsString(request.uri)
+        )
+      }
+    )
+    Ok(inboxCounters)
   }
 
   def comment(project: String, id: String) = Authenticated { implicit request =>
@@ -139,10 +133,10 @@ object Dashboard extends Controller with Secured with Pulling {
     }
   }
 
-  def byLevel(project: String, level: String) = Action { implicit request =>
+  def byLevel(project: String, level: String) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Getting logs by level for %s".format(project))
     Async {
-      Log.byLevel(level, project).map { logs =>
+      Log.byLevel(level, projects(project)).map { logs =>
         Ok(JsArray(
           logs.reverse.map(wrappedLog)
         ))
@@ -150,7 +144,7 @@ object Dashboard extends Controller with Secured with Pulling {
     }
   }
 
-  def more(project: String, id: String, limit: Int, level: Option[String]) = Action { implicit request =>
+  def more(project: String, id: String, limit: Int, level: Option[String]) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Getting more logs from project %s and log %s.".format(project, id))
     val logRefId = new ObjectId(id)
     Async {
@@ -159,7 +153,7 @@ object Dashboard extends Controller with Secured with Pulling {
           logRef <- logRefOpt
           date   <- Log.json.date(logRef)
         } yield {
-          Log.byProjectBefore(project, date, level, limit).map { logsAfter =>
+          Log.byProjectBefore(projects(project), date, level, limit).map { logsAfter =>
             Ok(JsArray(
               logsAfter.reverse.map(wrappedLog)
             ))
@@ -171,7 +165,7 @@ object Dashboard extends Controller with Secured with Pulling {
     }
   }
 
-  def withContext(project: String, id: String, limit: Int) = Action { implicit request =>
+  def withContext(project: String, id: String, limit: Int) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Getting on log %s with its context for project %s.".format(project, id))
     val limitBefore = scala.math.round(limit/2)
     val logId = new ObjectId(id)
@@ -181,9 +175,9 @@ object Dashboard extends Controller with Secured with Pulling {
           log  <- logOpt
           date <- Log.json.date(log)
         } yield {
-          Log.byProjectBefore(project, date, None, limitBefore).flatMap { beforeLogs =>
+          Log.byProjectBefore(projects(project), date, None, limitBefore).flatMap { beforeLogs =>
             val limitAfter = (limitBefore - beforeLogs.size) + limitBefore
-            Log.byProjectAfter(project, date, None, limitAfter).map { afterLogs =>
+            Log.byProjectAfter(projects(project), date, None, limitAfter).map { afterLogs =>
               val logWithContext = afterLogs ::: (log :: beforeLogs)
               Ok(JsArray(
                 logWithContext.reverse.map(wrappedLog)
@@ -197,7 +191,7 @@ object Dashboard extends Controller with Secured with Pulling {
     }
   }
 
-  def lastFrom(project: String, from: Long) = Action { implicit request =>
+  def lastFrom(project: String, from: Long) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Getting history of %s from %".format(project, from))
     Async {
       project match {
@@ -206,7 +200,7 @@ object Dashboard extends Controller with Secured with Pulling {
             logs.reverse.map(wrappedLog)
           ))
         }
-        case _ => Log.byProjectAfter(project, new Date(from)).map { logs =>
+        case _ => Log.byProjectAfter(projects(project), new Date(from)).map { logs =>
           Ok(JsArray(
             logs.reverse.map(wrappedLog)
           ))
@@ -215,7 +209,7 @@ object Dashboard extends Controller with Secured with Pulling {
     }
   }
 
-  def last(project: String) = Action { implicit request =>
+  def last(project: String) = Authenticated { implicit request =>
     Logger.info("[Dashboard] Getting history of %s".format(project))
     Async {
       project match {
@@ -224,7 +218,7 @@ object Dashboard extends Controller with Secured with Pulling {
             logs.reverse.map(wrappedLog)
           ))
         }
-        case _ => Log.byProject(project).map { logs =>
+        case _ => Log.byProject(projects(project)).map { logs =>
           Ok(JsArray(
             logs.reverse.map(wrappedLog)
           ))
@@ -253,6 +247,13 @@ object Dashboard extends Controller with Secured with Pulling {
       "log" -> Log.writeForWeb.writes(log),
       "src" -> request.uri
     )
+  }
+
+  private def projects(project: String)(implicit request: AuthenticatedRequest): List[String] = {
+    project match {
+      case Project.ALL => request.user.projectNames
+      case _ => List(project)
+    }
   }
 }
 

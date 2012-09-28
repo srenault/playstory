@@ -76,60 +76,45 @@ object Log extends MongoDB("logs") with Searchable {
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList
   }
 
-  def search(project: String, fields: List[Regex], level: Option[String], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
-    val byProject = project match {
-      case Project.ALL => Json.obj()
-      case _ => Json.obj("project" -> project)
-    }
-    val jsonQuery = JsonQueryBuilder().query(byKeywords(fields) ++ byProject).sort("date" -> Descending)
+  def search(projects: List[String], fields: List[Regex], level: Option[String], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
+    val byProjects = Json.obj("project" -> Json.obj("$in" -> projects))
+    val jsonQuery = JsonQueryBuilder().query(byKeywords(fields) ++ byProjects).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
-  def byProject(project: String, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
-    val byProject = project match {
-      case Project.ALL => Json.obj()
-      case _ => Json.obj("project" -> project)
-    }
-    val jsonQuery = JsonQueryBuilder().query(byProject).sort("date" -> Descending)
+  def byProject(projects: List[String], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
+    val byProjects = Json.obj("project" -> Json.obj("$in" -> projects))
+    val jsonQuery = JsonQueryBuilder().query(byProjects).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
-  def byLevel(level: String, project: String, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
+  def byLevel(level: String, projects: List[String], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
+    val byProjects = Json.obj("project" -> Json.obj("$in" -> projects))
     val byLevel = Json.obj("level" -> level.toUpperCase)
-    val byProject = project match {
-      case Project.ALL => Json.obj()
-      case _ => Json.obj("project" -> project)
-    }
 
-    val jsonQuery = JsonQueryBuilder().query(byProject ++ byLevel).sort("date" -> Descending)
+    val jsonQuery = JsonQueryBuilder().query(byProjects ++ byLevel).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
-  def byProjectBefore(project: String, before: Date, levelOpt: Option[String] = None, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
-    val byProject = project match {
-      case Project.ALL => Json.obj()
-      case _ => Json.obj("project" -> project)
-    }
+  def byProjectBefore(projects: List[String], before: Date, levelOpt: Option[String] = None, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
+    val byProjects = Json.obj("project" -> Json.obj("$in" -> projects))
     val byBefore = Json.obj("date" -> Json.obj("$lt" -> Json.obj("$date" -> before.getTime)))
     val byLevel = levelOpt.map { level =>
       Json.obj("level" -> level.toUpperCase)
     }.getOrElse(Json.obj())
 
-    val jsonQuery = JsonQueryBuilder().query(byProject ++ byBefore ++ byLevel).sort("date" -> Ascending)
+    val jsonQuery = JsonQueryBuilder().query(byProjects ++ byBefore ++ byLevel).sort("date" -> Ascending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
-  def byProjectAfter(project: String, before: Date, levelOpt: Option[String] = None, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
-    val byProject = project match {
-      case Project.ALL => Json.obj()
-      case _ => Json.obj("project" -> project)
-    }
+  def byProjectAfter(projects: List[String], before: Date, levelOpt: Option[String] = None, max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
+    val byProjects = Json.obj("project" -> Json.obj("$in" -> projects))
     val byAfter = Json.obj("date" -> Json.obj("$gt" -> Json.obj("$date" -> before.getTime)))
     val byLevel = levelOpt.map { level =>
       Json.obj("level" -> level.toUpperCase)
     }.getOrElse(Json.obj())
 
-    val jsonQuery = JsonQueryBuilder().query(byProject ++ byAfter ++ byLevel).sort("date" -> Descending)
+    val jsonQuery = JsonQueryBuilder().query(byProjects ++ byAfter ++ byLevel).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 
