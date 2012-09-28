@@ -8,9 +8,11 @@
         console.log("[Server] Init Server");
 
         this.urls = {
-            summary:      PlayRoutes.controllers.Home.summary().url,
-            allProjects:  PlayRoutes.controllers.Home.allProjects().url,
-            createProject: PlayRoutes.controllers.Home.createProject().url
+            summary:        PlayRoutes.controllers.Home.summary().url,
+            allProjects:    PlayRoutes.controllers.Home.allProjects().url,
+            createProject:  PlayRoutes.controllers.Home.createProject().url,
+            follow:         function (project) { return PlayRoutes.controllers.Home.follow(project).url; },
+            unfollow:       function (project) { return PlayRoutes.controllers.Home.unfollow(project).url; }
         };
 
         var self = this,
@@ -169,6 +171,23 @@
                     next(project);
                 }
             });
+        });
+
+        this.followOrUnfollow = Action(function (actionAndProject, next) {
+            var url;
+
+            if (actionAndProject.action == 'follow')
+                url = self.urls.follow(actionAndProject.project);
+            else
+                url = self.urls.unfollow(actionAndProject.project);
+
+            $.ajax({
+                url: url,
+                type: 'PUT',
+                success: function () {
+                    next(actionAndProject);
+                }
+            })
         });
     };
 })(window.PlayStory.Init.Home);

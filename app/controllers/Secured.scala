@@ -20,8 +20,7 @@ trait Secured {
             jsonUser <- maybeUser
             user     <- jsonUser.asOpt[User]
           } yield {
-            val mockUser = User.assignAvatar(user).copy(projectNames = List("onconnect"))
-            securedAction(AuthenticatedRequest(mockUser, request)) //TODO
+            securedAction(AuthenticatedRequest(user, request)) //TODO
           }
         }.await match {
           case Redeemed(Some(r)) => r

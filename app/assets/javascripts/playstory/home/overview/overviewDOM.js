@@ -44,41 +44,45 @@
                 projects = [],
                 levels = [];
 
-            var addToLevels = function(level) {
-                var found = levels.filter(function(l) {
-                    return level == l;
+            if (data.summary.length) {
+                var addToLevels = function(level) {
+                    var found = levels.filter(function(l) {
+                        return level == l;
+                    });
+                    if(!found.length) levels.push(level);
+                };
+
+                data.summary.forEach(function(proj, projIndex) {
+                    projects.push(proj.project);
+                    proj.counters.forEach(function(counter, index) {
+                        addToLevels(counter.level);
+                        inputs[index] = inputs[index] ||  [];
+                        inputs[index].push({ x: projIndex, y: counter.count});
+                    });
                 });
-                if(!found.length) levels.push(level);
-            };
 
-            data.summary.forEach(function(proj, projIndex) {
-                projects.push(proj.project);
-                proj.counters.forEach(function(counter, index) {
-                    addToLevels(counter.level);
-                    inputs[index] = inputs[index] ||  [];
-                    inputs[index].push({ x: projIndex, y: counter.count});
-                });
-            });
+                var onClickAxisX = function(project) {
+                    _call('overview-legend', project);
+                };
 
-            var onClickAxisX = function(project) {
-                _call('overview-legend', project);
-            };
+                var renderLegend = function(colors) {
+                    elts.$overview().prepend(tmplChartLegend({
+                        levels: levels,
+                        colors: colors
+                    }));
+                };
 
-            var renderLegend = function(colors) {
-                elts.$overview().prepend(tmplChartLegend({
-                    levels: levels,
-                    colors: colors
-                }));
-            };
+                Charts.drawStackedBars(
+                        inputs,
+                        projects,
+                        elts.$chart()[0],
+                        { start: "#91adc7", end: "#637a8f" },
+                        onClickAxisX,
+                        renderLegend
+                        );
+            }
 
-            Charts.drawStackedBars(
-                inputs,
-                projects,
-                elts.$chart()[0],
-                { start: "#91adc7", end: "#637a8f" },
-                onClickAxisX,
-                renderLegend
-            );
+            next(data);
        });
 
         this.render = function() {

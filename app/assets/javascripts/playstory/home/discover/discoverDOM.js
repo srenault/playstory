@@ -2,17 +2,18 @@
  * discoverDOM.js
  */
 
-(function(Discover, DOM) {
+(function(Discover, DOM, bucket) {
 
      Discover.DiscoverDOM = function() {
          console.log("[Discover.DOM] Init Discover DOM");
          var self = this;
 
          var elts = {
-             $middleColumn : DOM.$elt('.column-middle'),
-             $discover : DOM.$elt('.discover'),
-             $createProject : DOM.$elt('form[name=create_project] button'),
-             $projects : DOM.$elt('.projects')
+             $middleColumn:   DOM.$elt('.column-middle'),
+             $discover:       DOM.$elt('.discover'),
+             $createProject:  DOM.$elt('form[name=create_project] button'),
+             $projects:       DOM.$elt('.projects'),
+             $followLink:     DOM.$elt('.follow-link')
          };
 
          var tmpl        = _.template($("#discover_tmpl").html()),
@@ -35,9 +36,31 @@
             elts.$createProject().click(preventDefault(next));
          }
 
+         this.onFollowClick = function(next){
+            elts.$discover().on('click', '.follow-link', preventDefault(next));
+         }
+
          this.displayProjects = Action(function(projects, next) {
-             elts.$discover().append(tmplProject({projects: projects.projects}));
+             var currentUser = bucket.models('user').get();
+
+             elts.$discover().append(tmplProject({
+                 projects: projects.projects.map(function (project) {
+                     project.isFollowed = _.contains(currentUser.projects, project.name);
+                     return project;
+                 })
+             }));
+
              next(projects);
+         });
+         this.updateFollowingStatus = Action(function(actionAndProject, next) {
+             if (actionAndProject.action == 'follow') {
+                 actionAndProject.element.text('Unfollow');
+                 actionAndProject.element.data('follow-action', 'unfollow');
+             } else {
+                 actionAndProject.element.text('Follow');
+                 actionAndProject.element.data('follow-action', 'follow');
+             }
+             next(actionAndProject);
          });
 
          this.addProject = Action(function(project, next) {
@@ -47,4 +70,6 @@
          return this;
      };
 
- })(window.PlayStory.Init.Home.Discover, window.DOM);
+ })(window.PlayStory.Init.Home.Discover,
+    window.DOM,
+    PlayStory.Bucket);

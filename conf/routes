@@ -13,6 +13,9 @@ GET     /signout                                controllers.Application.signout(
 GET     /home/summary                           controllers.Home.summary()
 GET     /home/projects                          controllers.Home.allProjects
 
+PUT     /home/follow/:project                   controllers.Home.follow(project: String)
+PUT     /home/unfollow/:project                 controllers.Home.unfollow(project: String)
+
 POST     /projects                               controllers.Home.createProject()
 
 GET     /dashboard/all/bookmarks                controllers.Dashboard.bookmarks()

@@ -30,6 +30,17 @@
             })
             .await(server.createProject.then(this.dom.addProject))
             .subscribe();
+
+            When(this.dom.onFollowClick)
+            .map(function (evt) {
+                var $link   = $(evt.currentTarget),
+                    action  = $link.data('follow-action'),
+                    project = $link.data('follow-project');
+
+                return { action: action, project: project, element: $link };
+            })
+            .await(server.followOrUnfollow.then(this.dom.updateFollowingStatus))
+            .subscribe();
         };
     };
 

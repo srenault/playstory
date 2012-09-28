@@ -16,11 +16,32 @@
 </script>
 
 <script id="discover_project_tmpl" type="text/html">
+  <%
+  %>
+
   <fieldset>
     <legend>Projects</legend>
     <ul class="projects">
       <% projects.forEach(function(project) { %>
-        <li><%= project.name %></li>
+        <li>
+          <%= project.name %>
+          -
+          <% if (project.isFollowed) { %>
+            <a href='#'
+              data-follow-project='<%= project.name %>'
+              data-follow-action='unfollow'
+              class='follow-link'>
+              Unfollow
+            </a>
+          <% } else { %>
+            <a href='#'
+              data-follow-project='<%= project.name %>'
+              data-follow-action='follow'
+              class='follow-link'>
+              Follow
+            </a>
+          <% } %>
+        </li>
       <% }); %>
     </ul>
   </fieldset>

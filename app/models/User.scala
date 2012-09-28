@@ -37,10 +37,12 @@ case class User(
 
   def projects(): Future[List[JsValue]] = Project.byNames(projectNames:_*)
 
-  def follow(projectName: String): Option[Future[LastError]] = {
-    if(!isFollowedProject(projectName))
-      Some(User.follow(_id, projectName))
-    else None
+  def follow(projectName: String): Future[LastError] = {
+    User.follow(_id, projectName)
+  }
+
+  def unfollow(projectName: String): Future[LastError] = {
+    User.unfollow(_id, projectName)
   }
 
   def bookmark(keptLog: ObjectId) = User.bookmark(_id, keptLog)
@@ -105,6 +107,12 @@ object User extends MongoDB("users") {
   def follow(id: ObjectId, project: String): Future[LastError] = {
     val byId = Json.obj("_id" -> Json.obj("$oid" -> id.toString))
     val toProjects = Json.obj("$addToSet" -> Json.obj("projects" -> project))
+    collectAsync.update[JsValue, JsValue](byId, toProjects)
+  }
+
+  def unfollow(id: ObjectId, project: String): Future[LastError] = {
+    val byId = Json.obj("_id" -> Json.obj("$oid" -> id.toString))
+    val toProjects = Json.obj("$pull" -> Json.obj("projects" -> project))
     collectAsync.update[JsValue, JsValue](byId, toProjects)
   }
 

@@ -7,6 +7,7 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import models.Log
 import models.Project
+import utils.mongo.MongoUtils
 
 object Home extends Controller with Secured {
 
@@ -18,11 +19,27 @@ object Home extends Controller with Secured {
   }
 
   def follow(project: String) = Authenticated { implicit request =>
-    Ok
+    Async {
+      request.user.follow(project).map { lastError =>
+        MongoUtils.handleLastError(
+          lastError,
+          Ok,
+          message => InternalServerError(message)
+        )
+      }
+    }
   }
 
   def unfollow(project: String) = Authenticated { implicit request =>
-    Ok
+    Async {
+      request.user.unfollow(project).map { lastError =>
+        MongoUtils.handleLastError(
+          lastError,
+          Ok,
+          message => InternalServerError(message)
+        )
+      }
+    }
   }
 
   def changeAvatar() = Authenticated { implicit request =>
