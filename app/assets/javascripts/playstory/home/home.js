@@ -8,7 +8,7 @@
         var server       = new Init.Home.Server();
         var layout       = new Init.Home.Layout();
         var menuView     = new Init.Home.Menu.MenuView();
-        var discoverView = new Init.Home.Discover.DiscoverView();
+        var discoverView = new Init.Home.Discover.DiscoverView(server);
         var overviewView = new Init.Home.Overview.OverviewView(server);
 
         server.onReceiveFromTemplate('projects')

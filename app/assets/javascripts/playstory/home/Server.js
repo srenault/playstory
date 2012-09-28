@@ -8,7 +8,8 @@
         console.log("[Server] Init Server");
 
         this.urls = {
-            summary:      PlayRoutes.controllers.Home.summary().url
+            summary:      PlayRoutes.controllers.Home.summary().url,
+            allProjects:  PlayRoutes.controllers.Home.allProjects().url
         };
 
         var self = this,
@@ -149,6 +150,10 @@
         };
 
         this.fetchSummary = this.fetch(this.urls.summary, function(uriPattern, any) {
+            return uriPattern;
+        });
+
+        this.fetchAllProjects = this.fetch(this.urls.allProjects, function(uriPattern, any) {
             return uriPattern;
         });
     };

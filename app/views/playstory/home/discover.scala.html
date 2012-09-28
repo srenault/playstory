@@ -12,10 +12,16 @@
         <button>Create</button>
       </form>
     </fieldset>
-    <fieldset>
-      <legend>Projects</legend>
-      <ul class="projects">
-      </ul>
-    </fieldset>
   </div>
+</script>
+
+<script id="discover_project_tmpl" type="text/html">
+  <fieldset>
+    <legend>Projects</legend>
+    <ul class="projects">
+      <% projects.forEach(function(project) { %>
+        <li><%= project.name %></li>
+      <% }); %>
+    </ul>
+  </fieldset>
 </script>

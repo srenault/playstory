@@ -2,9 +2,11 @@ package controllers
 
 import play.api._
 import play.api.mvc._
+import play.api.libs.concurrent.execution.defaultContext
 import play.api.libs.json._
 import play.api.libs.json.Json._
 import models.Log
+import models.Project
 
 object Home extends Controller with Secured {
 
@@ -22,6 +24,17 @@ object Home extends Controller with Secured {
 
   def changeAvatar() = Authenticated { implicit request =>
     Ok
+  }
+
+  def allProjects() = Authenticated { implicit request =>
+    Async {
+      Project.all().map { projects =>
+        Ok(Json.obj(
+          "src"      -> request.uri,
+          "projects" -> JsArray(projects)
+        ))
+      }
+    }
   }
 
   def summary() = Authenticated { implicit request =>

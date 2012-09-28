@@ -11,6 +11,7 @@ GET     /signin                                controllers.Application.signin()
 GET     /signout                                controllers.Application.signout()
 
 GET     /home/summary                           controllers.Home.summary()
+GET     /home/projects                          controllers.Home.allProjects
 
 GET     /dashboard/all/bookmarks                controllers.Dashboard.bookmarks()
 GET     /dashboard/:project/search              controllers.Dashboard.search(project: String, keywords: List[String], level: Option[String])

@@ -13,10 +13,10 @@
              $discover : DOM.$elt('.discover')
          };
 
-         var tmpl = _.template($("#discover_tmpl").html());
+         var tmpl        = _.template($("#discover_tmpl").html()),
+             tmplProject = _.template($("#discover_project_tmpl").html());
 
          this.render = function() {
-             console.log('render');
              elts.$middleColumn().html(tmpl({
              }));
          };
@@ -28,6 +28,11 @@
          };
 
          this.destroyAsAction = asAction(self.destroy);
+
+         this.displayProjects = Action(function(projects, next) {
+             elts.$discover().append(tmplProject({projects: projects.projects}));
+             next(projects);
+         });
 
          return this;
      };
