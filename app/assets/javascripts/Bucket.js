@@ -27,7 +27,6 @@
         };
 
         this.collections = function(name) {
-
             var collection = function() {
                 _collections[name] = _collections[name] || [];
                 return _collections[name];

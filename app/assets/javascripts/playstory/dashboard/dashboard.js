@@ -17,23 +17,14 @@
             inboxView
         );
 
-        var bind = Action(function(evt, next) {
-            tabsView.lazyInit();
-            inboxView.lazyInit();
-            appsView.lazyInit();
-            searchView.lazyInit();
-            feedsView.lazyInit();
-            next(evt);
-        });
-
         var renderDashboard = layout.renderAsAction.then(
-            searchView.dom.renderAsAction
-           .and(tabsView.dom.renderAsAction)
-           .and(inboxView.dom.renderAsAction)
+            searchView.dom.renderAsAction.then(searchView.lazyInit)
+           .and(tabsView.dom.renderAsAction.then(tabsView.lazyInit))
+           .and(inboxView.dom.renderAsAction.then(inboxView.lazyInit))
            .and(feedsView.pastDOM.renderAsAction)
-           .and(feedsView.presentDOM.renderAsAction)
-           .and(appsView.dom.renderAsAction)
-        ).and(bind);
+           .then(feedsView.presentDOM.renderAsAction.then(feedsView.lazyInit))
+           .and(appsView.dom.renderAsAction.then(appsView.lazyInit))
+        );
 
         var destroyDashboard = layout.destroyAsAction.then(
             tabsView.dom.destroyAsAction
@@ -43,7 +34,9 @@
            .and(appsView.dom.destroyAsAction)
         );
 
-        Router.from('home*path').when('dashboard*paths', PlayStory.Home.destroy.and(renderDashboard));
+        Router.from('home*path').when('dashboard*paths').lazy(function() {
+            return PlayStory.Home.destroy.and(renderDashboard);
+        });
         Router.fromStart().when('dashboard*paths', renderDashboard);
 
         return {

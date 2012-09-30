@@ -80,9 +80,8 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-    var server = PlayStory.Home.Server;
-    server.fromTemplate('projects', @Html(dashboardData.projectsJson));
-    server.fromTemplate('user', @Html(dashboardData.userJson));
+    PlayStory.Bucket.collections('projects').set(@Html(dashboardData.projectsJson));
+    PlayStory.Bucket.models('user').set(@Html(dashboardData.userJson))
 });
 </script>
 }

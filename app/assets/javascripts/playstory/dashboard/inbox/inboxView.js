@@ -12,42 +12,44 @@
 
         this.dom = new Inbox.InboxDOM();
 
-        this.lazyInit = function() {
+        this.lazyInit = Action(function(any, next) {
             server.onReceive(server.urls.listen)
                 .map(modelsDef.asFeed)
-                .await(this.dom.updateLevels)
+                .await(self.dom.updateLevels)
                 .subscribe();
 
             server.onReceive(server.urls.inbox)
-                .await(this.dom.initLevels)
+                .await(self.dom.initLevels)
                 .subscribe();
 
             Router.when('dashboard/past/:project').chain(
                 server.fetchInbox,
-                this.dom.refreshNavigation,
-                this.dom.updateStarred
+                self.dom.refreshNavigation,
+                self.dom.updateStarred
             );
 
             Router.when('dashboard/present/:project').chain(
                 server.fetchInbox,
-                this.dom.refreshNavigation
+                self.dom.refreshNavigation
             );
 
             Router.when('dashboard/past/:project/level/:level').chain(
                 server.fetchInbox,
-                this.dom.refreshNavigation
+                self.dom.refreshNavigation
             );
 
             Router.when('dashboard/past/:project/search/*keywords').chain(
                 server.fetchInbox,
-                this.dom.refreshNavigation
+                self.dom.refreshNavigation
             );
 
             Router.when('dashboard/past/:project/feed/:id/:limit').chain(
                 server.fetchInbox,
-                this.dom.refreshNavigation
+                self.dom.refreshNavigation
             );
-        };
+
+            next(any);
+        });
     };
 
 })(window.PlayStory,

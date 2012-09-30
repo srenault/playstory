@@ -14,25 +14,21 @@
         this.pastDOM    =  new Dashboard.Feeds.FeedsPastDOM();
         this.presentDOM =  new Dashboard.Feeds.FeedsPresentDOM();
 
-        this.lazyInit = function() {
-
-            /**
-             * Binding to server responses.
-             */
+        this.lazyInit = Action(function(any, next) {
 
             server.onReceive(server.urls.listen)
                 .map(modelsDef.asFeed)
                 .await(
                  bucket.collections('feeds').putAsAction
-                .and(this.presentDOM.displayNewFeed())
-                .then(this.pastDOM.updateCounter)
+                .and(self.presentDOM.displayNewFeed())
+                .then(self.pastDOM.updateCounter)
             ).subscribe();
 
             server.onReceive(server.urls.last)
                 .map(modelsDef.asFeed)
                 .await(
                     bucket.collections('feeds').asFifo(limit)
-                   .and(this.pastDOM.displayNewFeed(limit))
+                   .and(self.pastDOM.displayNewFeed(limit))
             ).subscribe();
 
             server.onReceive(server.urls.byLevel)
@@ -64,8 +60,8 @@
                 })
                 .await(
                     bucket.collections('feeds').asFifo(limit)
-                       .and(this.pastDOM.displayNewFeed(limit)
-                       .then(this.pastDOM.highlightFeed))
+                       .and(self.pastDOM.displayNewFeed(limit)
+                       .then(self.pastDOM.highlightFeed))
                 ).subscribe();
 
             server.onReceive(server.urls.withContext)
@@ -81,19 +77,15 @@
 
             server.onReceive('/dashboard/:project/search?*keywords')
                   .map(modelsDef.asFeed)
-                  .await(this.pastDOM.displayNewFeed())
+                  .await(self.pastDOM.displayNewFeed())
                   .subscribe();
 
             Router.when('dashboard/past/:project/search/*keywords').chain(
-                this.pastDOM.clearFeeds,
+                self.pastDOM.clearFeeds,
                 searchView.dom.fillSearch,
                 server.searchFeeds,
                 server.streamFeeds
             );
-
-            /**
-             * Binding to routes
-             */
 
             var onlyRoutes = function(routes) {
                 return function() {
@@ -115,7 +107,7 @@
             Router.when('dashboard/past/:project').chain(
                 searchView.dom.clearSearch,
                 bucket.collections('feeds').resetAsAction,
-                this.pastDOM.clearFeeds,
+                self.pastDOM.clearFeeds,
                 server.closeStream(server.urls.listen),
                 server.streamFeeds
             ).and(server.fetchLastFeeds);
@@ -129,7 +121,7 @@
             Router.when('dashboard/past/:project/level/:level').chain(
                 searchView.dom.clearSearch,
                 bucket.collections('feeds').resetAsAction,
-                this.pastDOM.clearFeeds,
+                self.pastDOM.clearFeeds,
                 server.closeStream(server.urls.listen),
                 server.streamFeeds,
                 server.fetchFeedsByLevel
@@ -138,37 +130,33 @@
             Router.when('dashboard/bookmarks').chain(
                 searchView.dom.clearSearch,
                 bucket.collections('feeds').resetAsAction,
-                this.pastDOM.clearFeeds,
+                self.pastDOM.clearFeeds,
                 server.fetch(server.urls.bookmarks)
             );
 
             Router.when('dashboard/past/:project/feed/:id/:limit').chain(
                 searchView.dom.clearSearch,
                 bucket.collections('feeds').resetAsAction,
-                this.pastDOM.clearFeeds,
+                self.pastDOM.clearFeeds,
                 server.closeStream(server.urls.listen),
                 server.streamFeeds
             ).and(server.fetchFeedWithContext);
 
-            /**
-             * Binding to DOM
-             */
-
-            When(this.pastDOM.onNewCommentClick)
-                .await(this.pastDOM.displayNewComment)
+            When(self.pastDOM.onNewCommentClick)
+                .await(self.pastDOM.displayNewComment)
                 .subscribe();
 
-            When(this.pastDOM.onBookmarkClick)
-                .map(this.pastDOM.newBookmark)
+            When(self.pastDOM.onBookmarkClick)
+                .map(self.pastDOM.newBookmark)
                 .await(server.bookmark.then(inboxView.dom.summupStarred))
                 .subscribe();
 
-            When(this.pastDOM.onSubmitCommentClick)
-                .map(this.pastDOM.newComment)
-                .await(server.saveNewComment.then(this.pastDOM.displayComment))
+            When(self.pastDOM.onSubmitCommentClick)
+                .map(self.pastDOM.newComment)
+                .await(server.saveNewComment.then(self.pastDOM.displayComment))
                 .subscribe();
 
-            When(this.pastDOM.onBottomPageReach)
+            When(self.pastDOM.onBottomPageReach)
                 .filter(onlyRoutes(['dashboard/past/:project',
                                     'dashboard/past/:project/level/:level',
                                     'dashboard/past/:project/feed/:id/:level']))
@@ -178,29 +166,29 @@
                 .await(server.fetchMoreFeeds)
                 .subscribe();
 
-            When(this.pastDOM.onFeedClick)
-                .map(this.pastDOM.clickedFeed)
+            When(self.pastDOM.onFeedClick)
+                .map(self.pastDOM.clickedFeed)
                 .map(function($feed) {
                     return {
                         id: $feed.attr('id'),
                         project: $feed.data('project')
                     };
                 }).await(
-                    goFeed().and(this.pastDOM.highlightFeed)
+                    goFeed().and(self.pastDOM.highlightFeed)
                 ).subscribe();
 
-            When(this.presentDOM.onFeedClick)
-                .map(this.presentDOM.clickedFeed)
+            When(self.presentDOM.onFeedClick)
+                .map(self.presentDOM.clickedFeed)
                 .map(function($feed) {
                     return {
                         id: $feed.attr('id'),
                         project: $feed.data('project')
                     };
                 }).await(
-                    goFeed(true).and(this.pastDOM.highlightFeed)
+                    goFeed(true).and(self.pastDOM.highlightFeed)
                 ).subscribe();
 
-            When(this.pastDOM.onMoreFeedsClick)
+            When(self.pastDOM.onMoreFeedsClick)
                 .filter(onlyRoutes(['dashboard/past/:project',
                                     'dashboard/past/:project/level/:level',
                                     'dashboard/past/:project/feed/:id/:level']))
@@ -214,7 +202,9 @@
                 })
                 .await(server.fetchLastFeeds.then(self.pastDOM.resetMoreFeeds))
                 .subscribe();
-        };
+
+            next(any);
+        });
     };
 
 })(window.PlayStory,

@@ -10,15 +10,17 @@
 
         this.dom = new Apps.AppsDOM();
 
-        this.lazyInit = function() {
+        this.lazyInit = Action(function(any, next) {
             When(Bucket.models('user').onSet)
-                .await(this.dom.updateFollowedProjects)
+                .await(self.dom.updateFollowedProjects)
                 .subscribe();
 
-            Router.when('dashboard/past/:project', this.dom.refreshNavigation('past'));
-            Router.when('dashboard/present/:project', this.dom.refreshNavigation('present'));
-            Router.when('dashboard/past/:project/level/:level',this.dom.refreshNavigation('past'));
-        };
+            Router.when('dashboard/past/:project', self.dom.refreshNavigation('past'));
+            Router.when('dashboard/present/:project', self.dom.refreshNavigation('present'));
+            Router.when('dashboard/past/:project/level/:level',self.dom.refreshNavigation('past'));
+
+            next(any);
+        });
     };
 
 })(window.PlayStory.Init.Dashboard.Apps,

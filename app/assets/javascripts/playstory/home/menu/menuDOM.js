@@ -16,8 +16,7 @@
          var tmpl = _.template($("#menu_tmpl").html());
 
          this.render = function() {
-             elts.$leftColumn().append(tmpl({
-             }));
+             elts.$leftColumn().html(tmpl({}));
          };
 
          this.renderAsAction = asAction(self.render);

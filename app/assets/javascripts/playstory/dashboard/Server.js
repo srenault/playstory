@@ -76,15 +76,6 @@
             _streamChunks(JSON.parse(any.data));
         };
 
-        this.fromTemplate = function(name, any) {
-            var wrapped = {
-                src : '/template',
-                data : any,
-                name: name
-            };
-            _streamChunks(wrapped);
-        };
-
         this.onReceive = function(uri) {
             console.log("[Server] Subscribe to " + uri);
             return When(function(next) {

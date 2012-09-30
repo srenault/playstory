@@ -86,7 +86,8 @@
        });
 
         this.render = function() {
-            elts.$middleColumn().html(tmpl({ }));
+            console.log('render overview');
+            elts.$middleColumn().html(tmpl({}));
         };
 
         this.renderAsAction = Action(function(any, next) {

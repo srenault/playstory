@@ -16,9 +16,5 @@ window.PlayStory = {
             Search: {},
             Apps: {}
         }
-    },
-    Home: {
-    },
-    Dashboard: {
     }
 };

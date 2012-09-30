@@ -20,8 +20,7 @@
              tmplProject = _.template($("#discover_project_tmpl").html());
 
          this.render = function() {
-             elts.$middleColumn().html(tmpl({
-             }));
+             elts.$middleColumn().html(tmpl({}));
          };
 
          this.renderAsAction = asAction(self.render);
@@ -34,11 +33,11 @@
 
          this.onCreateProjectClick = function(next){
             elts.$createProject().click(preventDefault(next));
-         }
+         },
 
          this.onFollowClick = function(next){
             elts.$discover().on('click', '.follow-link', preventDefault(next));
-         }
+         },
 
          this.displayProjects = Action(function(projects, next) {
              var currentUser = bucket.models('user').get();

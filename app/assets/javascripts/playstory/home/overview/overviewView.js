@@ -10,23 +10,22 @@
 
         this.dom = new Overview.OverviewDOM();
 
-        this.lazyInit = function() {
-            server.onReceive(server.urls.summary)
-           .await(this.dom.drawSummary).subscribe();
+        Router.when('home', server.fetchSummary);
+        server.onReceive(server.urls.summary)
+              .await(self.dom.drawSummary).subscribe();
 
-            Router.from('*paths').when('home').chain(
-                this.dom.renderAsAction,
-                server.fetchSummary
-            );
+        this.lazyInit = Action(function(any, next) {
 
-            When(this.dom.onProjectClick)
+            When(self.dom.onProjectClick)
             .await(Router.goAsAction("dashboard/past/:project",
                 function(uriPattern, project) {
                     return uriPattern.replace(':project', project);
                 },
                 true
             )).subscribe();
-        };
+
+            next(any);
+        });
     };
 
 })(window.PlayStory.Init.Home.Overview,

@@ -8,38 +8,42 @@
         console.log("[Discover.View] Init Discover view");
         var self = this;
 
-        //Init
         this.dom = new Discover.DiscoverDOM();
+
+        Router.from('*paths').when('home/discover', server.fetchAllProjects);
+        server.onReceive(server.urls.allProjects)
+              .await(self.dom.displayProjects)
+              .subscribe();
 
         this.lazyInit = function() {
 
-            server.onReceive(server.urls.allProjects)
-            .await(this.dom.displayProjects)
-            .subscribe();
-
-            Router.from('*paths').when(
-                'home/discover',
-                this.dom.renderAsAction.then(server.fetchAllProjects));
-
-            When(this.dom.onCreateProjectClick)
+            When(self.dom.onCreateProjectClick)
             .map(function(evt) {
-                var $button = $(evt.currentTarget);
-                var name = $button.siblings("input[name=name]").val();
-                var realName = $button.siblings("input[name=real_name]").val();
-                return { name: name, realName: realName };
+                var $button = $(evt.currentTarget),
+                    name = $button.siblings("input[name=name]").val(),
+                    realName = $button.siblings("input[name=real_name]").val();
+
+                return {
+                    name: name,
+                    realName: realName
+                };
             })
-            .await(server.createProject.then(this.dom.addProject))
+            .await(server.createProject.then(self.dom.addProject))
             .subscribe();
 
-            When(this.dom.onFollowClick)
+            When(self.dom.onFollowClick)
             .map(function (evt) {
                 var $link   = $(evt.currentTarget),
                     action  = $link.data('follow-action'),
                     project = $link.data('follow-project');
 
-                return { action: action, project: project, element: $link };
+                return {
+                    action: action,
+                    project: project,
+                    element: $link
+                };
             })
-            .await(server.followOrUnfollow.then(this.dom.updateFollowingStatus))
+            .await(server.followOrUnfollow.then(self.dom.updateFollowingStatus))
             .subscribe();
         };
     };

@@ -13,14 +13,14 @@
 
         this.dom = new Search.SearchDOM();
 
-        this.lazyInit = function() {
+        this.lazyInit = Action(function(any, next) {
             var goSearchedFeed = Router.goAsAction('dashboard/past/:project/search/:query', function(uriPattern, params) {
                 return uriPattern.replace(':project', params.project)
                                  .replace(':query', params.keywords);
             }, true);
 
-            When(this.dom.onTypingEnter)
-                .map(this.dom.typedKeywords)
+            When(self.dom.onTypingEnter)
+                .map(self.dom.typedKeywords)
                 .map(function(keywords) {
                     keywords = 'keywords=' + keywords.reduce(function(query, keyword) {
                         return (query + '&keywords=' + keyword);
@@ -29,7 +29,9 @@
                     params.keywords = keywords;
                     return params;
             }).await(goSearchedFeed).subscribe();
-        };
+
+            next(any);
+        });
     };
 
 })(window.PlayStory,

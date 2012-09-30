@@ -8,12 +8,9 @@
         console.log("[Menu.View] Init Menu view");
         var self = this;
 
-        //Init
         this.dom = new Menu.MenuDOM();
 
         this.lazyInit = function() {
-            Router.fromStart().when('home*paths', this.dom.renderAsAction);
-            Router.from('dashboard*paths').when('home*paths', this.dom.renderAsAction);
         };
     };
 

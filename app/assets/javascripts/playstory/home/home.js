@@ -11,18 +11,26 @@
         var discoverView = new Init.Home.Discover.DiscoverView(server);
         var overviewView = new Init.Home.Overview.OverviewView(server);
 
-        server.onReceiveFromTemplate('projects')
-            .await(PlayStory.Bucket.collections('projects').setAsAction)
-            .subscribe();
+        /**  layout  **/
+        Router.fromStart().when('home*paths', layout.renderAsAction);
+        Router.from('dashboard*paths').when('home*paths').lazy(function() {
+            return PlayStory.Dashboard.destroy.and(layout.renderAsAction);
+        });
 
-        server.onReceiveFromTemplate('user')
-            .await(PlayStory.Bucket.models('user').setAsAction)
-            .subscribe();
-
-        var renderHome = layout.renderAsAction.then(
-            menuView.dom.renderAsAction
-           .and(overviewView.dom.renderAsAction)
+        /** menu & overview **/
+        Router.when('home').chain(
+            menuView.dom.renderAsAction,
+            overviewView.dom.renderAsAction,
+            overviewView.lazyInit
         );
+
+        /** dicover **/
+        Router.when('home/discover', Action(function(any, next) {
+            menuView.dom.render();
+            discoverView.dom.render();
+            discoverView.lazyInit();
+            next(any);
+        }));
 
         var destroyHome = layout.destroyAsAction.then(
             menuView.dom.destroyAsAction
@@ -30,22 +38,7 @@
            .and(overviewView.dom.destroyAsAction)
         );
 
-        if(Router.currentRoute() == '') {
-            Router.go('home');
-        }
-
-        Router.fromStart().when('home*paths', layout.renderAsAction);
-
-        menuView.lazyInit();
-        overviewView.lazyInit();
-        discoverView.lazyInit();
-
-        Router.from('dashboard*paths').when('home*paths').lazy(function() {
-            return PlayStory.Dashboard.destroy.and(renderHome);
-        });
-
         return {
-            render       : renderHome,
             destroy      : destroyHome,
             Server       : server,
             Layout       : layout,

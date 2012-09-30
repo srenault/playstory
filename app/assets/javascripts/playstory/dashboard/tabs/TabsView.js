@@ -10,43 +10,40 @@
 
         this.dom = new Tabs.TabsDOM();
 
-        this.lazyInit = function() {
-            When(this.dom.onPastTabClick)
-                .await(this.dom.turnOnPastTab)
+        this.lazyInit = Action(function(any, next) {
+            When(self.dom.onPastTabClick)
+                .await(self.dom.turnOnPastTab)
                 .subscribe();
 
-            When(this.dom.onPresentTabClick)
-                .await(this.dom.turnOnPresentTab)
+            When(self.dom.onPresentTabClick)
+                .await(self.dom.turnOnPresentTab)
                 .subscribe();
 
             Router.when('dashboard/past/:project').chain(
-                this.dom.turnOnPastTab,
-                this.dom.refreshNavigation
+                self.dom.turnOnPastTab,
+                self.dom.refreshNavigation
             );
 
             Router.when('dashboard/present/:project').chain(
-                this.dom.turnOnPresentTab,
-                this.dom.refreshNavigation
+                self.dom.turnOnPresentTab,
+                self.dom.refreshNavigation
             );
 
             Router.when('dashboard/past/:project/level/:level').chain(
-                this.dom.turnOnPastTab,
-                this.dom.refreshNavigation
+                self.dom.turnOnPastTab,
+                self.dom.refreshNavigation
             );
 
             Router.when('dashboard/past/:project/feed/:id/:limit').chain(
-                this.dom.turnOnPastTab,
-                this.dom.refreshNavigation
+                self.dom.turnOnPastTab,
+                self.dom.refreshNavigation
             );
 
             Router.when('dashboard/past/:project/search/*keywords').chain(
-                this.dom.turnOnPastTab,
-                this.dom.refreshNavigation
+                self.dom.turnOnPastTab,
+                self.dom.refreshNavigation
             );
-        };
 
-        this.lazyInitAsAction = Action(function(any, next) {
-            self.lazyInit();
             next(any);
         });
     };

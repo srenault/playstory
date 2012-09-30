@@ -15,8 +15,7 @@
          var tmpl = _.template($("#home_layout_tmpl").html());
 
          this.render = function() {
-             elts.$content().append(tmpl({
-             }));
+             elts.$content().html(tmpl({}));
              elts.$content().addClass("home");
          };
 
