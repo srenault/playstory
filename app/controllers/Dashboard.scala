@@ -195,7 +195,7 @@ object Dashboard extends Controller with Secured with Pulling {
     Logger.info("[Dashboard] Getting history of %s from %".format(project, from))
     Async {
       project match {
-        case Project.ALL => Log.all().map { logs =>
+        case Project.ALL => Log.all(request.user.projectNames).map { logs =>
           Ok(JsArray(
             logs.reverse.map(wrappedLog)
           ))
@@ -213,7 +213,7 @@ object Dashboard extends Controller with Secured with Pulling {
     Logger.info("[Dashboard] Getting history of %s".format(project))
     Async {
       project match {
-        case Project.ALL => Log.all().map { logs =>
+        case Project.ALL => Log.all(request.user.projectNames).map { logs =>
           Ok(JsArray(
             logs.reverse.map(wrappedLog)
           ))

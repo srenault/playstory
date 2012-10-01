@@ -10,15 +10,23 @@
 
         this.dom = new Apps.AppsDOM();
 
+        Router.when('dashboard/past/:project').chain(
+            self.dom.refreshNavigation('past')
+        );
+
+        Router.when('dashboard/present/:project').chain(
+            self.dom.refreshNavigation('present')
+        );
+
+        Router.when('dashboard/past/:project/level/:level').chain(
+            self.dom.refreshNavigation('past')
+        );
+
+        When(Bucket.models('user').onSet)
+            .await(self.dom.renderAsAction)
+            .subscribe();
+
         this.lazyInit = Action(function(any, next) {
-            When(Bucket.models('user').onSet)
-                .await(self.dom.updateFollowedProjects)
-                .subscribe();
-
-            Router.when('dashboard/past/:project', self.dom.refreshNavigation('past'));
-            Router.when('dashboard/present/:project', self.dom.refreshNavigation('present'));
-            Router.when('dashboard/past/:project/level/:level',self.dom.refreshNavigation('past'));
-
             next(any);
         });
     };

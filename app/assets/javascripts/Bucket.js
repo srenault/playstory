@@ -36,8 +36,7 @@
                 var self = this;
 
                 this.onSet = function(next) {
-                    _subscribe('model_' + name, next);
-                    _call('collect_' + name, collection);
+                    _subscribe('collect_' + name, next);
                 };
 
                 this.get = function() {

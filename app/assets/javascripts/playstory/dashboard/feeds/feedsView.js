@@ -14,133 +14,133 @@
         this.pastDOM    =  new Dashboard.Feeds.FeedsPastDOM();
         this.presentDOM =  new Dashboard.Feeds.FeedsPresentDOM();
 
+        server.onReceive(server.urls.listen)
+              .map(modelsDef.asFeed)
+              .await(
+                bucket.collections('feeds').putAsAction
+               .and(self.presentDOM.displayNewFeed())
+               .then(self.pastDOM.updateCounter)
+        ).subscribe();
+
+        server.onReceive(server.urls.last)
+            .map(modelsDef.asFeed)
+            .await(
+                bucket.collections('feeds').asFifo(limit)
+               .and(self.pastDOM.displayNewFeed(limit))
+        ).subscribe();
+
+        server.onReceive(server.urls.byLevel)
+            .map(modelsDef.asFeed)
+            .await(
+                bucket.collections('feeds').asFifo(limit)
+               .and(self.pastDOM.displayNewFeed(limit))
+        ).subscribe();
+
+        server.onReceive(server.urls.bookmarks)
+            .map(modelsDef.asFeed)
+            .await(
+                bucket.collections('feeds').asFifo(limit)
+               .and(self.pastDOM.displayNewFeed(limit))
+        ).subscribe();
+
+        server.onReceive(server.urls.more)
+            .map(modelsDef.asFeed)
+            .await(
+                bucket.collections('feeds').putAsAction
+               .and(self.pastDOM.displayPastFeed)
+        ).subscribe();
+
+        server.onReceive(server.urls.withContext)
+            .map(modelsDef.asFeed)
+            .filter(function(feed) {
+                var params = Router.matchCurrentRoute('dashboard/past/:project/feed/:id/:limit');
+                return (feed.id == params[1]);
+            })
+            .await(
+                bucket.collections('feeds').asFifo(limit)
+                      .and(self.pastDOM.displayNewFeed(limit)
+                      .then(self.pastDOM.highlightFeed))
+        ).subscribe();
+
+        server.onReceive(server.urls.withContext)
+            .map(modelsDef.asFeed)
+            .filter(function(feed) {
+                var params = Router.matchCurrentRoute('dashboard/past/:project/feed/:id/:limit');
+                return !(feed.id == params[1]);
+            })
+            .await(
+                bucket.collections('feeds').asFifo(limit)
+               .and(self.pastDOM.displayNewFeed(limit))
+        ).subscribe();
+
+        server.onReceive('/dashboard/:project/search?*keywords')
+            .map(modelsDef.asFeed)
+            .await(self.pastDOM.displayNewFeed())
+            .subscribe();
+
+        Router.when('dashboard/past/:project/search/*keywords').chain(
+            self.pastDOM.clearFeeds,
+            searchView.dom.fillSearch,
+            server.searchFeeds,
+            server.streamFeeds
+        );
+
+        var onlyRoutes = function(routes) {
+            return function() {
+                var matchedRoutes = routes.filter(function(route) {
+                    return Router.isMatchCurrentRoute(route);
+                });
+                return (matchedRoutes.length > 0) && (bucket.collections('feeds').size() > 0);
+            };
+        };
+
+        var goFeed = function(trigger) {
+            return Router.goAsAction('dashboard/past/:project/feed/:id/' + limit,
+                                     function(uriPattern, params) {
+                                         return uriPattern.replace(':project', params.project)
+                                             .replace(':id', params.id);
+                                     }, trigger);
+        };
+
+        Router.when('dashboard/past/:project').chain(
+            searchView.dom.clearSearch,
+            bucket.collections('feeds').resetAsAction,
+            self.pastDOM.clearFeeds,
+            server.closeStream(server.urls.listen),
+            server.streamFeeds
+        ).and(server.fetchLastFeeds);
+
+        Router.when('dashboard/present/:project').chain(
+            searchView.dom.clearSearch,
+            server.closeStream(server.urls.listen),
+            server.streamFeeds
+        );
+
+        Router.when('dashboard/past/:project/level/:level').chain(
+            searchView.dom.clearSearch,
+            bucket.collections('feeds').resetAsAction,
+            self.pastDOM.clearFeeds,
+            server.closeStream(server.urls.listen),
+            server.streamFeeds,
+            server.fetchFeedsByLevel
+        );
+
+        Router.when('dashboard/bookmarks').chain(
+            searchView.dom.clearSearch,
+            bucket.collections('feeds').resetAsAction,
+            self.pastDOM.clearFeeds,
+            server.fetch(server.urls.bookmarks)
+        );
+
+        Router.when('dashboard/past/:project/feed/:id/:limit').chain(
+            searchView.dom.clearSearch,
+            bucket.collections('feeds').resetAsAction,
+            self.pastDOM.clearFeeds,
+            server.closeStream(server.urls.listen),
+            server.streamFeeds
+        ).and(server.fetchFeedWithContext);
+
         this.lazyInit = Action(function(any, next) {
-
-            server.onReceive(server.urls.listen)
-                .map(modelsDef.asFeed)
-                .await(
-                 bucket.collections('feeds').putAsAction
-                .and(self.presentDOM.displayNewFeed())
-                .then(self.pastDOM.updateCounter)
-            ).subscribe();
-
-            server.onReceive(server.urls.last)
-                .map(modelsDef.asFeed)
-                .await(
-                    bucket.collections('feeds').asFifo(limit)
-                   .and(self.pastDOM.displayNewFeed(limit))
-            ).subscribe();
-
-            server.onReceive(server.urls.byLevel)
-                .map(modelsDef.asFeed)
-                .await(
-                    bucket.collections('feeds').asFifo(limit)
-                   .and(self.pastDOM.displayNewFeed(limit))
-            ).subscribe();
-
-            server.onReceive(server.urls.bookmarks)
-                .map(modelsDef.asFeed)
-                .await(
-                    bucket.collections('feeds').asFifo(limit)
-                   .and(self.pastDOM.displayNewFeed(limit))
-                ).subscribe();
-
-            server.onReceive(server.urls.more)
-                .map(modelsDef.asFeed)
-                .await(
-                    bucket.collections('feeds').putAsAction
-                   .and(self.pastDOM.displayPastFeed)
-            ).subscribe();
-
-            server.onReceive(server.urls.withContext)
-                .map(modelsDef.asFeed)
-                .filter(function(feed) {
-                    var params = Router.matchCurrentRoute('dashboard/past/:project/feed/:id/:limit');
-                    return (feed.id == params[1]);
-                })
-                .await(
-                    bucket.collections('feeds').asFifo(limit)
-                       .and(self.pastDOM.displayNewFeed(limit)
-                       .then(self.pastDOM.highlightFeed))
-                ).subscribe();
-
-            server.onReceive(server.urls.withContext)
-                .map(modelsDef.asFeed)
-                .filter(function(feed) {
-                    var params = Router.matchCurrentRoute('dashboard/past/:project/feed/:id/:limit');
-                    return !(feed.id == params[1]);
-                })
-                .await(
-                    bucket.collections('feeds').asFifo(limit)
-                   .and(self.pastDOM.displayNewFeed(limit))
-            ).subscribe();
-
-            server.onReceive('/dashboard/:project/search?*keywords')
-                  .map(modelsDef.asFeed)
-                  .await(self.pastDOM.displayNewFeed())
-                  .subscribe();
-
-            Router.when('dashboard/past/:project/search/*keywords').chain(
-                self.pastDOM.clearFeeds,
-                searchView.dom.fillSearch,
-                server.searchFeeds,
-                server.streamFeeds
-            );
-
-            var onlyRoutes = function(routes) {
-                return function() {
-                    var matchedRoutes = routes.filter(function(route) {
-                        return Router.isMatchCurrentRoute(route);
-                    });
-                    return (matchedRoutes.length > 0) && (bucket.collections('feeds').size() > 0);
-                };
-            };
-
-            var goFeed = function(trigger) {
-                return Router.goAsAction('dashboard/past/:project/feed/:id/' + limit,
-                       function(uriPattern, params) {
-                           return uriPattern.replace(':project', params.project)
-                                            .replace(':id', params.id);
-                       }, trigger);
-            };
-
-            Router.when('dashboard/past/:project').chain(
-                searchView.dom.clearSearch,
-                bucket.collections('feeds').resetAsAction,
-                self.pastDOM.clearFeeds,
-                server.closeStream(server.urls.listen),
-                server.streamFeeds
-            ).and(server.fetchLastFeeds);
-
-            Router.when('dashboard/present/:project').chain(
-                searchView.dom.clearSearch,
-                server.closeStream(server.urls.listen),
-                server.streamFeeds
-            );
-
-            Router.when('dashboard/past/:project/level/:level').chain(
-                searchView.dom.clearSearch,
-                bucket.collections('feeds').resetAsAction,
-                self.pastDOM.clearFeeds,
-                server.closeStream(server.urls.listen),
-                server.streamFeeds,
-                server.fetchFeedsByLevel
-            );
-
-            Router.when('dashboard/bookmarks').chain(
-                searchView.dom.clearSearch,
-                bucket.collections('feeds').resetAsAction,
-                self.pastDOM.clearFeeds,
-                server.fetch(server.urls.bookmarks)
-            );
-
-            Router.when('dashboard/past/:project/feed/:id/:limit').chain(
-                searchView.dom.clearSearch,
-                bucket.collections('feeds').resetAsAction,
-                self.pastDOM.clearFeeds,
-                server.closeStream(server.urls.listen),
-                server.streamFeeds
-            ).and(server.fetchFeedWithContext);
 
             When(self.pastDOM.onNewCommentClick)
                 .await(self.pastDOM.displayNewComment)

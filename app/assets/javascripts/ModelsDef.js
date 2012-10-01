@@ -10,17 +10,17 @@
 
         this.asFeed = function(data) {
             var projects = bucket.collections("projects").get(),
-                project= projects.filter(function(project) {
+                project = projects.filter(function(project) {
                     return project.name == data.log.project;
                 })[0];
 
             var feed = {
                 id: data.log._id,
-                realName: project.realName,
+                realName: project ? project.realName : '',
                 project: {
-                    name: project.name
+                    name: project ? project.name : ''
                 },
-                avatar: project.avatar,
+                avatar: project ? project.avatar : '',
                 time: new Date(data.log.date),
                 level: data.log.method,
                 message: data.log.message,

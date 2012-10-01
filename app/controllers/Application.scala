@@ -26,8 +26,6 @@ object Application extends Controller with GoogleOpenID with Secured {
   def index = Authenticated { implicit request =>
     Logger.info("Welcome authenticated user : " + request.user)
     Async {
-      val project = Project("onconnect", "ONconnect", Some("/assets/images/avatars/onconnect.png"))
-      Project.createIfNot(toJson(project))
       request.user.projects().map { projects =>
         Ok(views.html.playstory.index(
           request.user,

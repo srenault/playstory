@@ -8,6 +8,9 @@
       <li><a href="#home/discover">DISCOVER</a></li>
       <li><hr/></li>
       <li class="project"><a href="#dashboard/past/all">ALL</a></li>
+      <% projects.forEach(function(project) { %>
+      <li class="project"><a href="#dashboard/<%= project %>/all"><%= project %></a></li>
+      <% }) %>
     </ul>
   </div>
 </script>

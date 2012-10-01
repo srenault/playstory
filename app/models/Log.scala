@@ -54,8 +54,9 @@ object Log extends MongoDB("logs") with Searchable {
     def project(log: JsValue): Option[String] = (log \ "project").asOpt[String]
   }
 
-  def all(max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
-    val jsonQuery = JsonQueryBuilder().sort("date" -> Descending)
+  def all(projects: List[String], max: Int = Config.mongodb.limit): Future[List[JsValue]] = {
+    val byProjects = Json.obj("project" -> Json.obj("$in" -> projects))
+    val jsonQuery = JsonQueryBuilder().query(byProjects).sort("date" -> Descending)
     JsonQueryHelpers.find(collectAsync, jsonQuery).toList(max)
   }
 

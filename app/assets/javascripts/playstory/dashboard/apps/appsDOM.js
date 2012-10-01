@@ -20,7 +20,9 @@
 
          this.render = function() {
              console.log("[Dashboard] Rendering AppsView");
-             elts.$rightColumn().append(tmpl({
+             var user = bucket.models('user').get();
+             elts.$rightColumn().html(tmpl({
+                 projects: (user && user.projects) ? user.projects : []
              }));
          };
 
@@ -31,15 +33,6 @@
          };
 
          this.destroyAsAction = asAction(self.destroy);
-
-         this.updateFollowedProjects = Action(function(user, next) {
-             user.projects.forEach(function(project) {
-                 elts.$projectsContainer().append(
-                     $('<li><a href="#dashboard/past/:project">:project</a></li>'.replace(/:project/g, project))
-                 );
-             });
-             next(user);
-         });
 
          this.refreshNavigation = function(pastOrPresent) {
              return Action(function(any, next) {
